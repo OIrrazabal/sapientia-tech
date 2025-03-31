@@ -4,11 +4,15 @@ const express = require("express");
 //creamos la aplicacion express
 const app = express();
 
-port = 3000;
+const port = 3000;
+
+const path = require("path")
+
+app.use(express.static(path.join(__dirname, "assets")))
 
 //ruta inicio
 app.get("/", (req, res) => {
-	res.send("Hola Mundo Morado");
+	res.sendFile(path.join(__dirname, "assets", "index.html"));
 });
 
 // iniciar app escuchando puerto parametro
