@@ -12,7 +12,7 @@ app.use(express.static(path.join(__dirname, "assets")))
 
 //ruta inicio
 app.get("/", (req, res) => {
-	res.send("index.html");
+	res.sendFile(path.join(__dirname, "assets", "index.html"));
 });
 
 // iniciar app escuchando puerto parametro
