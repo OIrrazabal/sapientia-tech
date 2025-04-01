@@ -14,7 +14,7 @@ app.set("views", path.join(__dirname, "views"))
 
 //ruta inicio
 app.get("/", (req, res) => {
-	res.render("auth/home/index");
+	res.render("auth/home");
 });
 
 // iniciar app escuchando puerto parametro
