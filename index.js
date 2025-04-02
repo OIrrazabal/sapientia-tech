@@ -9,10 +9,16 @@ const port = 3000;
 const path = require("path")
 
 app.use(express.static(path.join(__dirname, "assets")))
+app.set("view engine", "ejs")
+app.set("views", path.join(__dirname, "views"))
 
 //ruta inicio
 app.get("/", (req, res) => {
-	res.sendFile(path.join(__dirname, "assets", "index.html"));
+	res.redirect("/auth/home");
+});
+
+app.get("/auth/home", (req, res) => {
+	res.render("auth/home");
 });
 
 // iniciar app escuchando puerto parametro
