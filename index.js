@@ -14,6 +14,10 @@ app.set("views", path.join(__dirname, "views"))
 
 //ruta inicio
 app.get("/", (req, res) => {
+	res.redirect("/auth/home");
+});
+
+app.get("/auth/home", (req, res) => {
 	res.render("auth/home");
 });
 
