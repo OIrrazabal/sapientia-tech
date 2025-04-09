@@ -1,3 +1,8 @@
+//Para la conexion a la base de datos
+const db = require("./db/conexion");
+
+//importar express
+const express = require("express");
 
 const express = require("express");
 const path = require("path")
