@@ -1,4 +1,38 @@
 const express = require('express');
 const router = express.Router();
+const db = require('../db/conexion');
+
+router.post('/public/login/try', (req, res) => {
+    // Obtener datos del formulario
+    const { email, password } = req.body;
+
+    if (!email?.trim() || !password?.trim()) {
+        return res.status(400).json({ error: 'Campos vacíos' });
+    }
+
+    if (password.length < 6) {
+        return res.status(400).json({ error: 'Contraseña muy corta' });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: 'Email invalido' });
+    }
+
+    // Buscar usuario en BD
+    const query = 'SELECT * FROM usuarios WHERE email = ? AND contraseña = ?';
+    db.get(query, [email, password], (err, user) => {
+        if (!user) {
+            return res.redirect('/login');
+        }
+
+        if (user.es_admin === 1) {
+            return res.redirect('/login');
+        }
+
+        // Usuario válido y no admin
+        res.redirect('/auth/home');
+    });
+});
 
 module.exports = router;
