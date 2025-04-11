@@ -2,7 +2,11 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/conexion');
 
-router.post('/public/login/try', (req, res) => {
+router.get('/admin-login', (req, res) => {
+    res.render('public/admin-login/index');
+});
+
+router.post('/login/try', (req, res) => {
     // Obtener datos del formulario
     const { email, password } = req.body;
 
