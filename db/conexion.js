@@ -10,14 +10,14 @@ const db = new sqlite3.Database(
       console.log("Conexión exitosa");
 
       // CONSULTA PARA MOSTRAR USUARIOS
-      db.all("SELECT * FROM usuarios", (err, rows) => {
+      /* db.all("SELECT * FROM usuarios", (err, rows) => {
         if (err) {
           console.error("Error al hacer SELECT:", err.message);
         } else {
           console.log("Usuarios registrados:");
           console.table(rows);
         }
-      });
+      }); */
     }
   }
 );
