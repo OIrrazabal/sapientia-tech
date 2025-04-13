@@ -6,6 +6,11 @@ router.get('/admin-login', (req, res) => {
     res.render('public/admin-login/index');
 });
 
+router.get('/login', (req, res) => {
+    res.render('public/login/index');
+});
+
+
 router.post('/login/try', (req, res) => {
     // Obtener datos del formulario
     const { email, password } = req.body;
