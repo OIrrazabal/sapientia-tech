@@ -3,6 +3,7 @@ const db = require("./db/conexion");
 
 //importar express
 const express = require("express");
+const session = require("express-session");
 
 const path = require("path")
 
@@ -17,6 +18,14 @@ const publicRoutes = require("./routes/public.routes");
 app.use(express.static(path.join(__dirname, "assets")))
 app.set("view engine", "ejs")
 app.set("views", path.join(__dirname, "views"))
+
+app.use(session({
+    name: 'is3-session-name',
+    secret: 'clave-aleatoria-y-secreta',
+    resave: false,
+    httpOnly: true,
+    saveUninitialized: false,
+}))
 
 //rutas
 app.use("/admin", adminRoutes);
