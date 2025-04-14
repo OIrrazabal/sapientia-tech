@@ -9,4 +9,10 @@ router.get('/', (req, res) => {
 // Usando el método home del controlador
 router.get('/home', authController.home);
 
+// Agregar logout (GET para probar desde el navegador)
+router.get('/logout', authController.logout);
+
+// Nuevo endpoint para logout
+router.post('/logout', authController.logout);
+
 module.exports = router;
