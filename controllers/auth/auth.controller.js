@@ -1,13 +1,13 @@
 // controllers/auth/auth.controller.js
 
-const { executeQuery } = require('../../db/db.handler');
+const Usuario = require('../../models/usuario.model');
 
 const authController = {};
 
 authController.home = async (req, res) => {
   try {
     // query de prueba que selecciona todos los usuarios
-    const users = await executeQuery('SELECT * FROM usuarios WHERE id = 1');
+    const users = await Usuario.listar();
     console.log(users);
     
     res.render('auth/home/index'); // renderiza views/auth/home/index.ejs
