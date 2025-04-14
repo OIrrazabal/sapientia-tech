@@ -44,7 +44,7 @@ router.post('/login/try', (req, res) => {
     });
 });
 
-router.post('/admin-login/try', (req, res) => {
+router.post('/admin-login/try', async (req, res) => {
     // Obtener datos del formulario
     const { email, password } = req.body;
 
@@ -61,20 +61,18 @@ router.post('/admin-login/try', (req, res) => {
         return res.status(400).send('Email invalido');
     }
 
-    // Buscar usuario en BD
-    const query = 'SELECT * FROM usuarios WHERE email = ? AND contraseña = ?';
-    db.get(query, [email, password], (err, user) => {
-        if (!user) {
-            return res.redirect('/public/login');
-        }
+    const user = await Usuario.loginAdmin(username, password);
+        
+    if (!user) {
+        return res.redirect('/public/admin-login');
+    }
 
-        if (user.es_admin !== 1) {
-            return res.redirect('/public/login');
-        }
-
-        // Usuario válido y no admin
-        res.redirect('/auth/home');
-    });
+    // Validar si es admin usando el servicio
+    if (!Usuario.isAdmin(user)) {
+        return res.redirect('/public/admin-login');
+    }
+    // Usuario válido y admin
+    res.redirect('/auth/home');
 });
 
 
