@@ -9,6 +9,8 @@ const path = require("path")
 
 //crear app express
 const app = express();
+//app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 //importar rutas
 const adminRoutes = require("./routes/admin.routes");
