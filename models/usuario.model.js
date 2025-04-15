@@ -1,50 +1,35 @@
-const db = require('../db/conexion');
+const dbHandler = require('../db/db.handler');
 
 const Usuario = {
-    // Método para listar todos los usuarios
     listar: async () => {
-        return new Promise((resolve, reject) => {
-            db.all('SELECT * FROM usuarios', [], (err, rows) => {
-                if (err) {
-                reject(err);
-                } else {
-                  resolve(rows); // <- acá sí está bien definido
-                }
-            });
-        });
+        return await dbHandler.ejecutarQueryAll('SELECT * FROM usuarios');
     },
 
-    // Método para login del administrador
-    loginAdmin: async (username, password) => {
-        return new Promise((resolve, reject) => {
-            db.get('SELECT * FROM usuarios WHERE nombre = ? AND tipo = "administrador" AND contraseña = ?', [username, password], (err, row) => {
-                if (err) {
-                    reject(err);
-                } else if (!row) {
-                    resolve({ success: false, message: 'Usuario no encontrado' });
-                } else {
-                    resolve({ success: true, user: row });
-                }
-            });
-        });
+    findOne: async ({ email }) => {
+        return await dbHandler.ejecutarQuery(
+            'SELECT * FROM usuarios WHERE email = ?', 
+            [email]
+        );
     },
 
-    // Buscar usuario por usuario y contraseña
     buscarUsuario: async (username, password) => {
-        return new Promise((resolve, reject) => {
-            db.get('SELECT * FROM usuarios WHERE nombre = ? AND contraseña = ?', [username, password], (err, row) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(row || null); // Retorna el usuario si la contraseña es válida
-                }
-            });
-        });
+        return await dbHandler.ejecutarQuery(
+            'SELECT * FROM usuarios WHERE nombre = ? AND contraseña = ?', 
+            [username, password]
+        );
     },
 
+    loginAdmin: async (email, password) => {
+        const user = await dbHandler.ejecutarQuery(
+            'SELECT * FROM usuarios WHERE email = ? AND es_admin = 1 AND contraseña = ?', 
+            [email, password]
+        );
+        return user ? { success: true, user } : { success: false, message: 'Usuario no encontrado' };
+    },
 
-
-
+    comparePassword: async (inputPassword, storedPassword) => {
+        return inputPassword === storedPassword;
+    }
 };
 
 module.exports = Usuario;

@@ -1,17 +1,29 @@
 const db = require('./conexion');
 
-const executeQuery = (query, params = []) => {
-    return new Promise((resolve, reject) => {
-        db.all(query, params, (error, rows) => {
-            if (error) {
-                reject(error);
-            } else {
-                resolve(rows);
-            }
+const dbHandler = {
+    ejecutarQuery: (query, params = []) => {
+        return new Promise((resolve, reject) => {
+            db.get(query, params, (err, row) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(row);
+                }
+            });
         });
-    });
+    },
+
+    ejecutarQueryAll: (query, params = []) => {
+        return new Promise((resolve, reject) => {
+            db.all(query, params, (err, rows) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(rows);
+                }
+            });
+        });
+    }
 };
 
-module.exports = {
-    executeQuery
-};
+module.exports = dbHandler;
