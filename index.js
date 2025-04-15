@@ -29,6 +29,8 @@ app.use(session({
     saveUninitialized: false,
 }))
 
+app.use(express.urlencoded({ extended: true }));
+
 //rutas
 app.use("/admin", adminRoutes);
 app.use("/auth", authRoutes);
