@@ -6,9 +6,9 @@ const Usuario = {
         return new Promise((resolve, reject) => {
             db.all('SELECT * FROM usuarios', [], (err, rows) => {
                 if (err) {
-                    reject(err);
+                reject(err);
                 } else {
-                    resolve(rows);
+                  resolve(rows); // <- acá sí está bien definido
                 }
             });
         });
