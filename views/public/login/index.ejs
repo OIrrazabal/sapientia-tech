@@ -68,6 +68,11 @@
                     <div class="course-item bg-light">
                         <div class="p-4 pb-0">
                             <h3 class="mb-4">Iniciar Sesión</h3>
+                            <% if (typeof error !== 'undefined' && error) { %>
+                                <div class="alert alert-danger">
+                                    <%= error %>
+                                </div>
+                            <% } %>
                             <form action="/public/login/try" method="POST">
                                 <div class="row g-3">
                                     <div class="col-12">

@@ -20,25 +20,11 @@ router.get('/home', checkLogin, authController.home);
 
 // Formulario de login
 router.get('/login', (req, res) => {
-  res.render('auth/login');
+  res.render('auth/login/index', { error: req.query.error });
 });
 
 // Procesar login
-router.post('/login', async (req, res) => {
-
-  const { email, password } = req.body;
-  const usuarios = await Usuario.listar();
-
-  const user = usuarios.find(u => u.email === email && u.contraseña === password);
-
-  if (user) {
-    req.session.userId = user.id;
-    req.session.userNombre = user.nombre;
-    res.redirect('/auth/home');
-  } else {
-    res.render('auth/login', { error: 'Credenciales inválidas' });
-  }
-});
+router.post('/login', authController.login);
 
 // Agregar logout (GET para probar desde el navegador)
 router.get('/logout', authController.logout);

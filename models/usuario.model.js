@@ -42,9 +42,26 @@ const Usuario = {
         });
     },
 
+    // Agregar método findOne para buscar por email
+    findOne: async ({ email }) => {
+        return new Promise((resolve, reject) => {
+            db.get('SELECT * FROM usuarios WHERE email = ?', [email], (err, row) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(row); // Devolver la fila directamente
+                }
+            });
+        });
+    },
 
-
-
+    // Agregar método comparePassword para verificar contraseña
+    comparePassword: async function(inputPassword, storedPassword) {
+        return new Promise((resolve, reject) => {
+            // Por ahora comparación directa, idealmente usar bcrypt
+            resolve(inputPassword === storedPassword);
+        });
+    }
 };
 
 module.exports = Usuario;

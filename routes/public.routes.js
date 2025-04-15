@@ -1,51 +1,53 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/conexion');
+const Usuario = require('../models/usuario.model'); // Agregar esta línea
 
 router.get('/admin-login', (req, res) => {
     res.render('public/admin-login/index');
 });
 
 router.get('/login', (req, res) => {
-    res.render('public/login/index');
-});
-
-
-router.post('/login/try', (req, res) => {
-    // Obtener datos del formulario
-    const { email, password } = req.body;
-
-    if (!email?.trim() || !password?.trim()) {
-        return res.status(400).send('contraseña o email vacio');
-    }
-
-    if (password.length < 6) {
-        return res.status(400).send('contraseña muy corta');
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return res.status(400).send('Email invalido');
-    }
-
-    // Buscar usuario en BD
-    const query = 'SELECT * FROM usuarios WHERE email = ? AND contraseña = ?';
-    db.get(query, [email, password], (err, user) => {
-        if (!user) {
-            return res.redirect('/public/login');
-        }
-
-        if (user.es_admin === 1) {
-            return res.redirect('/public/login');
-        }
-
-        // Usuario válido y no admin
-        res.redirect('/auth/home');
+    res.render('public/login/index', { 
+        error: req.query.error || null 
     });
 });
 
+router.post('/login/try', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        // Buscar usuario
+        const usuario = await Usuario.findOne({ email });
+        
+        if (!usuario) {
+            return res.redirect('/public/login?error=Usuario no encontrado');
+        }
+
+        // Verificar contraseña
+        if (password !== usuario.contraseña) {
+            return res.redirect('/public/login?error=Contraseña incorrecta');
+        }
+
+        // Crear sesión
+        req.session.usuario = usuario;
+        req.session.userId = usuario.id;
+        req.session.isAdmin = usuario.es_admin === 1;
+
+        // Redirigir según el tipo de usuario
+        if (usuario.es_admin === 1) {
+            res.redirect('/admin/home'); // Redirige a la vista de admin
+        } else {
+            res.redirect('/auth/home'); // Redirige a la vista normal
+        }
+
+    } catch (error) {
+        console.error('Error en login:', error);
+        res.redirect('/public/login?error=Error del servidor');
+    }
+});
+
 router.post('/admin-login/try', async (req, res) => {
-    // Obtener datos del formulario
     const { email, password } = req.body;
 
     if (!email?.trim() || !password?.trim()) {
@@ -61,19 +63,46 @@ router.post('/admin-login/try', async (req, res) => {
         return res.status(400).send('Email invalido');
     }
 
-    const user = await Usuario.loginAdmin(username, password);
+    try {
+        const user = await Usuario.loginAdmin(email, password); // Cambiar username por email
         
-    if (!user) {
-        return res.redirect('/public/admin-login');
-    }
+        if (!user || !user.success) {
+            return res.redirect('/public/admin-login?error=Credenciales incorrectas');
+        }
 
-    // Validar si es admin usando el servicio
-    if (!Usuario.isAdmin(user)) {
-        return res.redirect('/public/admin-login');
+        // Validar si es admin usando el servicio
+        if (!Usuario.isAdmin(user.user)) { // Ajustar según la estructura que devuelve loginAdmin
+            return res.redirect('/public/admin-login?error=No autorizado');
+        }
+
+        // Crear sesión para admin
+        req.session.usuario = user.user;
+        req.session.userId = user.user.id;
+        req.session.isAdmin = true;
+
+        // Usuario válido y admin
+        res.redirect('/auth/home');
+    } catch (error) {
+        console.error('Error en admin login:', error);
+        res.redirect('/public/admin-login?error=Error del servidor');
     }
-    // Usuario válido y admin
-    res.redirect('/auth/home');
 });
 
+// Agregar ruta de logout
+router.get('/logout', (req, res) => {
+    // Destruir la sesión
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error al cerrar sesión:', err);
+            return res.redirect('/?error=Error al cerrar sesión');
+        }
+        
+        // Limpiar la cookie de sesión
+        res.clearCookie('is3-session-name');
+        
+        // Redirigir al login
+        res.redirect('/public/login');
+    });
+});
 
 module.exports = router;
