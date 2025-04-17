@@ -58,4 +58,16 @@ authController.logout = (req, res) => {
   });
 };
 
+authController.team = (req, res) => {
+  try {
+    res.render('team', {
+      title: 'Nuestro Equipo',
+      usuario: req.session.usuario || null
+    });
+  } catch (error) {
+    console.error('Error al renderizar la página de equipo:', error);
+    res.status(500).send('Error del servidor');
+  }
+};
+
 module.exports = authController;
