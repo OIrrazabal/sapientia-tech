@@ -32,4 +32,7 @@ router.get('/logout', authController.logout);
 // Nuevo endpoint para logout
 router.post('/logout', authController.logout);
 
+// Ruta para la página del equipo
+router.get('/team', checkLogin, authController.team);
+
 module.exports = router;
