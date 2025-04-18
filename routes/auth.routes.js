@@ -35,4 +35,7 @@ router.post('/logout', authController.logout);
 // Ruta para la página del equipo
 router.get('/team', checkLogin, authController.team);
 
+//Listar mis cursos como profesor
+router.get('/mis-cursos', checkLogin, authController.misCursos);
+
 module.exports = router;

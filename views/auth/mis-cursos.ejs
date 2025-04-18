@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mis Cursos</title>
+</head>
+<body>
+    <h1>Mis Cursos</h1>
+
+    <!-- Listar los cursos que están asignados al profesor -->
+    <ul>
+        <% cursos.forEach(curso => { %>
+            <li>
+                <%= curso.nombre %> - <a href="/cursos/<%= curso.id %>">Ver curso</a>
+            </li>
+        <% }) %>
+    </ul>
+</body>
+</html>

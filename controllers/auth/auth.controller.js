@@ -67,6 +67,26 @@ authController.team = (req, res) => {
   } catch (error) {
     console.error('Error al renderizar la página de equipo:', error);
     res.status(500).send('Error del servidor');
+
+//Obtener cursos donde el usuario es profesor
+authController.misCursos = async (req, res) => {
+  const db = require('../../db/conexion');
+  const usuario = req.session.usuario;
+
+  // Verificar que el usuario esté logueado y sea profesor
+  if (!usuario || usuario.rol !== 'profesor') {
+      return res.status(403).send("Acceso denegado");
+  }
+
+  try {
+      // Consultar cursos asignados al profesor desde la base de datos
+      const cursos = await db.all('SELECT * FROM cursos WHERE profesor_id = ?', [usuario.id]);
+
+      // Renderizar la vista con la lista de cursos
+      res.render('auth/mis-cursos', { cursos });
+  } catch (error) {
+      console.error("Error al obtener cursos:", error);
+      res.status(500).send("Error al obtener los cursos.");
   }
 };
 
