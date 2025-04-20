@@ -1,0 +1,15 @@
+<form action="/auth/buscar" method="GET">
+    <input type="text" name="q" placeholder="Buscar cursos por nombre">
+    <button type="submit">Buscar</button>
+</form>
+
+<h1>Resultados para "<%= busqueda %>"</h1>
+<ul>
+    <% if (cursos.length > 0) { %>
+        <% cursos.forEach(curso => { %>
+            <li><%= curso.nombre %></li>
+        <% }) %>
+    <% } else { %>
+        <li>No se encontraron cursos</li>
+    <% } %>
+</ul>

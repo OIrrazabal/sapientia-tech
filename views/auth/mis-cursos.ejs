@@ -7,12 +7,18 @@
     <h1>Mis Cursos</h1>
 
     <!-- Listar los cursos que están asignados al profesor -->
+
+<% if (Array.isArray(cursos) && cursos.length > 0) { %>
     <ul>
-        <% cursos.forEach(curso => { %>
-            <li>
-                <%= curso.nombre %> - <a href="/cursos/<%= curso.id %>">Ver curso</a>
-            </li>
-        <% }) %>
+    <% cursos.forEach(curso => { %>
+        <li>
+        <%= curso.nombre %> - 
+        <a href="/cursos/<%= curso.id %>">Ver curso</a>
+        </li>
+    <% }) %>
     </ul>
+<% } else { %>
+    <p>No tienes cursos asignados actualmente.</p>
+<% } %>
 </body>
 </html>
