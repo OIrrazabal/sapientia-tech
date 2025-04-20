@@ -47,6 +47,13 @@ app.get("/", (req, res) => {
 	res.redirect("/auth/home");
 });
 
+// Ruta para manejar errores 404
+app.all("*", (req, res) => {
+    res.status(404).render("404", {
+        usuario: req.session.usuario || null
+    });
+});
+
 // iniciar app escuchando puerto parametro
 const port = 3000;
 app.listen(port, () => {
