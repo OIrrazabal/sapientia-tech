@@ -11,7 +11,8 @@ authController.home = async (req, res) => {
     //Pasamos los usuarios a la vista
     res.render('auth/home/index', {
       title: 'Inicio',
-      usuario: req.session.usuario || null
+      usuario: req.session.usuario || null,
+      active: 'inicio' //
     });
   } catch (error) {
     res.status(500).send('server error');
@@ -67,6 +68,8 @@ authController.team = (req, res) => {
   } catch (error) {
     console.error('Error al renderizar la página de equipo:', error);
     res.status(500).send('Error del servidor');
+  }
+};
 
 //Obtener cursos donde el usuario es profesor
 authController.misCursos = async (req, res) => {
@@ -87,6 +90,26 @@ authController.misCursos = async (req, res) => {
   } catch (error) {
       console.error("Error al obtener cursos:", error);
       res.status(500).send("Error al obtener los cursos.");
+  }
+};
+
+// Listar todos los usuarios
+authController.profesores = async (req, res) => {
+  try {
+    let profesores = (await Usuario.listar()).filter(u => u.rol === 'profesor');
+    if (!Array.isArray(profesores)) profesores = [];
+    res.render('auth/profesores', { 
+      profesores,
+      active: 'profesores',
+      usuario: req.session.usuario || null
+    });
+  } catch (error) {
+    console.error("Error al obtener usuarios:", error);
+    res.render('auth/profesores', { 
+      profesores: [],
+      active: 'profesores',
+      usuario: req.session.usuario || null
+    });
   }
 };
 

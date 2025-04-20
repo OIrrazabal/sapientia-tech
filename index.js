@@ -19,6 +19,7 @@ const authRoutes = require("./routes/auth.routes");
 const publicRoutes = require("./routes/public.routes");
 
 app.use(express.static(path.join(__dirname, "assets")))
+app.use('/assets', express.static('assets'));
 app.set("view engine", "ejs")
 app.set("views", path.join(__dirname, "views"))
 
