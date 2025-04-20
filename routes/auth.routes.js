@@ -38,4 +38,8 @@ router.get('/team', checkLogin, authController.team);
 //Listar mis cursos como profesor
 router.get('/mis-cursos', checkLogin, authController.misCursos);
 
+// Ruta para la página de profesores
+router.get('/profesores', authController.profesores);
+
+
 module.exports = router;
