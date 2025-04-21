@@ -34,12 +34,14 @@ router.post('/login/try', async (req, res) => {
         req.session.userId = usuario.id;
         req.session.isAdmin = usuario.es_admin === 1;
 
+        res.redirect('/auth/home');
+
         // Redirigir según el tipo de usuario
-        if (usuario.es_admin === 1) {
-            res.redirect('/admin/home'); // Redirige a la vista de admin
-        } else {
-            res.redirect('/auth/home'); // Redirige a la vista normal
-        }
+        // if (usuario.es_admin === 1) {
+        //     res.redirect('/admin/home'); // Redirige a la vista de admin
+        // } else {
+        //     res.redirect('/auth/home'); // Redirige a la vista normal
+        // }
 
     } catch (error) {
         console.error('Error en login:', error);
@@ -71,7 +73,7 @@ router.post('/admin-login/try', async (req, res) => {
         }
 
         // Validar si es admin usando el servicio
-        if (!Usuario.isAdmin(user.user)) { // Ajustar según la estructura que devuelve loginAdmin
+        if (!Usuario.es_admin === 1) { // Ajustar según la estructura que devuelve loginAdmin
             return res.redirect('/public/admin-login?error=No autorizado');
         }
 
