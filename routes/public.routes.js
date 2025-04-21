@@ -13,19 +13,29 @@ router.get('/login', (req, res) => {
 router.post('/login/try', async (req, res) => {
     const { email, password } = req.body;
 
+    console.log('Email: /login/try', email);
+    console.log('Password: /login/try', password);
+
     try {
         // Verificar si existe el usuario
-        const usuario = await Usuario.findOne({ email });
+        const usuario = await Usuario.findOne( email );
         if (!usuario) {
             return res.redirect('/public/login?error=Usuario no encontrado');
         }
 
-        const passwordMatch = await bcrypt.compare(password, usuario.contraseña);
+        console.log("usuario encontrado:", usuario);
+        console.log("comprar", password, usuario.contraseña);
+
+        //const passwordMatch = await bcrypt.compare(password, usuario.contraseña);
+
+        passwordMatch = password === usuario.contraseña; // Comparar la contraseña ingresada con la almacenada
         
         // Verificar contraseña directamente con la almacenada
         if (!passwordMatch) {
             return res.redirect('/public/login?error=Contraseña incorrecta');
         }
+
+        console.log('paso la comparacion de contrasenha')
 
         // Crear sesión
         req.session.usuario = usuario;

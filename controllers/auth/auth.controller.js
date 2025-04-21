@@ -22,14 +22,20 @@ authController.home = async (req, res) => {
 authController.login = async (req, res) => {
     try {
         const { email, password } = req.body;
+        console.log('Email:', email);
+        console.log('Password:', password);
         
         // Verificar si existe el usuario
-        const usuario = await Usuario.findOne({ email });
+        const usuario = await Usuario.findOne( email );
+        console.log('Usuario encontrado:', usuario);
         if (!usuario) {
             return res.redirect('/public/login?error=Usuario no encontrado');
         }
+        console.log('Contraseña ingresada:', password);
+        console.log('Contraseña almacenada:', usuario.contraseña);
 
         const passwordMatch = await bcrypt.compare(password, usuario.contraseña);
+        console.log('Contraseña coincide:', passwordMatch);
 
         // Verificar contraseña directamente con la almacenada
         if (!passwordMatch) {
