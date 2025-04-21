@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Nueva Sección - <%= curso.nombre %></title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f6f6f6;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 32px 40px;
+        }
+        h1 {
+            color: #4a148c;
+            margin-bottom: 8px;
+        }
+        h3 {
+            color: #333;
+            margin-top: 0;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        .btn-primary {
+            background: #512da8;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-secondary {
+            background: #9e9e9e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin-left: 10px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .alert {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .alert-danger {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Agregar Nueva Sección</h1>
+        <h3>Curso: <%= curso.nombre %></h3>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="alert alert-danger"><%= error %></div>
+        <% } %>
+
+        <form action="/auth/cursos/<%= curso.id %>/secciones" method="POST">
+            <div class="form-group">
+                <label for="nombre">Nombre de la Sección *</label>
+                <input type="text" 
+                       id="nombre" 
+                       name="nombre" 
+                       required 
+                       maxlength="100"
+                       placeholder="Ej: Introducción al tema">
+            </div>
+
+            <div class="form-group">
+                <label for="descripcion">Descripción</label>
+                <textarea id="descripcion" 
+                         name="descripcion" 
+                         maxlength="500"
+                         placeholder="Describe el contenido de esta sección"></textarea>
+            </div>
+
+            <div>
+                <button type="submit" class="btn-primary">
+                    Guardar Sección
+                </button>
+                <a href="/auth/cursos/<%= curso.id %>" class="btn-secondary">
+                    Cancelar
+                </a>
+                <a class="btn-secondary" href="/auth/mis-cursos">Volver atrás</a>
+            </div>
+            
+        </form>
+    </div>
+</body>
+</html>
