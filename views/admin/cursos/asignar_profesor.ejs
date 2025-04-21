@@ -1,0 +1,43 @@
+<%- include ('../../partials/navbar') %>
+
+<form action="/admin/cursos/guardar_profesor/<%= curso.id %>" method="POST" style="padding: 2em;">
+    <div class="card">
+        <div class="card-header">
+            <div class="row">
+                <h3>Asignar Profesor a Curso</h3>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-lg-3">
+                    <label class="form-label" for="curso"> Curso</label>
+                    <input type="text" class="form-control" value="<%= curso.titulo %>" readonly>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-lg-3">
+                    <label class="form-label" for="profesor_id"> Profesor (*)</label>
+                    <select class="form-select" id="profesor_id" name="profesor_id" required>
+                        <option value="" selected>Seleccionar...</option>
+                        <% usuarios.forEach(usuario => { %>
+                            <option value="<%= usuario.id %>"><%= usuario.nombre %></option>
+                        <% }) %>
+                    </select>
+                </div>
+            </div>
+            <% if (typeof error !== "undefined") { %>
+                <p style="color: red"><%= error %></p>
+            <% } %>
+        </div>
+        <div class="card-footer">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <a type="button" class="btn btn-danger me-2" href="/admin/cursos">Cancelar</a>
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<%- include ('../../partials/footer') %>
