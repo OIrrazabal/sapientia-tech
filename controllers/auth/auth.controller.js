@@ -39,7 +39,7 @@ authController.login = async (req, res) => {
         req.session.userId = usuario.id; // Importante para el middleware
         
         // Redirigir al home
-        res.redirect('/auth/home');
+       // res.redirect('/auth/home');
         
     } catch (error) {
         console.error('Error en login:', error);
