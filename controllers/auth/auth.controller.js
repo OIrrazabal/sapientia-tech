@@ -76,21 +76,24 @@ authController.misCursos = async (req, res) => {
   const db = require('../../db/conexion');
   const usuario = req.session.usuario;
 
-  // Verificar que el usuario esté logueado y sea profesor
   if (!usuario || usuario.rol !== 'profesor') {
-      return res.status(403).send("Acceso denegado");
+    return res.status(403).send("Acceso denegado");
   }
 
-  try {
-      // Consultar cursos asignados al profesor desde la base de datos
-      const cursos = await db.all('SELECT * FROM cursos WHERE profesor_id = ?', [usuario.id]) || [];
-
-      // Renderizar la vista con la lista de cursos
-      res.render('auth/mis-cursos', { cursos: Array.isArray(cursos) ? cursos : [] });
-  } catch (error) {
-      console.error("Error al obtener cursos:", error);
-      res.status(500).send("Error al obtener los cursos.");
-  }
+  db.all(
+    `SELECT c.*, u.nombre AS profesor_nombre
+     FROM cursos c
+     INNER JOIN usuarios u ON u.id = c.profesor_id
+     WHERE c.profesor_id = ?`,
+    [usuario.id],
+    (err, cursos) => {
+      if (err) {
+        console.error("Error al obtener cursos:", err);
+        return res.render('auth/mis-cursos', { cursos: [], usuario });
+      }
+      res.render('auth/mis-cursos', { cursos, usuario });
+    }
+  );
 };
 
 // Listar cursos donde el usuario es alumno
@@ -159,6 +162,84 @@ res.render('auth/Buscar', {
     busqueda,
     usuario: req.session.usuario || null
 });
+};
+
+// Mostrar formulario para agregar sección
+authController.mostrarFormularioSeccion = (req, res) => {
+  const db = require('../../db/conexion');
+  const cursoId = req.params.id;
+  const usuario = req.session.usuario;
+
+  db.get(
+    'SELECT * FROM cursos WHERE id = ?',
+    [cursoId],
+    (err, curso) => {
+      if (err) {
+        console.error("Error al obtener curso:", err);
+        return res.redirect('/auth/mis-cursos');
+      }
+
+      if (!curso) {
+        return res.redirect('/auth/mis-cursos');
+      }
+
+      if (curso.profesor_id !== usuario.id) {
+        return res.redirect('/auth/mis-cursos');
+      }
+
+      res.render('auth/secciones', {
+        curso,
+        usuario,
+        error: null
+      });
+    }
+  );
+};
+
+// Procesar el formulario de nueva sección
+authController.agregarSeccion = (req, res) => {
+  const db = require('../../db/conexion');
+  const cursoId = req.params.id;
+  const { nombre, descripcion } = req.body;
+  const usuario = req.session.usuario;
+
+  db.get(
+    'SELECT * FROM cursos WHERE id = ? AND profesor_id = ?',
+    [cursoId, usuario.id],
+    (err, curso) => {
+      if (err || !curso) {
+        return res.render('auth/secciones', {
+          curso: { id: cursoId },
+          usuario,
+          error: 'No tienes permiso para agregar secciones a este curso'
+        });
+      }
+
+      if (curso.publicado === 1) {
+        return res.render('auth/secciones', {
+          curso,
+          usuario,
+          error: 'No se pueden agregar secciones a un curso publicado'
+        });
+      }
+
+      db.run(
+        'INSERT INTO secciones (nombre, descripcion, curso_id) VALUES (?, ?, ?)',
+        [nombre, descripcion, cursoId],
+        (err) => {
+          if (err) {
+            console.error("Error al insertar sección:", err);
+            return res.render('auth/secciones', {
+              curso,
+              usuario,
+              error: 'Error al crear la sección'
+            });
+          }
+          res.redirect(`/auth/cursos/${cursoId}`);
+        }
+      );
+    }
+  );
 };
 
 module.exports = authController;

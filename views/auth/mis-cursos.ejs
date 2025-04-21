@@ -1,24 +1,125 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Mis Cursos</title>
+    <title>Mis Cursos como Profesor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f6f6f6;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 32px 40px;
+        }
+        h1 {
+            color: #4a148c;
+            margin-bottom: 8px;
+        }
+        h3 {
+            color: #333;
+            margin-top: 0;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            background: #ede7f6;
+            margin-bottom: 16px;
+            padding: 16px;
+            border-radius: 6px;
+        }
+        a {
+            color: #512da8;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .volver {
+            display: inline-block;
+            margin-top: 24px;
+            color: #fff;
+            background: #7e57c2;
+            padding: 8px 18px;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .volver:hover {
+            background: #512da8;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #b39ddb;
+            margin: 12px 0;
+        }
+        .btn-agregar {
+            background: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            margin-left: 10px;
+            text-decoration: none;
+        }
+        .btn-agregar:hover {
+            background: #388E3C;
+            text-decoration: none;
+        }
+        .estado {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            margin-top: 8px;
+        }
+        .publicado {
+            background: #C8E6C9;
+            color: #2E7D32;
+        }
+        .no-publicado {
+            background: #FFCDD2;
+            color: #C62828;
+        }
+    </style>
+    <script>
+        console.log('Usuario logueado:', <%= JSON.stringify(usuario) %>);
+    </script>
 </head>
 <body>
-    <h1>Mis Cursos</h1>
-
-    <!-- Listar los cursos que están asignados al profesor -->
-
-<% if (Array.isArray(cursos) && cursos.length > 0) { %>
-    <ul>
-    <% cursos.forEach(curso => { %>
-        <li>
-        <%= curso.nombre %> - 
-        <a href="/cursos/<%= curso.id %>">Ver curso</a>
-        </li>
-    <% }) %>
-    </ul>
-<% } else { %>
-    <p>No tienes cursos asignados actualmente.</p>
-<% } %>
+    <div class="container">
+        <h1>Mis Cursos como Profesor</h1>
+        <h3>Profesor: <%= usuario.nombre %></h3>
+        <ul>
+            <% if (Array.isArray(cursos) && cursos.length > 0) { %>
+                <% cursos.forEach(curso => { %>
+                    <li>
+                        <strong>ID:</strong> <%= curso.id %> <br>
+                        <strong>Materia:</strong> <%= curso.nombre %> <br>
+                        <strong>Descripción:</strong> <%= curso.descripcion %> <br>
+                        <span class="estado <%= curso.publicado ? 'publicado' : 'no-publicado' %>">
+                            <%= curso.publicado ? 'Publicado' : 'No publicado' %>
+                        </span>
+                        <br>
+                        <a href="/cursos/<%= curso.id %>">Ver curso</a>
+                        <% if (!curso.publicado) { %>
+                            <a href="/auth/cursos/<%= curso.id %>/secciones" class="btn-agregar">
+                                Agregar Sección
+                            </a>
+                        <% } %>
+                    </li>
+                <% }) %>
+            <% } else { %>
+                <li>No hay cursos para mostrar.</li>
+            <% } %>
+        </ul>
+        <a class="volver" href="/auth/home">Volver al inicio</a>
+    </div>
 </body>
 </html>

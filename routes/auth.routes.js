@@ -63,4 +63,10 @@ router.get('/profesores', authController.profesores);
 // Ruta para buscar cursos
 router.get('/buscar', checkLogin, authController.buscarCursos);
 
+// Mostrar formulario para agregar sección
+router.get('/cursos/:id/secciones', checkLogin, authController.mostrarFormularioSeccion);
+
+// Procesar el formulario de nueva sección
+router.post('/cursos/:id/secciones', checkLogin, authController.agregarSeccion);
+
 module.exports = router;
