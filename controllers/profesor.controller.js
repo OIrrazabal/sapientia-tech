@@ -53,3 +53,6 @@ profesorController.publish = async (req, res) => {
 };
 
 module.exports = profesorController;
+
+//publicar curso y ver
+
