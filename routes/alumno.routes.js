@@ -15,5 +15,5 @@ const router = express.Router();
 // router.get('/cursos/asignar_profesor/:id', checkLogin, checkAdmin, cursoController.create_teacher);
 
 // router.post('/cursos/guardar_profesor/:id', checkLogin, checkAdmin, cursoController.store_teacher);
-
+//a
 module.exports = router;
