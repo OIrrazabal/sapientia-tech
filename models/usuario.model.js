@@ -5,10 +5,9 @@ const Usuario = {
         return await dbHandler.ejecutarQueryAll('SELECT * FROM usuarios');
     },
 
-    findOne: async ( email ) => {
-        console.log('Email:', email);
+    findOne: async ({ email }) => {
         return await dbHandler.ejecutarQuery(
-            "SELECT * FROM usuarios WHERE email = ?", 
+            'SELECT * FROM usuarios WHERE email = ?', 
             [email]
         );
     },

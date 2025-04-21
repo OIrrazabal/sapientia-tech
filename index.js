@@ -17,10 +17,9 @@ app.use(express.urlencoded({ extended: true }));
 const adminRoutes = require("./routes/admin.routes");
 const authRoutes = require("./routes/auth.routes");
 const publicRoutes = require("./routes/public.routes");
-const profesorRoutes = require("./routes/profesor.routes");
-const alumnoRoutes = require("./routes/alumno.routes");
 
 app.use(express.static(path.join(__dirname, "assets")))
+app.use('/assets', express.static('assets'));
 app.set("view engine", "ejs")
 app.set("views", path.join(__dirname, "views"))
 
@@ -36,23 +35,23 @@ app.use(session({
     cookie: { maxAge: 24 * 60 * 60 * 1000 }
 }));
 
-app.use((req, res, next) => {
-    res.locals.usuario = req.session.usuario || null; // si usás sesión
-    next();
-});
-
 app.use(express.urlencoded({ extended: true }));
 
 //rutas
 app.use("/admin", adminRoutes);
 app.use("/auth", authRoutes);
 app.use("/public", publicRoutes);
-app.use("/profesor", profesorRoutes);
-app.use("/alumno", alumnoRoutes);
 
 //ruta inicio
 app.get("/", (req, res) => {
 	res.redirect("/auth/home");
+});
+
+// Ruta para manejar errores 404
+app.all("*", (req, res) => {
+    res.status(404).render("404", {
+        usuario: req.session.usuario || null
+    });
 });
 
 // iniciar app escuchando puerto parametro
