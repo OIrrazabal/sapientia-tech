@@ -93,6 +93,32 @@ authController.misCursos = async (req, res) => {
   }
 };
 
+// Listar cursos donde el usuario es alumno
+authController.misCursosAlumno = async (req, res) => {
+  const db = require('../../db/conexion');
+  const usuario = req.session.usuario;
+
+  if (!usuario || usuario.rol !== 'estudiante') {
+    return res.status(403).send("Acceso denegado");
+  }
+
+  db.all(
+    `SELECT c.*, u.nombre AS profesor_nombre
+     FROM cursos c
+     INNER JOIN inscripciones i ON i.curso_id = c.id
+     INNER JOIN usuarios u ON u.id = c.profesor_id
+     WHERE i.alumno_id = ?`,
+    [usuario.id],
+    (err, cursos) => {
+      if (err) {
+        console.error("Error al obtener cursos:", err);
+        return res.render('auth/mis-cursos-alumno', { cursos: [], usuario });
+      }
+      res.render('auth/mis-cursos-alumno', { cursos, usuario });
+    }
+  );
+};
+
 // Listar todos los usuarios
 authController.profesores = async (req, res) => {
   try {

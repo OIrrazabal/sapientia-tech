@@ -10,6 +10,22 @@ router.get('/debug/usuarios', async (req, res) => {
   res.json(usuarios);
 });
 
+router.get('/debug/cursos', (req, res) => {
+  const db = require('../db/conexion');
+  db.all('SELECT * FROM cursos', (err, cursos) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(cursos);
+  });
+});
+
+router.get('/debug/inscripciones', (req, res) => {
+  const db = require('../db/conexion');
+  db.all('SELECT * FROM inscripciones', (err, inscripciones) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(inscripciones);
+  });
+});
+
 // Redirección inicial
 router.get('/', (req, res) => {
   res.redirect('/auth/home');
@@ -37,6 +53,9 @@ router.get('/team', checkLogin, authController.team);
 
 //Listar mis cursos como profesor
 router.get('/mis-cursos', checkLogin, authController.misCursos);
+
+// Listar mis cursos como alumno
+router.get('/mis-cursos-alumno', checkLogin, authController.misCursosAlumno);
 
 // Ruta para la página de profesores
 router.get('/profesores', authController.profesores);
