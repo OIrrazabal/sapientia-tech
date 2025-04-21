@@ -41,5 +41,7 @@ router.get('/mis-cursos', checkLogin, authController.misCursos);
 // Ruta para la página de profesores
 router.get('/profesores', authController.profesores);
 
+// Ruta para buscar cursos
+router.get('/buscar', checkLogin, authController.buscarCursos);
 
 module.exports = router;

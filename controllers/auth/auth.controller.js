@@ -83,10 +83,10 @@ authController.misCursos = async (req, res) => {
 
   try {
       // Consultar cursos asignados al profesor desde la base de datos
-      const cursos = await db.all('SELECT * FROM cursos WHERE profesor_id = ?', [usuario.id]);
+      const cursos = await db.all('SELECT * FROM cursos WHERE profesor_id = ?', [usuario.id]) || [];
 
       // Renderizar la vista con la lista de cursos
-      res.render('auth/mis-cursos', { cursos });
+      res.render('auth/mis-cursos', { cursos: Array.isArray(cursos) ? cursos : [] });
   } catch (error) {
       console.error("Error al obtener cursos:", error);
       res.status(500).send("Error al obtener los cursos.");
@@ -111,6 +111,28 @@ authController.profesores = async (req, res) => {
       usuario: req.session.usuario || null
     });
   }
+};
+
+// Buscar Cursos
+authController.buscarCursos = async (req, res) => {
+  const db = require('../../db/conexion');
+  const busqueda = req.query.q || '';
+  let cursos = [];
+
+  if (busqueda.trim() !== '') {
+    const query = `
+        SELECT * FROM cursos
+        WHERE publicado = 1 AND LOWER(nombre) LIKE LOWER(?)
+    `;
+
+    cursos = await db.all(query, [`%${busqueda}%`]);
+}
+
+res.render('auth/Buscar', {
+    cursos,
+    busqueda,
+    usuario: req.session.usuario || null
+});
 };
 
 module.exports = authController;
