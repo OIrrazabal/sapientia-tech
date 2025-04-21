@@ -1,0 +1,68 @@
+<%- include ('../../partials/navbar') %>
+
+<form style="padding: 2em;">
+    <div class="card">
+        <div class="card-header">
+            <div class="row">
+                <h3>Ver Curso</h3>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-lg-3">
+                    <label class="form-label" for="titulo"> Título</label>
+                    <input type="text" class="form-control" id="titulo" value="<%= curso.titulo %>" readonly/>
+                </div>
+                <div class="col-lg-3">
+                    <label class="form-label" for="categoria"> Categoría</label>
+                    <input type="text" class="form-control" id="categoria" value="<%= curso.categoria %>" readonly/>
+                </div>
+                <div class="col-lg-6 d-flex justify-content-end">
+                    <div class="col-lg-3 me-4">
+                        <label class="form-label" for="creado"> Creado Por</label>
+                        <input type="text" class="form-control" id="creado" value="<%= curso.creador %>" readonly/>
+                    </div>
+                    <div class="col-lg-3">
+                        <label class="form-label" for="fecha_creacion"> Fecha Creación</label>
+                        <input type="text" class="form-control" id="fecha_creacion" value="<%= curso.fecha_creacion %>" readonly/>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-lg-6">
+                    <label class="form-label" for="titulo"> Descripción</label>
+                    <textarea type="text" class="form-control" id="descripcion" readonly><%= curso.descripcion %></textarea>
+                </div>
+                <div class="col-lg-6 d-flex justify-content-end">
+                    <div class="col-lg-3 me-4">
+                        <label class="form-label" for="soy">En este curso soy</label>
+                        <% if (usuario.rol === 0) { %>
+                            <input type="text" class="form-control" value="Administrador" readonly>
+                        <% } else if (usuario.rol === 1) { %>
+                            <input type="text" class="form-control" value="Profesor" readonly>
+                        <% } else { %>
+                            <input type="text" class="form-control" value="Alumno" readonly>
+                        <% } %>
+                    </div>
+                    <div class="col-lg-3">
+                        <label class="form-label" for="estado"> Estado</label>
+                        <% if (curso.publicado === 1) { %>
+                            <input type="text" class="form-control" id="estado" value="Publicado" readonly />
+                        <% } else { %>
+                            <input type="text" class="form-control" id="estado" value="Pendiente" readonly />
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <a type="button" class="btn btn-danger me-2" href="/">Volver al Inicio</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<%- include ('../../partials/footer') %>
