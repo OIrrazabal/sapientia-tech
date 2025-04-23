@@ -8,14 +8,10 @@ adminController.home = (req, res) => {
     });
 };
 
-
+// Crear cursos
 adminController.mostrarFormulario = async (req, res) => {
     try {
-        const profesores = await Usuario.listar()
-            .then(users => users.filter(u => u.rol === 'profesor'));
-        
         res.render('admin/crear-curso/index', {
-            profesores,
             usuario: req.session.usuario || null,
             error: null
         });
@@ -23,7 +19,6 @@ adminController.mostrarFormulario = async (req, res) => {
         console.error('Error:', error);
         res.status(500).render('admin/crear-curso/index', {
             error: 'Error al cargar el formulario',
-            profesores: [],
             usuario: req.session.usuario || null
         });
     }
@@ -32,11 +27,9 @@ adminController.mostrarFormulario = async (req, res) => {
 adminController.crearCurso = async (req, res) => {
     const { nombre, descripcion, profesor_id } = req.body;
     
-    if (!nombre || !descripcion || !profesor_id) {
+    if (!nombre || !descripcion) {
         return res.status(400).render('admin/crear-curso/index', {
             error: 'Todos los campos son requeridos',
-            profesores: await Usuario.listar()
-                .then(users => users.filter(u => u.rol === 'profesor')),
             usuario: req.session.usuario || null
         });
     }
@@ -48,8 +41,58 @@ adminController.crearCurso = async (req, res) => {
         console.error('Error:', error);
         res.status(500).render('admin/crear-curso/index', {
             error: 'Error al crear el curso',
+            usuario: req.session.usuario || null
+        });
+    }
+};
+
+//Asignar profesores
+adminController.mostrarFormularioAsignar = async (req, res) => {
+    try {
+        const profesores = await Usuario.listar()
+            .then(users => users.filter(u => u.rol === 'profesor'));
+        const cursos = await Curso.listarDisponibles();
+        
+        res.render('admin/asignar-profesor/index', {
+            profesores,
+            cursos,
+            usuario: req.session.usuario || null,
+            error: null
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).render('admin/asignar-profesor/index', {
+            error: 'Error al cargar el formulario',
+            profesores: [],
+            cursos: [],
+            usuario: req.session.usuario || null
+        });
+    }
+};
+
+adminController.asignarProfesor = async (req, res) => {
+    const { curso_id, profesor_id } = req.body;
+    
+    if (!curso_id || !profesor_id) {
+        return res.status(400).render('admin/asignar-profesor/index', {
+            error: 'Todos los campos son requeridos',
             profesores: await Usuario.listar()
                 .then(users => users.filter(u => u.rol === 'profesor')),
+            cursos: await Curso.listarDisponibles(),
+            usuario: req.session.usuario || null
+        });
+    }
+
+    try {
+        await Curso.asignarProfesor(curso_id, profesor_id);
+        res.redirect('/admin/home');
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).render('admin/asignar-profesor/index', {
+            error: 'Error al asignar profesor',
+            profesores: await Usuario.listar()
+                .then(users => users.filter(u => u.rol === 'profesor')),
+            cursos: await Curso.listarDisponibles(),
             usuario: req.session.usuario || null
         });
     }
