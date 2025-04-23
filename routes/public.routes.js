@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/conexion');
-const Usuario = require('../models/usuario.model'); // Agregar esta línea
+const Usuario = require('../models/usuario.model');
+const bcrypt = require('bcrypt');
 
 router.get('/admin-login', (req, res) => {
     res.render('public/admin-login/index');
@@ -25,7 +26,8 @@ router.post('/login/try', async (req, res) => {
         }
 
         // Verificar contraseña
-        if (password !== usuario.contraseña) {
+        const match = await bcrypt.compare(password, usuario.contraseña);
+        if (!match) {
             return res.redirect('/public/login?error=Contraseña incorrecta');
         }
 

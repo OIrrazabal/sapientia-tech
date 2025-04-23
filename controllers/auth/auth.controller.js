@@ -1,6 +1,5 @@
-// controllers/auth/auth.controller.js
-
 const Usuario = require('../../models/usuario.model');
+const bcrypt = require('bcrypt');
 
 const authController = {};
 
@@ -30,7 +29,8 @@ authController.login = async (req, res) => {
         }
 
         // Verificar contraseña directamente con la almacenada
-        if (password !== usuario.contraseña) {
+        const match = await bcrypt.compare(password, usuario.contraseña);
+        if (!match) {
             return res.redirect('/public/login?error=Contraseña incorrecta');
         }
 
@@ -39,8 +39,7 @@ authController.login = async (req, res) => {
         req.session.userId = usuario.id; // Importante para el middleware
         
         // Redirigir al home
-       // res.redirect('/auth/home');
-        
+        res.redirect('/auth/home');  
     } catch (error) {
         console.error('Error en login:', error);
         res.redirect('/public/login?error=Error del servidor');
