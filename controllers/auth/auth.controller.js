@@ -149,18 +149,32 @@ authController.buscarCursos = async (req, res) => {
 
   if (busqueda.trim() !== '') {
     const query = `
-        SELECT * FROM cursos
-        WHERE publicado = 1 AND LOWER(nombre) LIKE LOWER(?)
+      SELECT c.*, u.nombre as profesor_nombre 
+      FROM cursos c
+      LEFT JOIN usuarios u ON c.profesor_id = u.id
+      WHERE c.publicado = 1 
+      AND LOWER(c.nombre) LIKE LOWER(?)
     `;
 
-    cursos = await db.all(query, [`%${busqueda}%`]);
-}
+    try {
+      cursos = await new Promise((resolve, reject) => {
+        db.all(query, [`%${busqueda}%`], (err, rows) => {
+          if (err) reject(err);
+          else resolve(rows);
+        });
+      });
+    } catch (error) {
+      console.error("Error al buscar cursos:", error);
+      cursos = [];
+    }
+  }
 
-res.render('auth/Buscar', {
+  res.render('auth/buscar', {
     cursos,
     busqueda,
-    usuario: req.session.usuario || null
-});
+    usuario: req.session.usuario || null,
+    active: 'buscar'
+  });
 };
 
 // Mostrar formulario para agregar sección
