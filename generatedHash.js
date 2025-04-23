@@ -1,7 +1,10 @@
 const bcrypt = require('bcrypt');
 
-// Generar el hash de la contraseña
 const password = '123456';
-const hashedPassword = bcrypt.hashSync(password, 10);
-
-console.log(hashedPassword);
+bcrypt.hash(password, 10, (err, hash) => {
+    if (err) {
+        console.error('Error generando hash:', err);
+        return;
+    }
+    console.log('Hash para usar en el SQL:', hash);
+});

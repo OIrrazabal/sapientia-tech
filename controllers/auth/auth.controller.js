@@ -1,6 +1,5 @@
-// controllers/auth/auth.controller.js
-
 const Usuario = require('../../models/usuario.model');
+const bcrypt = require('bcrypt');
 
 const authController = {};
 
@@ -30,7 +29,8 @@ authController.login = async (req, res) => {
         }
 
         // Verificar contraseña directamente con la almacenada
-        if (password !== usuario.contraseña) {
+        const match = await bcrypt.compare(password, usuario.contraseña);
+        if (!match) {
             return res.redirect('/public/login?error=Contraseña incorrecta');
         }
 
@@ -39,8 +39,7 @@ authController.login = async (req, res) => {
         req.session.userId = usuario.id; // Importante para el middleware
         
         // Redirigir al home
-       // res.redirect('/auth/home');
-        
+        res.redirect('/auth/home');  
     } catch (error) {
         console.error('Error en login:', error);
         res.redirect('/public/login?error=Error del servidor');
@@ -150,18 +149,32 @@ authController.buscarCursos = async (req, res) => {
 
   if (busqueda.trim() !== '') {
     const query = `
-        SELECT * FROM cursos
-        WHERE publicado = 1 AND LOWER(nombre) LIKE LOWER(?)
+      SELECT c.*, u.nombre as profesor_nombre 
+      FROM cursos c
+      LEFT JOIN usuarios u ON c.profesor_id = u.id
+      WHERE c.publicado = 1 
+      AND LOWER(c.nombre) LIKE LOWER(?)
     `;
 
-    cursos = await db.all(query, [`%${busqueda}%`]);
-}
+    try {
+      cursos = await new Promise((resolve, reject) => {
+        db.all(query, [`%${busqueda}%`], (err, rows) => {
+          if (err) reject(err);
+          else resolve(rows);
+        });
+      });
+    } catch (error) {
+      console.error("Error al buscar cursos:", error);
+      cursos = [];
+    }
+  }
 
-res.render('auth/Buscar', {
+  res.render('auth/buscar', {
     cursos,
     busqueda,
-    usuario: req.session.usuario || null
-});
+    usuario: req.session.usuario || null,
+    active: 'buscar'
+  });
 };
 
 // Mostrar formulario para agregar sección
