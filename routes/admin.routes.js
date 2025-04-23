@@ -1,12 +1,12 @@
 const express = require('express');
+const adminController = require('../controllers/admin/admin.controller');
+const { checkAdmin } = require('../middleware/admin.middleware');
 const router = express.Router();
 
-router.get('/home', (req, res) => {
-    res.render('admin/home/index');
-});
+router.get('/home', checkAdmin, adminController.home);
 
-router.get('/crear-curso', (req, res) => {
-    res.render('admin/crear-curso');
-});
+router.get('/crear-curso', checkAdmin, adminController.mostrarFormulario);
+
+router.post('/crear-curso', checkAdmin, adminController.crearCurso);
 
 module.exports = router;
