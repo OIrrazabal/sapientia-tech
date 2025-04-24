@@ -1,91 +1,119 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
+
 <head>
-    <title>Mis Cursos como Alumno</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f6f6f6;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 700px;
-            margin: 40px auto;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            padding: 32px 40px;
-        }
-        h1 {
-            color: #4a148c;
-            margin-bottom: 8px;
-        }
-        h3 {
-            color: #333;
-            margin-top: 0;
-        }
-        ul {
-            list-style: none;
-            padding: 0;
-        }
-        li {
-            background: #ede7f6;
-            margin-bottom: 16px;
-            padding: 16px;
-            border-radius: 6px;
-        }
-        a {
-            color: #512da8;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        .volver {
-            display: inline-block;
-            margin-top: 24px;
-            color: #fff;
-            background: #7e57c2;
-            padding: 8px 18px;
-            border-radius: 5px;
-            text-decoration: none;
-        }
-        .volver:hover {
-            background: #512da8;
-        }
-        hr {
-            border: none;
-            border-top: 1px solid #b39ddb;
-            margin: 12px 0;
-        }
-    </style>
-    <script>
-        console.log('Usuario logueado:', <%= JSON.stringify(usuario) %>);
-    </script>
+    <meta charset="utf-8">
+    <title>eLEARNING - Mis Cursos como Alumno</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+    <!-- Favicon -->
+    <link href="/img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="/lib/animate/animate.min.css" rel="stylesheet">
+    <link href="/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+
+    <!-- Bootstrap & Template Stylesheet -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
 </head>
+
 <body>
-    <div class="container">
-        <h1>Mis Cursos como Alumno</h1>
-        <h3>Estudiante: <%= usuario.nombre %></h3>
-        <ul>
-            <% if (Array.isArray(cursos) && cursos.length > 0) { %>
-                <% cursos.forEach(curso => { %>
-                    <li>
-                        <strong>ID:</strong> <%= curso.id %> <br>
-                        <strong>Materia:</strong> <%= curso.nombre %> <br>
-                        <strong>Descripción:</strong> <%= curso.descripcion %> <br>
-                        <strong>Profesor ID:</strong> <%= curso.profesor_id %> <br>
-                        <strong>Profesor:</strong> <%= curso.profesor_nombre %> <br>
-                        <a href="/cursos/<%= curso.id %>">Ver curso</a>
-                    </li>
-                <% }) %>
-            <% } else { %>
-                <li>No hay cursos para mostrar.</li>
-            <% } %>
-        </ul>
-        <a class="volver" href="/auth/home">Volver al inicio</a>
+    <!-- Spinner Start -->
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only">Cargando...</span>
+        </div>
     </div>
+    <!-- Spinner End -->
+
+    <%- include('../partials/navbar') %>
+
+    <!-- Header Start -->
+    <div class="container-fluid bg-primary py-5 mb-5 page-header">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 text-center">
+                    <h1 class="display-3 text-white animated slideInDown">Mis Cursos</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-center">
+                            <li class="breadcrumb-item"><a class="text-white" href="/auth/home">Inicio</a></li>
+                            <li class="breadcrumb-item text-white active" aria-current="page">Mis Cursos como Alumno</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Header End -->
+
+    <!-- Courses Start -->
+    <div class="container-xxl py-5">
+        <div class="container">
+            <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+                <h6 class="section-title bg-white text-center text-primary px-3">Mis Cursos</h6>
+                <h1 class="mb-5">Cursos en los que estoy inscrito</h1>
+            </div>
+            <div class="row g-4 justify-content-center">
+                <% if (Array.isArray(cursos) && cursos.length > 0) { %>
+                    <% cursos.forEach((curso, index) => { %>
+                        <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="<%= 0.1 + (index * 0.2) %>s">
+                            <div class="course-item bg-light">
+                                <div class="position-relative overflow-hidden">
+                                    <img class="img-fluid" src="/assets/img/course-<%= (index % 3) + 1 %>.jpg" alt="<%= curso.nombre %>">
+                                    <div class="w-100 d-flex justify-content-center position-absolute bottom-0 start-0 mb-4">
+                                        <a href="/auth/curso/<%= curso.id %>" class="flex-shrink-0 btn btn-sm btn-primary px-3">Ver Curso</a>
+                                    </div>
+                                </div>
+                                <div class="text-center p-4 pb-0">
+                                    <h5 class="mb-4"><%= curso.nombre %></h5>
+                                    <p class="mb-4"><%= curso.descripcion %></p>
+                                </div>
+                                <div class="d-flex border-top">
+                                    <small class="flex-fill text-center border-end py-2">
+                                        <i class="fa fa-user-tie text-primary me-2"></i><%= curso.profesor_nombre %>
+                                    </small>
+                                    <small class="flex-fill text-center py-2">
+                                        <i class="fa fa-graduation-cap text-primary me-2"></i>Alumno
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <div class="col-12 text-center">
+                        <p class="text-muted">No hay cursos para mostrar.</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+    <!-- Courses End -->
+
+    <%- include('../partials/footer') %>
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/lib/wow/wow.min.js"></script>
+    <script src="/lib/easing/easing.min.js"></script>
+    <script src="/lib/waypoints/waypoints.min.js"></script>
+    <script src="/lib/owlcarousel/owl.carousel.min.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="/js/main.js"></script>
 </body>
+
 </html>

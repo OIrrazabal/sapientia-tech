@@ -4,40 +4,14 @@ const authController = require('../controllers/auth/auth.controller');
 const { checkLogin } = require('../middleware/auth.middleware');
 const Usuario = require('../models/usuario.model');
 
-// Ruta de depuración
-router.get('/debug/usuarios', async (req, res) => {
-  const usuarios = await Usuario.listar();
-  res.json(usuarios);
-});
-
-router.get('/debug/cursos', (req, res) => {
-  const db = require('../db/conexion');
-  db.all('SELECT * FROM cursos', (err, cursos) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(cursos);
-  });
-});
-
-router.get('/debug/inscripciones', (req, res) => {
-  const db = require('../db/conexion');
-  db.all('SELECT * FROM inscripciones', (err, inscripciones) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(inscripciones);
-  });
-});
-
 // Redirección inicial
-router.get('/', (req, res) => {
-  res.redirect('/auth/home');
-});
+router.get('/', authController.redirectHome);
 
 // Ruta protegida
 router.get('/home', checkLogin, authController.home);
 
 // Formulario de login
-router.get('/login', (req, res) => {
-  res.render('auth/login/index', { error: req.query.error });
-});
+router.get('/login', authController.loginForm);
 
 // Procesar login
 router.post('/login', authController.login);
@@ -63,10 +37,16 @@ router.get('/profesores', authController.profesores);
 // Ruta para buscar cursos
 router.get('/buscar', checkLogin, authController.buscarCursos);
 
+//ver curso
+router.get('/curso/:id', checkLogin, authController.verCurso);
+
 // Mostrar formulario para agregar sección
 router.get('/cursos/:id/secciones', checkLogin, authController.mostrarFormularioSeccion);
 
 // Procesar el formulario de nueva sección
 router.post('/cursos/:id/secciones', checkLogin, authController.agregarSeccion);
+
+// ver todos los cursos publicados
+router.get('/mis-cursos-redirect', checkLogin, authController.redirectMisCursos);
 
 module.exports = router;

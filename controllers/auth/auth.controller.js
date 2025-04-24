@@ -1,7 +1,12 @@
 const Usuario = require('../../models/usuario.model');
+const Curso = require('../../models/curso.model');
 const bcrypt = require('bcrypt');
 
 const authController = {};
+
+authController.redirectHome = (req, res) => {
+  res.redirect('/auth/home');
+};
 
 authController.home = async (req, res) => {
   try {
@@ -16,6 +21,10 @@ authController.home = async (req, res) => {
   } catch (error) {
     res.status(500).send('server error');
   }
+};
+
+authController.loginForm = (req, res) => {
+  res.render('auth/login/index', { error: req.query.error });
 };
 
 authController.login = async (req, res) => {
@@ -72,53 +81,36 @@ authController.team = (req, res) => {
 
 //Obtener cursos donde el usuario es profesor
 authController.misCursos = async (req, res) => {
-  const db = require('../../db/conexion');
-  const usuario = req.session.usuario;
+    const usuario = req.session.usuario;
 
-  if (!usuario || usuario.rol !== 'profesor') {
-    return res.status(403).send("Acceso denegado");
-  }
-
-  db.all(
-    `SELECT c.*, u.nombre AS profesor_nombre
-     FROM cursos c
-     INNER JOIN usuarios u ON u.id = c.profesor_id
-     WHERE c.profesor_id = ?`,
-    [usuario.id],
-    (err, cursos) => {
-      if (err) {
-        console.error("Error al obtener cursos:", err);
-        return res.render('auth/mis-cursos', { cursos: [], usuario });
-      }
-      res.render('auth/mis-cursos', { cursos, usuario });
+    if (!usuario || usuario.rol !== 'profesor') {
+        return res.status(403).send("Acceso denegado");
     }
-  );
+
+    try {
+        const cursos = await Curso.getCursosByProfesor(usuario.id);
+        res.render('auth/mis-cursos', { cursos, usuario });
+    } catch (error) {
+        console.error("Error al obtener cursos:", error);
+        res.render('auth/mis-cursos', { cursos: [], usuario });
+    }
 };
 
 // Listar cursos donde el usuario es alumno
 authController.misCursosAlumno = async (req, res) => {
-  const db = require('../../db/conexion');
-  const usuario = req.session.usuario;
+    const usuario = req.session.usuario;
 
-  if (!usuario || usuario.rol !== 'estudiante') {
-    return res.status(403).send("Acceso denegado");
-  }
-
-  db.all(
-    `SELECT c.*, u.nombre AS profesor_nombre
-     FROM cursos c
-     INNER JOIN inscripciones i ON i.curso_id = c.id
-     INNER JOIN usuarios u ON u.id = c.profesor_id
-     WHERE i.alumno_id = ?`,
-    [usuario.id],
-    (err, cursos) => {
-      if (err) {
-        console.error("Error al obtener cursos:", err);
-        return res.render('auth/mis-cursos-alumno', { cursos: [], usuario });
-      }
-      res.render('auth/mis-cursos-alumno', { cursos, usuario });
+    if (!usuario || usuario.rol !== 'estudiante') {
+        return res.status(403).send("Acceso denegado");
     }
-  );
+
+    try {
+        const cursos = await Curso.getCursosByAlumno(usuario.id);
+        res.render('auth/mis-cursos-alumno', { cursos, usuario });
+    } catch (error) {
+        console.error("Error al obtener cursos:", error);
+        res.render('auth/mis-cursos-alumno', { cursos: [], usuario });
+    }
 };
 
 // Listar todos los usuarios
@@ -143,38 +135,65 @@ authController.profesores = async (req, res) => {
 
 // Buscar Cursos
 authController.buscarCursos = async (req, res) => {
-  const db = require('../../db/conexion');
-  const busqueda = req.query.q || '';
-  let cursos = [];
+    const busqueda = req.query.q || '';
+    let cursos = [];
 
-  if (busqueda.trim() !== '') {
-    const query = `
-      SELECT c.*, u.nombre as profesor_nombre 
-      FROM cursos c
-      LEFT JOIN usuarios u ON c.profesor_id = u.id
-      WHERE c.publicado = 1 
-      AND LOWER(c.nombre) LIKE LOWER(?)
-    `;
+    if (busqueda.trim() !== '') {
+        try {
+            cursos = await Curso.buscarCursos(busqueda);
+        } catch (error) {
+            console.error("Error al buscar cursos:", error);
+        }
+    }
+
+    res.render('auth/buscar', {
+        cursos,
+        busqueda,
+        usuario: req.session.usuario || null,
+        active: 'buscar'
+    });
+};
+
+// ver todos los cursos
+authController.redirectMisCursos = (req, res) => {
+  if (req.session.usuario) {
+      if (req.session.usuario.rol === 'profesor') {
+          res.redirect('/auth/mis-cursos');
+      } else if (req.session.usuario.rol === 'estudiante') {
+          res.redirect('/auth/mis-cursos-alumno');
+      } else {
+          res.redirect('/auth/home');
+      }
+  } else {
+      res.redirect('/public/login');
+  }
+};
+
+// ver curso
+authController.verCurso = async (req, res) => {
+    const cursoId = req.params.id;
+    const usuario = req.session.usuario;
 
     try {
-      cursos = await new Promise((resolve, reject) => {
-        db.all(query, [`%${busqueda}%`], (err, rows) => {
-          if (err) reject(err);
-          else resolve(rows);
-        });
-      });
-    } catch (error) {
-      console.error("Error al buscar cursos:", error);
-      cursos = [];
-    }
-  }
+        const curso = await Curso.getCursoById(cursoId);
+        if (!curso) {
+            return res.redirect('/auth/home');
+        }
 
-  res.render('auth/buscar', {
-    cursos,
-    busqueda,
-    usuario: req.session.usuario || null,
-    active: 'buscar'
-  });
+        const inscripcion = await Curso.verificarInscripcion(cursoId, usuario.id);
+        const secciones = await Curso.getSeccionesByCurso(cursoId);
+
+        res.render('auth/ver-curso', {
+            curso,
+            secciones,
+            usuario,
+            esProfesor: curso.profesor_id === usuario.id,
+            estaInscrito: !!inscripcion
+        });
+    } catch (error) {
+        console.error('Error al obtener curso:', error);
+        res.redirect('/auth/home');
+    }
 };
 
 // Mostrar formulario para agregar sección
@@ -210,49 +229,40 @@ authController.mostrarFormularioSeccion = (req, res) => {
 };
 
 // Procesar el formulario de nueva sección
-authController.agregarSeccion = (req, res) => {
-  const db = require('../../db/conexion');
-  const cursoId = req.params.id;
-  const { nombre, descripcion } = req.body;
-  const usuario = req.session.usuario;
+authController.agregarSeccion = async (req, res) => {
+    const cursoId = req.params.id;
+    const { nombre, descripcion } = req.body;
+    const usuario = req.session.usuario;
 
-  db.get(
-    'SELECT * FROM cursos WHERE id = ? AND profesor_id = ?',
-    [cursoId, usuario.id],
-    (err, curso) => {
-      if (err || !curso) {
-        return res.render('auth/secciones', {
-          curso: { id: cursoId },
-          usuario,
-          error: 'No tienes permiso para agregar secciones a este curso'
-        });
-      }
-
-      if (curso.publicado === 1) {
-        return res.render('auth/secciones', {
-          curso,
-          usuario,
-          error: 'No se pueden agregar secciones a un curso publicado'
-        });
-      }
-
-      db.run(
-        'INSERT INTO secciones (nombre, descripcion, curso_id) VALUES (?, ?, ?)',
-        [nombre, descripcion, cursoId],
-        (err) => {
-          if (err) {
-            console.error("Error al insertar sección:", err);
+    try {
+        const curso = await Curso.getCursoById(cursoId);
+        
+        if (!curso || curso.profesor_id !== usuario.id) {
             return res.render('auth/secciones', {
-              curso,
-              usuario,
-              error: 'Error al crear la sección'
+                curso: { id: cursoId },
+                usuario,
+                error: 'No tienes permiso para agregar secciones a este curso'
             });
-          }
-          res.redirect(`/auth/cursos/${cursoId}`);
         }
-      );
+
+        if (curso.publicado === 1) {
+            return res.render('auth/secciones', {
+                curso,
+                usuario,
+                error: 'No se pueden agregar secciones a un curso publicado'
+            });
+        }
+
+        await Curso.agregarSeccion(nombre, descripcion, cursoId);
+        res.redirect(`/auth/cursos/${cursoId}`);
+    } catch (error) {
+        console.error("Error al insertar sección:", error);
+        res.render('auth/secciones', {
+            curso: { id: cursoId },
+            usuario,
+            error: 'Error al crear la sección'
+        });
     }
-  );
 };
 
 module.exports = authController;
