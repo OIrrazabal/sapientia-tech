@@ -68,7 +68,7 @@
                                 <span class="badge bg-success">
                                     <i class="fa fa-check-circle me-2"></i>Estás inscrito
                                 </span>
-                            <% } else if (curso.publicado) { %>
+                            <% } else if (!esProfesor && !estaInscrito && curso.publicado && usuario.rol === 'estudiante') { %>
                                 <!-- Botón de inscripción -->
                                 <form action="/auth/curso/<%= curso.id %>/inscribir" method="POST" class="d-inline">
                                     <button type="submit" class="btn btn-success btn-sm">
