@@ -254,7 +254,7 @@ authController.agregarSeccion = async (req, res) => {
         }
 
         await Curso.agregarSeccion(nombre, descripcion, cursoId);
-        res.redirect(`/auth/cursos/${cursoId}`);
+        res.redirect('/auth/mis-cursos');
     } catch (error) {
         console.error("Error al insertar sección:", error);
         res.render('auth/secciones', {
@@ -263,6 +263,39 @@ authController.agregarSeccion = async (req, res) => {
             error: 'Error al crear la sección'
         });
     }
+};
+
+// Publicar curso
+authController.publicarCurso = async (req, res) => {
+  const cursoId = req.params.id;
+  const usuario = req.session.usuario;
+
+  try {
+      const curso = await Curso.getCursoById(cursoId);
+      
+      // Validar que existe el curso y soy el profesor
+      if (!curso || curso.profesor_id !== usuario.id) {
+          return res.redirect('/auth/curso/' + cursoId);
+      }
+
+      // Validar que el curso no esté publicado
+      if (curso.publicado) {
+          return res.redirect('/auth/curso/' + cursoId);
+      }
+
+      // Validar que tenga al menos una sección
+      const secciones = await Curso.getSeccionesByCurso(cursoId);
+      if (!secciones || secciones.length === 0) {
+          return res.redirect('/auth/curso/' + cursoId);
+      }
+
+      // Publicar el curso
+      await Curso.publicarCurso(cursoId);
+      res.redirect('/auth/curso/' + cursoId);
+  } catch (error) {
+      console.error('Error al publicar curso:', error);
+      res.redirect('/auth/curso/' + cursoId);
+  }
 };
 
 module.exports = authController;

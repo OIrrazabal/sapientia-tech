@@ -84,6 +84,11 @@ class Curso {
                 throw err;
             });
     }
+
+    static async publicarCurso(cursoId) {
+        const query = 'UPDATE cursos SET publicado = 1 WHERE id = ? AND publicado = 0';
+        return dbHandler.ejecutarQuery(query, [cursoId]);
+    }
 }
 
 module.exports = Curso;

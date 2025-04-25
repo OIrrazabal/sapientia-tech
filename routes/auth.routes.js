@@ -49,4 +49,7 @@ router.post('/cursos/:id/secciones', checkLogin, authController.agregarSeccion);
 // ver todos los cursos publicados
 router.get('/mis-cursos-redirect', checkLogin, authController.redirectMisCursos);
 
+// Ruta para publicar curso
+router.post('/curso/:id/publicar', checkLogin, authController.publicarCurso);
+
 module.exports = router;
