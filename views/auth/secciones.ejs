@@ -1,119 +1,129 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <title>Nueva Sección - <%= curso.nombre %></title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f6f6f6;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 700px;
-            margin: 40px auto;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            padding: 32px 40px;
-        }
-        h1 {
-            color: #4a148c;
-            margin-bottom: 8px;
-        }
-        h3 {
-            color: #333;
-            margin-top: 0;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #333;
-        }
-        input[type="text"],
-        textarea {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        textarea {
-            height: 100px;
-            resize: vertical;
-        }
-        .btn-primary {
-            background: #512da8;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .btn-secondary {
-            background: #9e9e9e;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            margin-left: 10px;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .alert {
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-        .alert-danger {
-            background: #ffebee;
-            color: #c62828;
-            border: 1px solid #ef9a9a;
-        }
-    </style>
+    <meta charset="utf-8">
+    <title>eLEARNING - Nueva Sección</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+    <!-- Favicon -->
+    <link href="/img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="/lib/animate/animate.min.css" rel="stylesheet">
+    <link href="/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+
+    <!-- Bootstrap & Template Stylesheet -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
 </head>
+
 <body>
-    <div class="container">
-        <h1>Agregar Nueva Sección</h1>
-        <h3>Curso: <%= curso.nombre %></h3>
-
-        <% if (typeof error !== 'undefined' && error) { %>
-            <div class="alert alert-danger"><%= error %></div>
-        <% } %>
-
-        <form action="/auth/cursos/<%= curso.id %>/secciones" method="POST">
-            <div class="form-group">
-                <label for="nombre">Nombre de la Sección *</label>
-                <input type="text" 
-                       id="nombre" 
-                       name="nombre" 
-                       required 
-                       maxlength="100"
-                       placeholder="Ej: Introducción al tema">
-            </div>
-
-            <div class="form-group">
-                <label for="descripcion">Descripción</label>
-                <textarea id="descripcion" 
-                         name="descripcion" 
-                         maxlength="500"
-                         placeholder="Describe el contenido de esta sección"></textarea>
-            </div>
-
-            <div>
-                <button type="submit" class="btn-primary">
-                    Guardar Sección
-                </button>
-                <a href="/auth/cursos/<%= curso.id %>" class="btn-secondary">
-                    Cancelar
-                </a>
-                <a class="btn-secondary" href="/auth/mis-cursos">Volver atrás</a>
-            </div>
-            
-        </form>
+    <!-- Spinner Start -->
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only">Cargando...</span>
+        </div>
     </div>
+    <!-- Spinner End -->
+
+    <%- include('../partials/navbar') %>
+
+    <!-- Header Start -->
+    <div class="container-fluid bg-primary py-5 mb-5 page-header">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 text-center">
+                    <h1 class="display-3 text-white animated slideInDown">Nueva Sección</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-center">
+                            <li class="breadcrumb-item"><a class="text-white" href="/auth/home">Inicio</a></li>
+                            <li class="breadcrumb-item"><a class="text-white" href="/auth/mis-cursos">Mis Cursos</a></li>
+                            <li class="breadcrumb-item text-white active" aria-current="page">Nueva Sección</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Header End -->
+
+    <!-- Form Start -->
+    <div class="container-xxl py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card wow fadeInUp" data-wow-delay="0.1s">
+                        <div class="card-body">
+                            <h2 class="card-title text-center mb-4">Agregar Sección a <%= curso.nombre %></h2>
+
+                            <% if (typeof error !== 'undefined' && error) { %>
+                                <div class="alert alert-danger">
+                                    <i class="fa fa-exclamation-circle me-2"></i><%= error %>
+                                </div>
+                            <% } %>
+
+                            <form action="/auth/cursos/<%= curso.id %>/secciones" method="POST">
+                                <div class="mb-3">
+                                    <label for="nombre" class="form-label">Nombre de la Sección *</label>
+                                    <input type="text" 
+                                           class="form-control"
+                                           id="nombre" 
+                                           name="nombre" 
+                                           required 
+                                           maxlength="100"
+                                           placeholder="Ej: Introducción al tema">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="descripcion" class="form-label">Descripción</label>
+                                    <textarea class="form-control" 
+                                              id="descripcion" 
+                                              name="descripcion" 
+                                              rows="4"
+                                              maxlength="500"
+                                              placeholder="Describe el contenido de esta sección"></textarea>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary py-3">
+                                        <i class="fa fa-save me-2"></i>Guardar Sección
+                                    </button>
+                                    <a href="/auth/cursos/<%= curso.id %>" class="btn btn-secondary py-3">
+                                        <i class="fa fa-arrow-left me-2"></i>Cancelar
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Form End -->
+
+    <%- include('../partials/footer') %>
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/lib/wow/wow.min.js"></script>
+    <script src="/lib/easing/easing.min.js"></script>
+    <script src="/lib/waypoints/waypoints.min.js"></script>
+    <script src="/lib/owlcarousel/owl.carousel.min.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="/js/main.js"></script>
 </body>
 </html>

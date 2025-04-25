@@ -106,6 +106,17 @@
                                     </div>
                                 <% }); %>
                             </div>
+
+                            <!-- Agregar botón de publicar si soy profesor y el curso no está publicado -->
+                            <% if (esProfesor && !curso.publicado) { %>
+                                <div class="mt-4">
+                                    <form action="/auth/curso/<%= curso.id %>/publicar" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fa fa-globe me-2"></i>Publicar Curso
+                                        </button>
+                                    </form>
+                                </div>
+                            <% } %>
                         <% } else { %>
                             <div class="alert alert-info">
                                 <i class="fa fa-info-circle me-2"></i>Sin Secciones
