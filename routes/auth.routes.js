@@ -52,4 +52,7 @@ router.get('/mis-cursos-redirect', checkLogin, authController.redirectMisCursos)
 // Ruta para publicar curso
 router.post('/curso/:id/publicar', checkLogin, authController.publicarCurso);
 
+// Ruta para inscripción a curso
+router.post('/curso/:id/inscribir', checkLogin, authController.inscribirAlumno);
+
 module.exports = router;

@@ -298,4 +298,46 @@ authController.publicarCurso = async (req, res) => {
   }
 };
 
+// Inscribir alumno
+authController.inscribirAlumno = async (req, res) => {
+  const cursoId = req.params.id;
+  const usuario = req.session.usuario;
+
+  try {
+      const curso = await Curso.getCursoById(cursoId);
+      
+      // Validar que existe el curso y está publicado
+      if (!curso || !curso.publicado) {
+          return res.status(400).json({
+              error: 'El curso no está disponible para inscripción'
+          });
+      }
+
+      // Validar que no soy el profesor
+      if (curso.profesor_id === usuario.id) {
+          return res.status(400).json({
+              error: 'No puedes inscribirte a un curso donde eres profesor'
+          });
+      }
+
+      // Validar que no esté ya inscrito
+      const inscripcion = await Curso.verificarInscripcion(cursoId, usuario.id);
+      if (inscripcion) {
+          return res.status(400).json({
+              error: 'Ya estás inscrito en este curso'
+          });
+      }
+
+      // Realizar inscripción
+      await Curso.inscribirAlumno(cursoId, usuario.id);
+      
+      res.redirect('/auth/curso/' + cursoId);
+  } catch (error) {
+      console.error('Error al inscribir alumno:', error);
+      res.status(500).json({
+          error: 'Error al procesar la inscripción'
+      });
+  }
+};
+
 module.exports = authController;
