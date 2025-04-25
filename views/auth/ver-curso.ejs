@@ -64,12 +64,17 @@
                                 <span class="badge bg-primary">
                                     <i class="fa fa-user-tie me-2"></i>Eres profesor de este curso
                                 </span>
-                            <% } %>
-                            
-                            <% if (estaInscrito) { %>
+                            <% } else if (estaInscrito) { %>
                                 <span class="badge bg-success">
                                     <i class="fa fa-check-circle me-2"></i>Estás inscrito
                                 </span>
+                            <% } else if (curso.publicado) { %>
+                                <!-- Botón de inscripción -->
+                                <form action="/auth/curso/<%= curso.id %>/inscribir" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        <i class="fa fa-user-plus me-2"></i>Inscribirme al curso
+                                    </button>
+                                </form>
                             <% } %>
 
                             <% if (curso.publicado) { %>

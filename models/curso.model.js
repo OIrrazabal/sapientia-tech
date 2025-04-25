@@ -89,6 +89,11 @@ class Curso {
         const query = 'UPDATE cursos SET publicado = 1 WHERE id = ? AND publicado = 0';
         return dbHandler.ejecutarQuery(query, [cursoId]);
     }
+
+    static async inscribirAlumno(cursoId, alumnoId) {
+        const query = 'INSERT INTO inscripciones (alumno_id, curso_id) VALUES (?, ?)';
+        return dbHandler.ejecutarQuery(query, [alumnoId, cursoId]);
+    }
 }
 
 module.exports = Curso;
