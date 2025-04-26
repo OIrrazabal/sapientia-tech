@@ -28,31 +28,22 @@ authController.loginForm = (req, res) => {
 };
 
 authController.login = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        
-        // Verificar si existe el usuario
-        const usuario = await Usuario.findOne({ email });
-        if (!usuario) {
-            return res.redirect('/public/login?error=Usuario no encontrado');
-        }
-
-        // Verificar contraseña directamente con la almacenada
-        const match = await bcrypt.compare(password, usuario.contraseña);
-        if (!match) {
-            return res.redirect('/public/login?error=Contraseña incorrecta');
-        }
-
-        // Crear sesión
-        req.session.usuario = usuario;
-        req.session.userId = usuario.id; // Importante para el middleware
-        
-        // Redirigir al home
-        res.redirect('/auth/home');  
-    } catch (error) {
-        console.error('Error en login:', error);
-        res.redirect('/public/login?error=Error del servidor');
-    }
+  try {
+      const { email, password } = req.body;
+      const usuario = await Usuario.findOne({ email });
+      if (!usuario) {
+          return res.redirect('/public/login?error=Usuario no encontrado');
+      }
+      const match = await bcrypt.compare(password, usuario.contraseña);
+      if (!match) {
+          return res.redirect('/public/login?error=Contraseña incorrecta');
+      }
+      req.session.usuario = usuario;
+      res.redirect('/auth/home');
+  } catch (error) {
+      console.error(error);
+      res.redirect('/public/login?error=Error de servidor');
+  }
 };
 
 // Nuevo método logout
@@ -63,7 +54,7 @@ authController.logout = (req, res) => {
       return res.status(500).send({ message: 'Error al cerrar sesión' });
     }
     res.clearCookie('connect.sid'); // elimina la cookie de sesión
-     res.redirect('/'); // redirige al inicio después de cerrar sesión
+     res.redirect('/public/login'); // redirige al inicio después de cerrar sesión
   });
 };
 
@@ -339,5 +330,9 @@ authController.inscribirAlumno = async (req, res) => {
       });
   }
 };
+
+
+
+
 
 module.exports = authController;

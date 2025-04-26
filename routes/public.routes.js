@@ -13,4 +13,16 @@ router.post('/admin-login/try', publicController.adminLoginTry);
 // Logout
 router.get('/logout', publicController.logout);
 
+
+
+// SIN usar controller
+router.get('/about', (req, res) => {
+    res.render('about', {
+      title: 'Acerca de Nosotros',
+      usuario: req.session.usuario || null
+    });
+  });
+
+
+
 module.exports = router;
