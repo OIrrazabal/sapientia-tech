@@ -22,7 +22,12 @@ router.get('/about', (req, res) => {
       usuario: req.session.usuario || null
     });
   });
-
+  router.get('/testimonial', (req, res) => {
+    res.render('testimonial', {
+      title: 'Testimonial',
+      usuario: req.session.usuario || null
+    });
+});
 
 
 module.exports = router;
