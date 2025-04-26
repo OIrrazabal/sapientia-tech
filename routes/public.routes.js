@@ -16,18 +16,25 @@ router.get('/logout', publicController.logout);
 
 
 // SIN usar controller
+//acerca de
 router.get('/about', (req, res) => {
     res.render('about', {
       title: 'Acerca de Nosotros',
       usuario: req.session.usuario || null
     });
-  });
+    });
+    //testimonial
   router.get('/testimonial', (req, res) => {
     res.render('testimonial', {
       title: 'Testimonial',
       usuario: req.session.usuario || null
     });
 });
-
-
+//contactos
+router.get('/contact', (req, res) => {
+  res.render('contact', {
+      title: 'Contacto',
+      usuario: req.session.usuario || null
+  });
+});
 module.exports = router;
