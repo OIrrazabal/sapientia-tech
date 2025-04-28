@@ -22,17 +22,11 @@ router.get('/logout', authController.logout);
 // Nuevo endpoint para logout
 router.post('/logout', authController.logout);
 
-// Ruta para la página del equipo
-router.get('/team', checkLogin, authController.team);
-
 //Listar mis cursos como profesor
 router.get('/mis-cursos', checkLogin, authController.misCursos);
 
 // Listar mis cursos como alumno
 router.get('/mis-cursos-alumno', checkLogin, authController.misCursosAlumno);
-
-// Ruta para la página de profesores
-router.get('/profesores', authController.profesores);
 
 // Ruta para buscar cursos
 router.get('/buscar', checkLogin, authController.buscarCursos);

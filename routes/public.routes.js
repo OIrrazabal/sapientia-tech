@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const publicController = require('../controllers/public/public.controller');
 
+router.get('/', publicController.showHome);
+
 // Rutas de login
 router.get('/admin-login', publicController.showAdminLogin);
 router.get('/login', publicController.showLogin);
@@ -13,28 +15,11 @@ router.post('/admin-login/try', publicController.adminLoginTry);
 // Logout
 router.get('/logout', publicController.logout);
 
+// Páginas públicas
+router.get('/about', publicController.showAbout);
+router.get('/testimonial', publicController.showTestimonial);
+router.get('/contact', publicController.showContact);
+router.get('/team', publicController.team);
+router.get('/profesores', publicController.profesores);
 
-
-// SIN usar controller
-//acerca de
-router.get('/about', (req, res) => {
-    res.render('about', {
-      title: 'Acerca de Nosotros',
-      usuario: req.session.usuario || null
-    });
-    });
-    //testimonial
-  router.get('/testimonial', (req, res) => {
-    res.render('testimonial', {
-      title: 'Testimonial',
-      usuario: req.session.usuario || null
-    });
-});
-//contactos
-router.get('/contact', (req, res) => {
-  res.render('contact', {
-      title: 'Contacto',
-      usuario: req.session.usuario || null
-  });
-});
 module.exports = router;

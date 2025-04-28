@@ -58,18 +58,6 @@ authController.logout = (req, res) => {
   });
 };
 
-authController.team = (req, res) => {
-  try {
-    res.render('team', {
-      title: 'Nuestro Equipo',
-      usuario: req.session.usuario || null
-    });
-  } catch (error) {
-    console.error('Error al renderizar la página de equipo:', error);
-    res.status(500).send('Error del servidor');
-  }
-};
-
 //Obtener cursos donde el usuario es profesor
 authController.misCursos = async (req, res) => {
     const usuario = req.session.usuario;
@@ -102,26 +90,6 @@ authController.misCursosAlumno = async (req, res) => {
         console.error("Error al obtener cursos:", error);
         res.render('auth/mis-cursos-alumno', { cursos: [], usuario });
     }
-};
-
-// Listar todos los usuarios
-authController.profesores = async (req, res) => {
-  try {
-    let profesores = (await Usuario.listar()).filter(u => u.rol === 'profesor');
-    if (!Array.isArray(profesores)) profesores = [];
-    res.render('auth/profesores', { 
-      profesores,
-      active: 'profesores',
-      usuario: req.session.usuario || null
-    });
-  } catch (error) {
-    console.error("Error al obtener usuarios:", error);
-    res.render('auth/profesores', { 
-      profesores: [],
-      active: 'profesores',
-      usuario: req.session.usuario || null
-    });
-  }
 };
 
 // Buscar Cursos
