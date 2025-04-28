@@ -1,6 +1,9 @@
     //Para la conexion a la base de datos
     const db = require("./db/conexion");
 
+    //Para uso de dotenv
+    require("dotenv").config(); 
+
     //importar express
     const express = require("express");
     const session = require("express-session");
@@ -56,7 +59,7 @@
     });
 
     // iniciar app escuchando puerto parametro
-    const port = 3000;
+    const port = process.env.PORT;
     app.listen(port, () => {
-        console.log("Servidor corriendo en el puerto 3000");
+        console.log("Servidor corriendo en el puerto:" + port); 
     });
