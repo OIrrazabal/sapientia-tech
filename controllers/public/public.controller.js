@@ -10,12 +10,16 @@ publicController.showHome = (req, res) => {
 };
 
 publicController.showAdminLogin = (req, res) => {
-    res.render('public/admin-login/index');
+    res.render('public/admin-login/index', {
+        error: null,
+        usuario: req.session.usuario || null
+    });
 };
 
 publicController.showLogin = (req, res) => {
     res.render('public/login/index', { 
-        error: req.query.error || null 
+        error: req.query.error || null,
+        usuario: req.session.usuario || null
     });
 };
 
