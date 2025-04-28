@@ -147,4 +147,35 @@ publicController.showContact = (req, res) => {
     });
 };
 
+publicController.team = (req, res) => {
+    try {
+      res.render('team', {
+        title: 'Nuestro Equipo',
+        usuario: req.session.usuario || null
+      });
+    } catch (error) {
+      console.error('Error al renderizar la página de equipo:', error);
+      res.status(500).send('Error del servidor');
+    }
+};
+
+publicController.profesores = async (req, res) => {
+    try {
+      let profesores = (await Usuario.listar()).filter(u => u.rol === 'profesor');
+      if (!Array.isArray(profesores)) profesores = [];
+      res.render('public/profesores', { 
+        profesores,
+        active: 'profesores',
+        usuario: req.session.usuario || null
+      });
+    } catch (error) {
+      console.error("Error al obtener usuarios:", error);
+      res.render('public/profesores', { 
+        profesores: [],
+        active: 'profesores',
+        usuario: req.session.usuario || null
+      });
+    }
+};
+
 module.exports = publicController;

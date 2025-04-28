@@ -19,5 +19,7 @@ router.get('/logout', publicController.logout);
 router.get('/about', publicController.showAbout);
 router.get('/testimonial', publicController.showTestimonial);
 router.get('/contact', publicController.showContact);
+router.get('/team', publicController.team);
+router.get('/profesores', publicController.profesores);
 
 module.exports = router;
