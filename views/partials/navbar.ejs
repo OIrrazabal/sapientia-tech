@@ -39,9 +39,19 @@
                 </a>
             </div>
         <% } else { %>
-            <a href="/public/login" class="btn btn-primary py-4 px-lg-5 d-none d-lg-block">
-                ACCEDER<i class="fa fa-arrow-right ms-3"></i>
-            </a>
+            <div class="nav-item dropdown d-none d-lg-block">
+                <button class="btn btn-primary py-4 px-lg-5 dropdown-toggle" data-bs-toggle="dropdown">
+                    ACCEDER<i class="fa fa-arrow-right ms-3"></i>
+                </button>
+                <div class="dropdown-menu fade-down m-0">
+                    <a href="/public/login" class="dropdown-item">
+                        <i class="fa fa-user me-2"></i>Login Usuario
+                    </a>
+                    <a href="/public/admin-login" class="dropdown-item">
+                        <i class="fa fa-lock me-2"></i>Login Admin
+                    </a>
+                </div>
+            </div>
         <% } %>
     </div>
 </nav>

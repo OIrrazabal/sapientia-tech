@@ -42,9 +42,10 @@
     app.use("/auth", authRoutes);
     app.use("/public", publicRoutes);
 
-    //ruta inicio
-    app.get("/", (req, res) => {
-        res.redirect("/auth/home");
+    app.get('/', (req, res) => {
+        res.render('public/home/index', {
+            usuario: req.session.usuario || null
+        });
     });
 
     // Ruta para manejar errores 404

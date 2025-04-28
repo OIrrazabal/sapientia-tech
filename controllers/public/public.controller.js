@@ -3,6 +3,12 @@ const bcrypt = require('bcrypt');
 
 const publicController = {};
 
+publicController.showHome = (req, res) => {
+    res.render('public/home/index', {
+        usuario: req.session.usuario || null
+    });
+};
+
 publicController.showAdminLogin = (req, res) => {
     res.render('public/admin-login/index');
 };
@@ -16,12 +22,29 @@ publicController.showLogin = (req, res) => {
 publicController.loginTry = async (req, res) => {
     const { email, password } = req.body;
 
+    if (!email?.trim() || !password?.trim()) {
+        return res.status(400).send('contraseña o email vacio');
+    }
+
+    if (password.length < 6) {
+        return res.status(400).send('contraseña muy corta');
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).send('Email invalido');
+    }
+
     try {
         // Buscar usuario
         const usuario = await Usuario.findOne({ email });
         
         if (!usuario) {
             return res.redirect('/public/login?error=Usuario no encontrado');
+        }
+
+        if (usuario.es_admin === 1) {
+            return res.redirect('/public/login?error=Los administradores deben usar el login de administrador');
         }
 
         // Verificar contraseña
@@ -59,21 +82,28 @@ publicController.adminLoginTry = async (req, res) => {
     }
 
     try {
-        const user = await Usuario.loginAdmin(email, password);
+        const usuario = await Usuario.findOne({ email });
         
-        if (!user || !user.success) {
-            return res.redirect('/public/admin-login?error=Credenciales incorrectas');
+        if (!usuario) {
+            return res.redirect('/public/admin-login?error=Usuario no encontrado');
         }
 
-        if (!Usuario.es_admin === 1) {
-            return res.redirect('/public/admin-login?error=No autorizado');
+        // Verificar que sea un admin
+        if (usuario.es_admin !== 1) {
+            return res.redirect('/public/admin-login?error=Acceso denegado. Use el login de usuario normal');
         }
 
-        req.session.usuario = user.user;
-        req.session.userId = user.user.id;
+        // Verificar contraseña
+        const match = await bcrypt.compare(password, usuario.contraseña);
+        if (!match) {
+            return res.redirect('/public/admin-login?error=Contraseña incorrecta');
+        }
+
+        req.session.usuario = usuario;
+        req.session.userId = usuario.id;
         req.session.isAdmin = true;
 
-        res.redirect('/auth/home');
+        res.redirect('/admin/home');
     } catch (error) {
         console.error('Error en admin login:', error);
         res.redirect('/public/admin-login?error=Error del servidor');
@@ -89,6 +119,27 @@ publicController.logout = (req, res) => {
         
         res.clearCookie('is3-session-name');
         res.redirect('/public/login');
+    });
+};
+
+publicController.showAbout = (req, res) => {
+    res.render('about', {
+        title: 'Acerca de Nosotros',
+        usuario: req.session.usuario || null
+    });
+};
+
+publicController.showTestimonial = (req, res) => {
+    res.render('testimonial', {
+        title: 'Testimonial',
+        usuario: req.session.usuario || null
+    });
+};
+
+publicController.showContact = (req, res) => {
+    res.render('contact', {
+        title: 'Contacto',
+        usuario: req.session.usuario || null
     });
 };
 
