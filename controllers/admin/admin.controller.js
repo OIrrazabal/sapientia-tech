@@ -1,6 +1,7 @@
 const adminController = {};
 const Usuario = require('../../models/usuario.model');
 const Curso = require('../../models/curso.model');
+const cursoSchema = require('../../validators/curso.schema');
 
 adminController.home = (req, res) => {
     res.render('admin/home/index', {
@@ -25,23 +26,28 @@ adminController.mostrarFormulario = async (req, res) => {
 };
 
 adminController.crearCurso = async (req, res) => {
-    const { nombre, descripcion, profesor_id } = req.body;
+    const { nombre, descripcion } = req.body;
     
-    if (!nombre || !descripcion) {
+    // Validar con Joi
+    const { error } = cursoSchema.validate(req.body, { abortEarly: false });
+    
+    if (error) {
         return res.status(400).render('admin/crear-curso/index', {
-            error: 'Todos los campos son requeridos',
-            usuario: req.session.usuario || null
+            error: error.details.map(err => err.message).join('. '),
+            usuario: req.session.usuario || null,
+            valores: req.body // Para mantener los valores ingresados
         });
     }
 
     try {
-        await Curso.crear({ nombre, descripcion, profesor_id });
+        await Curso.crear({ nombre, descripcion });
         res.redirect('/admin/home');
     } catch (error) {
         console.error('Error:', error);
         res.status(500).render('admin/crear-curso/index', {
             error: 'Error al crear el curso',
-            usuario: req.session.usuario || null
+            usuario: req.session.usuario || null,
+            valores: req.body
         });
     }
 };

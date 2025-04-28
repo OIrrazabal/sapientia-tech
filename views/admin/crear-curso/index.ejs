@@ -81,6 +81,7 @@
                                        class="form-control" 
                                        id="nombre" 
                                        name="nombre" 
+                                       value="<%= locals.valores ? valores.nombre : '' %>"
                                        required>
                             </div>
 
@@ -90,7 +91,7 @@
                                           id="descripcion" 
                                           name="descripcion" 
                                           rows="3" 
-                                          required></textarea>
+                                          required><%= locals.valores ? valores.descripcion : '' %></textarea>
                             </div>
 
                             <div class="d-grid gap-2">
