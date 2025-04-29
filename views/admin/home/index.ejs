@@ -41,7 +41,8 @@
     <!-- Spinner End -->
 
 
-    <%- include('../../partials/navbar') %>
+    <%- include('../../partials/navbar', { usuario: usuario, appName: appName }) %>
+
 
     <% if (usuario && usuario.es_admin === 1) { %>
     <!-- Admin Panel Start -->
