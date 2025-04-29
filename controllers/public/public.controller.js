@@ -1,5 +1,6 @@
 const Usuario = require('../../models/usuario.model');
 const bcrypt = require('bcrypt');
+const loginSchema = require('../../validators/login.schema');
 
 const publicController = {};
 
@@ -26,22 +27,16 @@ publicController.showLogin = (req, res) => {
 publicController.loginTry = async (req, res) => {
     const { email, password } = req.body;
 
-    if (!email?.trim() || !password?.trim()) {
-        return res.status(400).send('contraseña o email vacio');
-    }
-
-    if (password.length < 6) {
-        return res.status(400).send('contraseña muy corta');
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return res.status(400).send('Email invalido');
-    }
-
     try {
         // Buscar usuario
         const usuario = await Usuario.findOne({ email });
+
+                 // Validar datos recibidos usando Joi
+                const { error } = loginSchema.validate(req.body);
+                if (error) {
+                const mensajeError = error.details[0].message;
+                return res.render('public/login/index', { error: mensajeError, usuario:"" });
+                }
         
         if (!usuario) {
             return res.redirect('/public/login?error=Usuario no encontrado');
