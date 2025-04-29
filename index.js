@@ -1,65 +1,68 @@
-    //Para la conexion a la base de datos
-    const db = require("./db/conexion");
+//Para la conexion a la base de datos
+const db = require("./db/conexion");
 
-    //Para uso de dotenv
-    require("dotenv").config(); 
+//Para uso de dotenv
+require("dotenv").config();
 
-    //importar express
-    const express = require("express");
-    const session = require("express-session");
-    const SQLiteStore = require("connect-sqlite3")(session);
+//importar express
+const express = require("express");
+const session = require("express-session");
+const SQLiteStore = require("connect-sqlite3")(session);
 
-    const path = require("path")
+const path = require("path");
 
-    //crear app express
-    const app = express();
-    //app.use(express.json());
-    app.use(express.urlencoded({ extended: true }));
+//crear app express
+const app = express();
+//app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+require("dotenv").config();
+app.locals.appName = process.env.APP_NAME;
+//importar rutas
+const adminRoutes = require("./routes/admin.routes");
+const authRoutes = require("./routes/auth.routes");
+const publicRoutes = require("./routes/public.routes");
 
-    //importar rutas
-    const adminRoutes = require("./routes/admin.routes");
-    const authRoutes = require("./routes/auth.routes");
-    const publicRoutes = require("./routes/public.routes");
+app.use(express.static(path.join(__dirname, "assets")));
+app.use("/assets", express.static("assets"));
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
-    app.use(express.static(path.join(__dirname, "assets")))
-    app.use('/assets', express.static('assets'));
-    app.set("view engine", "ejs")
-    app.set("views", path.join(__dirname, "views"))
+app.use(
+	session({
+		name: "is3-session-name",
+		store: new SQLiteStore({
+			db: "database.sqlite",
+			dir: "./db",
+		}),
+		secret: "clave-aleatoria-y-secreta",
+		resave: false,
+		saveUninitialized: false,
+		cookie: { maxAge: 24 * 60 * 60 * 1000 },
+	})
+);
 
-    app.use(session({
-        name: 'is3-session-name',
-        store: new SQLiteStore({
-            db: 'database.sqlite',
-            dir: './db'
-        }),
-        secret: 'clave-aleatoria-y-secreta',
-        resave: false,
-        saveUninitialized: false,
-        cookie: { maxAge: 24 * 60 * 60 * 1000 }
-    }));
+app.use(express.urlencoded({ extended: true }));
 
-    app.use(express.urlencoded({ extended: true }));
+//rutas
+app.use("/admin", adminRoutes);
+app.use("/auth", authRoutes);
+app.use("/public", publicRoutes);
 
-    //rutas
-    app.use("/admin", adminRoutes);
-    app.use("/auth", authRoutes);
-    app.use("/public", publicRoutes);
+app.get("/", (req, res) => {
+	res.render("public/home/index", {
+		usuario: req.session.usuario || null,
+	});
+});
 
-    app.get('/', (req, res) => {
-        res.render('public/home/index', {
-            usuario: req.session.usuario || null
-        });
-    });
+// Ruta para manejar errores 404
+app.all("*", (req, res) => {
+	res.status(404).render("404", {
+		usuario: req.session.usuario || null,
+	});
+});
 
-    // Ruta para manejar errores 404
-    app.all("*", (req, res) => {
-        res.status(404).render("404", {
-            usuario: req.session.usuario || null
-        });
-    });
-
-    // iniciar app escuchando puerto parametro
-    const port = process.env.PORT;
-    app.listen(port, () => {
-        console.log("Servidor corriendo en el puerto:" + port); 
-    });
+// iniciar app escuchando puerto parametro
+const port = process.env.PORT;
+app.listen(port, () => {
+	console.log("Servidor corriendo en el puerto:" + port);
+});
