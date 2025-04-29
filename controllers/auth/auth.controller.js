@@ -31,6 +31,7 @@ authController.login = async (req, res) => {
   try {
       const { email, password } = req.body;
       const usuario = await Usuario.findOne({ email });
+ 
       if (!usuario) {
           return res.redirect('/public/login?error=Usuario no encontrado');
       }
