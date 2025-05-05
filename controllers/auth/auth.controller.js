@@ -1,6 +1,7 @@
 const Usuario = require('../../models/usuario.model');
 const Curso = require('../../models/curso.model');
 const bcrypt = require('bcrypt');
+const inscripcionSchema = require('../../validators/inscripcion.schema');
 
 const authController = {};
 
@@ -258,50 +259,52 @@ authController.publicarCurso = async (req, res) => {
   }
 };
 
-// Inscribir alumno
+// Inscribir alumno 
 authController.inscribirAlumno = async (req, res) => {
-  const cursoId = req.params.id;
-  const usuario = req.session.usuario;
+    const cursoId = req.params.id;
+    const usuario = req.session.usuario;
 
-  try {
-      const curso = await Curso.getCursoById(cursoId);
-      
-      // Validar que existe el curso y está publicado
-      if (!curso || !curso.publicado) {
-          return res.status(400).json({
-              error: 'El curso no está disponible para inscripción'
-          });
-      }
+    try {
+        const curso = await Curso.getCursoById(cursoId);
+        
+        // Validar que existe el curso y está publicado
+        const { error } = inscripcionSchema.validate({
+            curso_id: cursoId,
+            alumno_id: usuario.id,
+            estado_curso: curso?.publicado || 0
+        });
 
-      // Validar que no soy el profesor
-      if (curso.profesor_id === usuario.id) {
-          return res.status(400).json({
-              error: 'No puedes inscribirte a un curso donde eres profesor'
-          });
-      }
+        if (error) {
+            return res.status(400).json({
+                error: error.details[0].message  
+            });
+        }
 
-      // Validar que no esté ya inscrito
-      const inscripcion = await Curso.verificarInscripcion(cursoId, usuario.id);
-      if (inscripcion) {
-          return res.status(400).json({
-              error: 'Ya estás inscrito en este curso'
-          });
-      }
+        // Validar que no soy el profesor
+        if (curso.profesor_id === usuario.id) {
+            return res.status(400).json({
+                error: 'No puedes inscribirte a un curso donde eres profesor'
+            });
+        }
 
-      // Realizar inscripción
-      await Curso.inscribirAlumno(cursoId, usuario.id);
-      
-      res.redirect('/auth/curso/' + cursoId);
-  } catch (error) {
-      console.error('Error al inscribir alumno:', error);
-      res.status(500).json({
-          error: 'Error al procesar la inscripción'
-      });
-  }
+        // Validar que no esté ya inscrito
+        const inscripcion = await Curso.verificarInscripcion(cursoId, usuario.id);
+        if (inscripcion) {
+            return res.status(400).json({
+                error: 'Ya estás inscrito en este curso'  
+            });
+        }
+
+        // Realizar inscripción
+        await Curso.inscribirAlumno(cursoId, usuario.id);
+        res.redirect('/auth/curso/' + cursoId);
+
+    } catch (error) {
+        console.error('Error al inscribir alumno:', error);
+        res.status(500).json({
+            error: 'Error al procesar la inscripción'
+        });
+    }
 };
-
-
-
-
 
 module.exports = authController;
