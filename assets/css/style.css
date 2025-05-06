@@ -432,3 +432,11 @@
     padding-right: 0;
     border-right: none;
 }
+
+/* Normaliza las imágenes del carrusel */
+.carousel-img {
+    width: 100%;
+    height: 200px; /* Puedes ajustar el alto según tu preferencia */
+    object-fit: cover;
+    object-position: center;
+}
