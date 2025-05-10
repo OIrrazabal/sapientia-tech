@@ -47,11 +47,23 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/admin", adminRoutes);
 app.use("/auth", authRoutes);
 app.use("/public", publicRoutes);
+const Usuario = require("./models/usuario.model");
+app.get("/", async (req, res) => {
+	try {
+		const profesores = (await Usuario.listar()).filter(u => u.rol === 'profesor');
+		const profesoresUnicos = Array.from(new Map(profesores.map(p => [p.id, p])).values());
 
-app.get("/", (req, res) => {
-	res.render("public/home/index", {
-		usuario: req.session.usuario || null,
-	});
+		res.render("public/home/index", {
+			usuario: req.session.usuario || null,
+			profesores: profesoresUnicos
+		});
+	} catch (error) {
+		console.error("Error cargando profesores:", error);
+		res.render("public/home/index", {
+			usuario: req.session.usuario || null,
+			profesores: []
+		});
+	}
 });
 
 // Ruta para manejar errores 404
