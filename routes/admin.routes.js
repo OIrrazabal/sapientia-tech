@@ -14,5 +14,6 @@ router.post('/crear-curso', checkAdmin, adminController.crearCurso);
 router.get('/asignar-profesor', checkAdmin, adminController.mostrarFormularioAsignar);
 
 router.post('/asignar-profesor', checkAdmin, adminController.asignarProfesor);
+router.get('/asignaciones', adminController.verAsignaciones);
 
 module.exports = router;
