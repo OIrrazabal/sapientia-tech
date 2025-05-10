@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const publicController = require('../controllers/public/public.controller');
 
+// 🔍 Consola de verificación:
+//console.log("🔎 Funciones cargadas en publicController:", Object.keys(publicController));
+//console.log("🔎 Tipo de showHome:", typeof publicController.showHome);
+
 router.get('/', publicController.showHome);
 
 // Rutas de login

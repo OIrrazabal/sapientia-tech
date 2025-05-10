@@ -3,13 +3,13 @@ const bcrypt = require('bcrypt');
 const loginSchema = require('../../validators/login.schema');
 
 const publicController = {};
-
+/*
 publicController.showHome = (req, res) => {
     res.render('public/home/index', {
         usuario: req.session.usuario || null
     });
 };
-
+*/
 publicController.showAdminLogin = (req, res) => {
     res.render('public/admin-login/index', {
         error: null,
@@ -154,22 +154,38 @@ publicController.team = (req, res) => {
     }
 };
 
+publicController.showHome = async (req, res) => {
+    try {
+        let profesores = (await Usuario.listar()).filter(u => u.rol === 'profesor');
+
+        // Eliminar duplicados por ID (o usar 'email' si preferís)
+        const profesoresUnicos = Array.from(new Map(profesores.map(p => [p.id, p])).values());
+
+        res.render('public/home/index', {
+            usuario: req.session.usuario || null,
+            profesores: profesoresUnicos
+        });
+    } catch (error) {
+        console.error("Error al cargar profesores en home:", error);
+        res.render('public/home/index', {
+            usuario: req.session.usuario || null,
+            profesores: []
+        });
+    }
+};
 publicController.profesores = async (req, res) => {
     try {
-      let profesores = (await Usuario.listar()).filter(u => u.rol === 'profesor');
-      if (!Array.isArray(profesores)) profesores = [];
-      res.render('public/profesores', { 
-        profesores,
-        active: 'profesores',
-        usuario: req.session.usuario || null
-      });
+        let profesores = (await Usuario.listar()).filter(u => u.rol === 'profesor');
+        res.render('public/profesores', {
+            profesores,
+            usuario: req.session.usuario || null,
+        });
     } catch (error) {
-      console.error("Error al obtener usuarios:", error);
-      res.render('public/profesores', { 
-        profesores: [],
-        active: 'profesores',
-        usuario: req.session.usuario || null
-      });
+        console.error('Error al cargar profesores:', error);
+        res.render('public/profesores', {
+            profesores: [],
+            usuario: req.session.usuario || null,
+        });
     }
 };
 
