@@ -60,49 +60,57 @@
             <div class="col-lg-10">
                 <div class="card wow fadeInUp" data-wow-delay="0.1s">
                     <div class="card-body">
-    <h2 class="card-title text-center mb-4">Listado de Asignaciones</h2>
+                        <h2 class="card-title text-center mb-4">Listado de Asignaciones</h2>
 
-    <!-- Botón CREAR nueva asignación -->
-    <div class="text-end mb-3">
-        <a href="/admin/asignaciones/nueva" class="btn btn-success">
-            <i class="fa fa-plus me-1"></i> Crear nueva asignación
-        </a>
-    </div>
+                        <!-- Botón CREAR nueva asignación -->
+                        <div class="text-end mb-3">
+                            <a href="/admin/asignaciones/nueva" class="btn btn-success">
+                                <i class="fa fa-plus me-1"></i> Crear nueva asignación
+                            </a>
+                        </div>
 
-    <% if (asignaciones.length === 0) { %>
-        <div class="alert alert-warning text-center">No hay asignaciones registradas.</div>
-    <% } else { %>
-        <div class="table-responsive">
-            <table class="table table-bordered text-center align-middle">
-                <thead class="table-primary">
-                    <tr>
-                        <th>ID Curso</th>
-                        <th>Nombre Curso</th>
-                        <th>ID Profesor</th>
-                        <th>Nombre Profesor</th>
-                        <th>Publicado</th>
-                        <th>Ver Curso</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% asignaciones.forEach(asig => { %>
-                        <tr>
-                            <td><%= asig.curso_id %></td>
-                            <td><%= asig.titulo %></td>
-                            <td><%= asig.profesor_id %></td>
-                            <td><%= asig.profesor_nombre %></td>
-                            <td><%= asig.publicado ? 'Sí' : 'No' %></td>
-                            <td>
-                                <a href="/auth/curso/<%= asig.curso_id %>" class="btn btn-sm btn-outline-primary">
-                                    <i class="fa fa-eye me-1"></i> Ver
-                                </a>
-                            </td>
-                        </tr>
-                    <% }) %>
-                </tbody>
-            </table>
-        </div>
-    <% } %>
+                        <% if (asignaciones.length === 0) { %>
+                            <div class="alert alert-warning text-center">No hay asignaciones registradas.</div>
+                        <% } else { %>
+                            <div class="table-responsive">
+                                <table class="table table-bordered text-center align-middle">
+                                    <thead class="table-primary">
+                                        <tr>
+                                            <th>ID Curso</th>
+                                            <th>Nombre Curso</th>
+                                            <th>ID Profesor</th>
+                                            <th>Nombre Profesor</th>
+                                            <th>Publicado</th>
+                                            <th>Ver Curso</th>
+                                            <th>Eliminar</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% asignaciones.forEach(asig => { %>
+                                            <tr>
+                                                <td><%= asig.curso_id %></td>
+                                                <td><%= asig.titulo %></td>
+                                                <td><%= asig.profesor_id %></td>
+                                                <td><%= asig.profesor_nombre %></td>
+                                                <td><%= asig.publicado ? 'Sí' : 'No' %></td>
+                                                <td>
+                                                    <a href="/auth/curso/<%= asig.curso_id %>" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fa fa-eye me-1"></i> Ver
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <form action="/admin/asignaciones/<%= asig.asignacion_id %>/eliminar" method="POST" onsubmit="return confirm('¿Está seguro de eliminar esta asignación?');">
+                                                        <button class="btn btn-sm btn-danger" type="submit">
+                                                            <i class="fa fa-trash"></i> Eliminar
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <% } %>
 
                         <div class="text-center mt-4">
                             <a href="/admin/home" class="btn btn-secondary py-3">
