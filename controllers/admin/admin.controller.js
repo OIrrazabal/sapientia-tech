@@ -182,5 +182,19 @@ adminController.crearAsignacionDesdeListado = async (req, res) => {
     res.status(500).send('No se pudo crear la asignación');
   }
 };
+adminController.eliminarAsignacion = async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const dbRun = util.promisify(db.run).bind(db);
+    await dbRun(`DELETE FROM asignaciones WHERE id = ?`, [id]);
+
+    // Mensaje opcional usando flash o query params si lo deseas
+    res.redirect('/admin/asignaciones');
+  } catch (error) {
+    console.error('Error al eliminar asignación:', error);
+    res.status(500).send('No se pudo eliminar la asignación');
+  }
+};
 
 module.exports = adminController;
