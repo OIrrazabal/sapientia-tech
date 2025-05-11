@@ -15,5 +15,7 @@ router.get('/asignar-profesor', checkAdmin, adminController.mostrarFormularioAsi
 
 router.post('/asignar-profesor', checkAdmin, adminController.asignarProfesor);
 router.get('/asignaciones', adminController.verAsignaciones);
+router.get('/asignaciones/nueva', adminController.nuevaAsignacion);
+router.post('/asignaciones/crear', adminController.crearAsignacionDesdeListado);
 
 module.exports = router;

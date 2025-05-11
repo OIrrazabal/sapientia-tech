@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="utf-8">
-    <title>eLEARNING - Ver Asignaciones</title>
+    <title>eLEARNING - Crear Asignación</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <link href="/assets/img/favicon.ico" rel="icon">
 
@@ -34,18 +33,19 @@
     </div>
     <!-- Spinner End -->
 
-    <%- include('../../partials/navbar', { usuario: usuario, appName: appName }) %>
+    <%- include('../../partials/navbar', { usuario: usuario, appName: 'eLEARNING' }) %>
 
     <!-- Header Start -->
     <div class="container-fluid bg-primary py-5 mb-5 page-header">
         <div class="container py-5">
             <div class="row justify-content-center">
                 <div class="col-lg-10 text-center">
-                    <h1 class="display-3 text-white animated slideInDown">Ver Asignaciones</h1>
+                    <h1 class="display-3 text-white animated slideInDown">Nueva Asignación</h1>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb justify-content-center">
                             <li class="breadcrumb-item"><a class="text-white" href="/admin/home">Inicio</a></li>
-                            <li class="breadcrumb-item text-white active" aria-current="page">Asignaciones</li>
+                            <li class="breadcrumb-item"><a class="text-white" href="/admin/asignaciones">Asignaciones</a></li>
+                            <li class="breadcrumb-item text-white active" aria-current="page">Crear</li>
                         </ol>
                     </nav>
                 </div>
@@ -54,67 +54,54 @@
     </div>
     <!-- Header End -->
 
-    <!-- Table Start -->
+    <!-- Form Start -->
     <div class="container py-5">
         <div class="row justify-content-center">
-            <div class="col-lg-10">
+            <div class="col-lg-8">
                 <div class="card wow fadeInUp" data-wow-delay="0.1s">
                     <div class="card-body">
-    <h2 class="card-title text-center mb-4">Listado de Asignaciones</h2>
+                        <h2 class="card-title text-center mb-4">Asignar Profesor a Curso</h2>
 
-    <!-- Botón CREAR nueva asignación -->
-    <div class="text-end mb-3">
-        <a href="/admin/asignaciones/nueva" class="btn btn-success">
-            <i class="fa fa-plus me-1"></i> Crear nueva asignación
-        </a>
-    </div>
+                        <form action="/admin/asignaciones/crear" method="POST">
+                            <div class="mb-3">
+                                <label for="profesor" class="form-label">Profesor</label>
+                                <select name="profesor_id" id="profesor" class="form-select" required>
+                                    <option value="">Seleccionar profesor</option>
+                                    <% profesores.forEach(profesor => { %>
+                                        <option value="<%= profesor.id %>"><%= profesor.nombre %></option>
+                                    <% }) %>
+                                </select>
+                            </div>
 
-    <% if (asignaciones.length === 0) { %>
-        <div class="alert alert-warning text-center">No hay asignaciones registradas.</div>
-    <% } else { %>
-        <div class="table-responsive">
-            <table class="table table-bordered text-center align-middle">
-                <thead class="table-primary">
-                    <tr>
-                        <th>ID Curso</th>
-                        <th>Nombre Curso</th>
-                        <th>ID Profesor</th>
-                        <th>Nombre Profesor</th>
-                        <th>Publicado</th>
-                        <th>Ver Curso</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% asignaciones.forEach(asig => { %>
-                        <tr>
-                            <td><%= asig.curso_id %></td>
-                            <td><%= asig.titulo %></td>
-                            <td><%= asig.profesor_id %></td>
-                            <td><%= asig.profesor_nombre %></td>
-                            <td><%= asig.publicado ? 'Sí' : 'No' %></td>
-                            <td>
-                                <a href="/auth/curso/<%= asig.curso_id %>" class="btn btn-sm btn-outline-primary">
-                                    <i class="fa fa-eye me-1"></i> Ver
+                            <div class="mb-3">
+                                <label for="curso" class="form-label">Curso</label>
+                                <select name="curso_id" id="curso" class="form-select" required>
+                                    <option value="">Seleccionar curso</option>
+                                    <% cursos.forEach(curso => { %>
+                                        <option value="<%= curso.id %>"><%= curso.nombre %></option>
+                                    <% }) %>
+                                </select>
+                            </div>
+
+                            <% if (error) { %>
+                                <div class="alert alert-danger mt-3"><%= error %></div>
+                            <% } %>
+
+                            <div class="d-flex justify-content-between mt-4">
+                                <a href="/admin/asignaciones" class="btn btn-secondary">
+                                    <i class="fa fa-arrow-left me-1"></i> Cancelar
                                 </a>
-                            </td>
-                        </tr>
-                    <% }) %>
-                </tbody>
-            </table>
-        </div>
-    <% } %>
-
-                        <div class="text-center mt-4">
-                            <a href="/admin/home" class="btn btn-secondary py-3">
-                                <i class="fa fa-arrow-left me-2"></i>Volver al Inicio
-                            </a>
-                        </div>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fa fa-check me-1"></i> Guardar Asignación
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Table End -->
+    <!-- Form End -->
 
     <%- include('../../partials/footer') %>
 
@@ -130,9 +117,4 @@
     <script src="/lib/owlcarousel/owl.carousel.min.js"></script>
     <script src="/js/main.js"></script>
 </body>
-
 </html>
-
-
-
-
