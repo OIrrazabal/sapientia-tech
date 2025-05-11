@@ -25,5 +25,8 @@ router.get('/testimonial', publicController.showTestimonial);
 router.get('/contact', publicController.showContact);
 router.get('/team', publicController.team);
 router.get('/profesores', publicController.profesores);
+router.get('/privacy', publicController.showPrivacy);
+router.get('/terms', publicController.showTerms);
+router.get('/faqs', publicController.showFaqs);
 
 module.exports = router;
