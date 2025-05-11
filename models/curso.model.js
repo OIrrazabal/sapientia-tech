@@ -6,6 +6,12 @@ class Curso {
         return dbHandler.ejecutarQueryAll(query);
     }
 
+    // Método para listar todos los cursos
+    static async listar() {
+        const query = 'SELECT * FROM cursos';
+        return dbHandler.ejecutarQueryAll(query);
+    }
+
     static async getCursosByProfesor(profesorId) {
         const query = `
             SELECT c.*, u.nombre AS profesor_nombre
@@ -61,10 +67,10 @@ class Curso {
 
     static crear(curso) {
         const { nombre, descripcion, profesor_id } = curso;
-        
+
         const query = 'INSERT INTO cursos (nombre, descripcion, publicado) VALUES (?, ?, ?)';
         const params = [nombre, descripcion, 0];
-        
+
         return dbHandler.ejecutarQuery(query, params)
             .then(result => result)
             .catch(err => {
@@ -76,7 +82,7 @@ class Curso {
     static async asignarProfesor(curso_id, profesor_id) {
         const query = 'UPDATE cursos SET profesor_id = ? WHERE id = ?';
         const params = [profesor_id, curso_id];
-        
+
         return dbHandler.ejecutarQuery(query, params)
             .then(result => result)
             .catch(err => {
