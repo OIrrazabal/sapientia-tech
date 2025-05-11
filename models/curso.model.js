@@ -1,4 +1,5 @@
 const dbHandler = require('../db/db.handler');
+const db = require('../db/conexion');
 
 class Curso {
     static async listarDisponibles() {
@@ -100,6 +101,24 @@ class Curso {
         const query = 'INSERT INTO inscripciones (alumno_id, curso_id) VALUES (?, ?)';
         return dbHandler.ejecutarQuery(query, [alumnoId, cursoId]);
     }
+
+    static getCursosPopulares = async function (limite = 8) {
+        return new Promise((resolve, reject) => {
+            const sql = `
+                SELECT c.*, COUNT(i.alumno_id) AS inscriptos
+                FROM cursos c
+                LEFT JOIN inscripciones i ON c.id = i.curso_id
+                WHERE c.publicado = 1
+                GROUP BY c.id
+                ORDER BY inscriptos DESC
+                LIMIT ?
+            `;
+            db.all(sql, [limite], (err, rows) => {
+                if (err) return reject(err);
+                resolve(rows);
+            });
+        });
+    };
 }
 
 module.exports = Curso;

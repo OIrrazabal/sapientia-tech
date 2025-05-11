@@ -48,22 +48,28 @@ app.use("/admin", adminRoutes);
 app.use("/auth", authRoutes);
 app.use("/public", publicRoutes);
 const Usuario = require("./models/usuario.model");
+const Curso = require("./models/curso.model");
 app.get("/", async (req, res) => {
-	try {
-		const profesores = (await Usuario.listar()).filter(u => u.rol === 'profesor');
-		const profesoresUnicos = Array.from(new Map(profesores.map(p => [p.id, p])).values());
+    try {
+        const profesores = (await Usuario.listar()).filter(u => u.rol === 'profesor');
+        const profesoresUnicos = Array.from(new Map(profesores.map(p => [p.id, p])).values());
 
-		res.render("public/home/index", {
-			usuario: req.session.usuario || null,
-			profesores: profesoresUnicos
-		});
-	} catch (error) {
-		console.error("Error cargando profesores:", error);
-		res.render("public/home/index", {
-			usuario: req.session.usuario || null,
-			profesores: []
-		});
-	}
+        // Obtener los 8 cursos más populares (publicados y con más inscriptos)
+        const cursosPopulares = await Curso.getCursosPopulares(8);
+
+        res.render("public/home/index", {
+            usuario: req.session.usuario || null,
+            profesores: profesoresUnicos,
+            cursosPopulares // <-- enviar a la vista
+        });
+    } catch (error) {
+        console.error("Error cargando profesores:", error);
+        res.render("public/home/index", {
+            usuario: req.session.usuario || null,
+            profesores: [],
+            cursosPopulares: []
+        });
+    }
 });
 
 // Ruta para manejar errores 404
