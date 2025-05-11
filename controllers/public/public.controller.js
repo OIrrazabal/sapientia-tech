@@ -189,4 +189,26 @@ publicController.profesores = async (req, res) => {
     }
 };
 
+publicController.showPrivacy = (req, res) => {
+    res.render('privacy', {
+    title: 'Política de Privacidad',
+    usuario: req.session.usuario || null
+    });
+};
+
+publicController.showTerms = (req, res) => {
+    res.render('terms', {
+        title: 'Términos y Condiciones',
+        usuario: req.session.usuario || null
+    });
+};
+
+publicController.showFaqs = (req, res) => {
+    res.render('faqs', {
+        title: 'Preguntas Frecuentes',
+        usuario: req.session.usuario || null
+    });
+};
+
+
 module.exports = publicController;
