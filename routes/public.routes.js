@@ -6,6 +6,7 @@ const publicController = require('../controllers/public/public.controller');
 //console.log("🔎 Funciones cargadas en publicController:", Object.keys(publicController));
 //console.log("🔎 Tipo de showHome:", typeof publicController.showHome);
 
+//mostrar la vista de inicio
 router.get('/', publicController.showHome);
 
 // Rutas de login
