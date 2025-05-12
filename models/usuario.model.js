@@ -29,7 +29,14 @@ const Usuario = {
 
     comparePassword: async (inputPassword, storedPassword) => {
         return inputPassword === storedPassword;
-    }
+    },
+
+    getProfesores: async () => {
+        return await dbHandler.ejecutarQueryAll(
+            'SELECT * FROM usuarios WHERE rol = ?', 
+            ['profesor']
+        );
+    },
 };
 
 module.exports = Usuario;
