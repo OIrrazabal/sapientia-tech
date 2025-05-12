@@ -12,12 +12,14 @@ authController.redirectHome = (req, res) => {
 authController.home = async (req, res) => {
   try {
     const users = await Usuario.listar();
+    const profesores = await Usuario.getProfesores();
 
     //Pasamos los usuarios a la vista
     res.render('auth/home/index', {
       title: 'Inicio',
       usuario: req.session.usuario || null,
-      active: 'inicio' //
+      active: 'inicio',
+      profesores: profesores 
     });
   } catch (error) {
     res.status(500).send('server error');
