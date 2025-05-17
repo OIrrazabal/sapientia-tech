@@ -197,4 +197,17 @@ adminController.eliminarAsignacion = async (req, res) => {
   }
 };
 
+adminController.listarUsuarios = async (req, res) => {
+    try {
+        const usuarios = await Usuario.obtenerUsuariosConContadores();
+        res.render('admin/usuarios/usuarios', { 
+            usuarios, 
+            usuario: req.session.usuario || null, 
+            appName: 'eLEARNING' // o el nombre de tu app
+        });
+    } catch (error) {
+        res.status(500).send('Error al obtener usuarios');
+    }
+};
+
 module.exports = adminController;

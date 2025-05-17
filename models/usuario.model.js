@@ -1,4 +1,5 @@
 const dbHandler = require('../db/db.handler');
+const db = require('../db/conexion');
 
 const Usuario = {
     listar: async () => {
@@ -36,6 +37,30 @@ const Usuario = {
             'SELECT * FROM usuarios WHERE rol = ?', 
             ['profesor']
         );
+    },
+
+    obtenerUsuariosConContadores: async function() {
+        const sql = `
+            SELECT u.id, u.nombre, u.email, u.rol,
+                (SELECT COUNT(*) FROM inscripciones i WHERE i.alumno_id = u.id) AS cursos_alumno,
+                (SELECT COUNT(*) FROM cursos c WHERE c.profesor_id = u.id) AS cursos_profesor,
+                (SELECT GROUP_CONCAT(c2.nombre, ', ') 
+                    FROM inscripciones i2 
+                    JOIN cursos c2 ON i2.curso_id = c2.id 
+                    WHERE i2.alumno_id = u.id
+                ) AS materias_alumno,
+                (SELECT GROUP_CONCAT(c3.nombre, ', ') 
+                    FROM cursos c3 
+                    WHERE c3.profesor_id = u.id
+                ) AS materias_profesor
+            FROM usuarios u
+        `;
+        return new Promise((resolve, reject) => {
+            db.all(sql, [], (err, rows) => {
+                if (err) return reject(err);
+                resolve(rows);
+            });
+        });
     },
 };
 
