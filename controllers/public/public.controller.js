@@ -128,12 +128,29 @@ publicController.showAbout = (req, res) => {
     });
 };
 
-publicController.showTestimonial = (req, res) => {
-    res.render('testimonial', {
-        title: 'Testimonial',
-        usuario: req.session.usuario || null
-    });
+publicController.showTestimonial = async (req, res) => {
+    try {
+        // Obtener todos los usuarios y filtrar por rol estudiante
+        let estudiantes = (await Usuario.listar()).filter(u => u.rol === 'estudiante');
+
+        // Eliminar duplicados por ID
+        const estudiantesUnicos = Array.from(new Map(estudiantes.map(e => [e.id, e])).values());
+
+        res.render('testimonial', {
+            title: 'Testimonial',
+            usuario: req.session.usuario || null,
+            alumnos: estudiantesUnicos
+        });
+    } catch (error) {
+        console.error("Error al cargar estudiantes en testimonial:", error);
+        res.render('testimonial', {
+            title: 'Testimonial',
+            usuario: req.session.usuario || null,
+            alumnos: []
+        });
+    }
 };
+
 
 publicController.showContact = (req, res) => {
     res.render('contact', {
