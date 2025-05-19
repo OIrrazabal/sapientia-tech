@@ -210,4 +210,36 @@ adminController.listarUsuarios = async (req, res) => {
     }
 };
 
+// inscripciones
+adminController.inscripciones = (req, res) => {
+    const sql = `
+        SELECT 
+            u.nombre AS alumno,
+            i.alumno_id,
+            i.curso_id,
+            i.fecha_inscripcion
+        FROM inscripciones i
+        JOIN usuarios u ON i.alumno_id = u.id
+        ORDER BY i.fecha_inscripcion DESC
+    `;
+
+    db.all(sql, [], (err, filas) => {
+        if (err) {
+            console.error('Error al obtener inscripciones:', err);
+            return res.render('admin/inscripciones/index', {
+                inscripciones: [],
+                usuario: req.session.usuario || null,
+                appName: 'Panel Admin',
+                error: 'Error al obtener datos'
+            });
+        }
+
+        res.render('admin/inscripciones/index', {
+            inscripciones: filas,
+            usuario: req.session.usuario || null,
+            appName: 'Panel Admin'
+        });
+    });
+};
+
 module.exports = adminController;
