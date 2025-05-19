@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inscripciones de Alumnos</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<%- include('../../partials/navbar', { usuario: usuario, appName: appName }) %>
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Listado de Inscripciones</h2>
+
+    <% if (inscripciones && inscripciones.length > 0) { %>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-primary text-center">
+                    <tr>
+                        <th>Alumno</th>
+                        <th>ID Alumno</th>
+                        <th>ID Curso</th>
+                        <th>Fecha de Inscripción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% inscripciones.forEach(ins => { %>
+                        <tr>
+                            <td><%= ins.alumno %></td>
+                            <td class="text-center"><%= ins.alumno_id %></td>
+                            <td class="text-center"><%= ins.curso_id %></td>
+                            <td class="text-center"><%= new Date(ins.fecha_inscripcion).toLocaleString('es-ES') %></td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    <% } else { %>
+        <div class="alert alert-info text-center">
+            No hay inscripciones registradas.
+        </div>
+    <% } %>
+</div>
+
+<%- include('../../partials/footer', { usuario: usuario, appName: appName }) %>
+
+</body>
+</html>

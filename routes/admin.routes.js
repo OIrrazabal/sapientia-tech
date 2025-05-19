@@ -19,5 +19,6 @@ router.get('/asignaciones/nueva', adminController.nuevaAsignacion);
 router.post('/asignaciones/crear', adminController.crearAsignacionDesdeListado);
 router.post('/asignaciones/:id/eliminar', adminController.eliminarAsignacion);
 router.get('/usuarios', checkAdmin, adminController.listarUsuarios);
+router.get('/inscripciones', checkAdmin, adminController.inscripciones);
 
 module.exports = router;
