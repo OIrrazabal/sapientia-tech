@@ -4,13 +4,32 @@ const bcrypt = require('bcrypt');
 const loginSchema = require('../../validators/login.schema');
 
 const publicController = {};
-/*
-publicController.showHome = (req, res) => {
-    res.render('public/home/index', {
-        usuario: req.session.usuario || null
-    });
+
+publicController.showHome = async (req, res) => {
+    try {
+        const profesores = (await Usuario.listar()).filter(u => u.rol === 'profesor');
+        const profesoresUnicos = Array.from(new Map(profesores.map(p => [p.id, p])).values());
+        const categoriasPopulares = await Curso.getCategoriasPopulares(4);
+        // Obtener los 8 cursos más populares (publicados y con más inscriptos)
+        const cursosPopulares = await Curso.getCursosPopulares(8);
+
+        res.render("public/home/index", {
+            usuario: req.session.usuario || null,
+            profesores: profesoresUnicos,
+            cursosPopulares,
+            categoriasPopulares: categoriasPopulares || []
+        });
+    } catch (error) {
+        console.error("Error cargando profesores:", error);
+        res.render("public/home/index", {
+            usuario: req.session.usuario || null,
+            profesores: [],
+            cursosPopulares: [],
+            categoriasPopulares: []
+        });
+    }
 };
-*/
+
 publicController.showAdminLogin = (req, res) => {
     res.render('public/admin-login/index', {
         error: null,
@@ -171,7 +190,7 @@ publicController.team = (req, res) => {
       res.status(500).send('Error del servidor');
     }
 };
-
+/*
 publicController.showHome = async (req, res) => {
     try {
         let profesores = (await Usuario.listar()).filter(u => u.rol === 'profesor');
@@ -198,7 +217,7 @@ publicController.showHome = async (req, res) => {
         });
     }
 };
-
+*/
 publicController.profesores = async (req, res) => {
     try {
         let profesores = (await Usuario.listar()).filter(u => u.rol === 'profesor');

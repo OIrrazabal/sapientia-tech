@@ -1,7 +1,9 @@
 const adminController = {};
 const Usuario = require('../../models/usuario.model');
 const Curso = require('../../models/curso.model');
+const Categoria = require('../../models/categorias.model');
 const cursoSchema = require('../../validators/curso.schema');
+const categoriaSchema = require('../../validators/categoria.schema');
 const db = require('../../db/conexion');
 const util = require('util');
 
@@ -244,16 +246,7 @@ adminController.inscripciones = (req, res) => {
 
 adminController.listarCategorias = async (req, res) => {
     try {
-        const query = `
-            SELECT c.id, c.nombre, c.descripcion, 
-                   COUNT(cu.id) as total_cursos
-            FROM categorias c
-            LEFT JOIN cursos cu ON c.id = cu.categoria_id
-            GROUP BY c.id
-            ORDER BY c.nombre ASC`;
-
-        const dbAll = util.promisify(db.all).bind(db);
-        const categorias = await dbAll(query);
+        const categorias = await Categoria.listarConTotalCursos();
 
         res.render('admin/categorias/index', {
             categorias,
@@ -263,6 +256,61 @@ adminController.listarCategorias = async (req, res) => {
     } catch (error) {
         console.error('Error al obtener categorías:', error);
         res.status(500).send('Error al cargar las categorías');
+    }
+};
+
+adminController.mostrarFormularioCategoria = async (req, res) => {
+    try {
+        res.render('admin/categorias/nueva', {
+            usuario: req.session.usuario || null,
+            error: null,
+            appName: 'eLEARNING'
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).render('admin/categorias/nueva', {
+            error: 'Error al cargar el formulario',
+            usuario: req.session.usuario || null,
+            appName: 'eLEARNING'
+        });
+    }
+};
+
+adminController.crearCategoria = async (req, res) => {
+    const { nombre, descripcion } = req.body;
+    const { error } = categoriaSchema.validate(req.body, { abortEarly: false });
+
+    if (error) {
+        return res.status(400).render('admin/categorias/nueva', {
+            error: error.details.map(err => err.message).join('. '),
+            usuario: req.session.usuario || null,
+            valores: req.body,
+            appName: 'eLEARNING'
+        });
+    }
+
+    try {
+        // Verificar si ya existe una categoría con el mismo nombre
+        const existe = await Categoria.existeNombre(nombre);
+        if (existe) {
+            return res.status(400).render('admin/categorias/nueva', {
+                error: 'Ya existe una categoría con ese nombre',
+                usuario: req.session.usuario || null,
+                valores: req.body,
+                appName: 'eLEARNING'
+            });
+        }
+
+        await Categoria.crear({ nombre, descripcion });
+        res.redirect('/admin/categorias');
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).render('admin/categorias/nueva', {
+            error: 'Error al crear la categoría',
+            usuario: req.session.usuario || null,
+            valores: req.body,
+            appName: 'eLEARNING'
+        });
     }
 };
 
