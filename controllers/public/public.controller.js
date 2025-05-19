@@ -1,4 +1,5 @@
 const Usuario = require('../../models/usuario.model');
+const Curso = require('../../models/curso.model');
 const bcrypt = require('bcrypt');
 const loginSchema = require('../../validators/login.schema');
 
@@ -175,21 +176,29 @@ publicController.showHome = async (req, res) => {
     try {
         let profesores = (await Usuario.listar()).filter(u => u.rol === 'profesor');
 
-        // Eliminar duplicados por ID (o usar 'email' si preferís)
+        // Eliminar duplicados por ID
         const profesoresUnicos = Array.from(new Map(profesores.map(p => [p.id, p])).values());
+
+        const categoriasPopulares = await Curso.getCategoriasPopulares(4);
+        const cursosPopulares = await Curso.getCursosPopulares?.(8) || [];
 
         res.render('public/home/index', {
             usuario: req.session.usuario || null,
-            profesores: profesoresUnicos
+            profesores: profesoresUnicos,
+            categoriasPopulares: categoriasPopulares || [],
+            cursosPopulares
         });
     } catch (error) {
-        console.error("Error al cargar profesores en home:", error);
+        console.error("Error al cargar datos en home:", error);
         res.render('public/home/index', {
             usuario: req.session.usuario || null,
-            profesores: []
+            profesores: [],
+            categoriasPopulares: [],
+            cursosPopulares: []
         });
     }
 };
+
 publicController.profesores = async (req, res) => {
     try {
         let profesores = (await Usuario.listar()).filter(u => u.rol === 'profesor');
