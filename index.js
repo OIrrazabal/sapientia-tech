@@ -47,6 +47,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/admin", adminRoutes);
 app.use("/auth", authRoutes);
 app.use("/public", publicRoutes);
+/*
 const Usuario = require("./models/usuario.model");
 const Curso = require("./models/curso.model");
 app.get("/", async (req, res) => {
@@ -73,6 +74,8 @@ app.get("/", async (req, res) => {
         });
     }
 });
+*/
+app.use('/', publicRoutes);
 
 // Ruta para manejar errores 404
 app.all("*", (req, res) => {
