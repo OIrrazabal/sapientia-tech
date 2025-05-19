@@ -242,4 +242,28 @@ adminController.inscripciones = (req, res) => {
     });
 };
 
+adminController.listarCategorias = async (req, res) => {
+    try {
+        const query = `
+            SELECT c.id, c.nombre, c.descripcion, 
+                   COUNT(cu.id) as total_cursos
+            FROM categorias c
+            LEFT JOIN cursos cu ON c.id = cu.categoria_id
+            GROUP BY c.id
+            ORDER BY c.nombre ASC`;
+
+        const dbAll = util.promisify(db.all).bind(db);
+        const categorias = await dbAll(query);
+
+        res.render('admin/categorias/index', {
+            categorias,
+            usuario: req.session.usuario || null,
+            appName: 'eLEARNING'
+        });
+    } catch (error) {
+        console.error('Error al obtener categorías:', error);
+        res.status(500).send('Error al cargar las categorías');
+    }
+};
+
 module.exports = adminController;
