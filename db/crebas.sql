@@ -19,13 +19,21 @@ CREATE TABLE inscripciones (
     FOREIGN KEY (curso_id) REFERENCES cursos(id)
 );
 
+CREATE TABLE categorias (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL UNIQUE,
+    descripcion TEXT
+);
+
 CREATE TABLE cursos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre TEXT NOT NULL,
     descripcion TEXT,
     profesor_id INTEGER,
+    categoria_id INTEGER,
     publicado INTEGER DEFAULT 0,
     FOREIGN KEY (profesor_id) REFERENCES usuarios(id)
+    FOREIGN KEY (categoria_id) REFERENCES categorias(id)
 );
 
 CREATE TABLE secciones (

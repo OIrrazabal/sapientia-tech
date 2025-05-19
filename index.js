@@ -53,21 +53,23 @@ app.get("/", async (req, res) => {
     try {
         const profesores = (await Usuario.listar()).filter(u => u.rol === 'profesor');
         const profesoresUnicos = Array.from(new Map(profesores.map(p => [p.id, p])).values());
-
+        const categoriasPopulares = await Curso.getCategoriasPopulares(4);
         // Obtener los 8 cursos más populares (publicados y con más inscriptos)
         const cursosPopulares = await Curso.getCursosPopulares(8);
 
         res.render("public/home/index", {
             usuario: req.session.usuario || null,
             profesores: profesoresUnicos,
-            cursosPopulares // <-- enviar a la vista
+            cursosPopulares,
+            categoriasPopulares: categoriasPopulares || []
         });
     } catch (error) {
         console.error("Error cargando profesores:", error);
         res.render("public/home/index", {
             usuario: req.session.usuario || null,
             profesores: [],
-            cursosPopulares: []
+            cursosPopulares: [],
+            categoriasPopulares: []
         });
     }
 });
