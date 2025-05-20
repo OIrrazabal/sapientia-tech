@@ -45,3 +45,9 @@ CREATE TABLE secciones (
     fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (curso_id) REFERENCES cursos(id)
 );
+
+CREATE TABLE asignaciones (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    curso_id INTEGER NOT NULL,
+    profesor_id INTEGER NOT NULL,
+);
