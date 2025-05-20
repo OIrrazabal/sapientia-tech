@@ -48,6 +48,6 @@ CREATE TABLE secciones (
 
 CREATE TABLE asignaciones (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    curso_id INTEGER NOT NULL,
-    profesor_id INTEGER NOT NULL,
+    id_curso INTEGER NOT NULL,
+    id_profesor INTEGER NOT NULL
 );
