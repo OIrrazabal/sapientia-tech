@@ -7,7 +7,8 @@ const publicController = require('../controllers/public/public.controller');
 //console.log("🔎 Tipo de showHome:", typeof publicController.showHome);
 
 //mostrar la vista de inicio
-router.get('/', publicController.showHome);
+router.get('/', publicController.redirectToHome);
+router.get('/home', publicController.showHome);
 
 // Rutas de login
 router.get('/admin-login', publicController.showAdminLogin);

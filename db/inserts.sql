@@ -103,3 +103,21 @@ INSERT INTO secciones (nombre, descripcion, curso_id, orden) VALUES
 ('Metodologías Ágiles', 'Scrum, Kanban y Lean', 10, 1),
 ('Herramientas de Gestión', 'Jira, Trello y GitHub Projects', 10, 2),
 ('Seguimiento y Métricas', 'Velocidad, burndown y KPIs', 10, 3);
+
+
+INSERT INTO asignaciones (id_curso, id_profesor) VALUES
+(1, 2),
+(2, 3),
+(3, 4),
+(4, 2),
+(5, 3),
+(6, 4),
+(7, 2),
+(8, 3),
+(9, 4),
+(10, 2),
+(11, 3),
+(12, 4),
+(13, 2),
+(14, 3),
+(15, 4);

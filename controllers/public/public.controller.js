@@ -30,6 +30,10 @@ publicController.showHome = async (req, res) => {
     }
 };
 
+publicController.redirectToHome = (req, res) => {
+    res.redirect('/public/home');
+};
+
 publicController.showAdminLogin = (req, res) => {
     res.render('public/admin-login/index', {
         error: null,
