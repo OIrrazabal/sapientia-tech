@@ -1,5 +1,6 @@
 const dbHandler = require('../db/db.handler');
 const db = require('../db/conexion');
+const util = require('util');
 
 const Usuario = {
     listar: async () => {
@@ -61,6 +62,38 @@ const Usuario = {
                 resolve(rows);
             });
         });
+    },
+
+    // Obtener usuario por email
+    obtenerPorEmail: async (email) => {
+        try {
+            const query = 'SELECT * FROM usuarios WHERE email = ?';
+            const dbGet = util.promisify(db.get).bind(db);
+            return await dbGet(query, [email]);
+        } catch (error) {
+            console.error('Error al obtener usuario por email:', error);
+            throw error;
+        }
+    },
+
+    // Crear usuario
+    crear: async (usuario) => {
+        try {
+            const { nombre, email, contraseña, es_admin, telefono, direccion, rol } = usuario;
+            const query = `
+                INSERT INTO usuarios 
+                (nombre, email, contraseña, es_admin, telefono, direccion, rol) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            `;
+            const dbRun = util.promisify(db.run).bind(db);
+            return await dbRun(
+                query, 
+                [nombre, email, contraseña, es_admin, telefono || '', direccion || '', rol]
+            );
+        } catch (error) {
+            console.error('Error al crear usuario:', error);
+            throw error;
+        }
     },
 };
 
