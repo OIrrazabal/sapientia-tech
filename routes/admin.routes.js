@@ -19,9 +19,17 @@ router.get('/asignaciones/nueva', adminController.nuevaAsignacion);
 router.post('/asignaciones/crear', adminController.crearAsignacionDesdeListado);
 router.post('/asignaciones/:id/eliminar', adminController.eliminarAsignacion);
 
+//usuarios
+router.get('/usuarios', checkAdmin, adminController.listarUsuarios);
+
+//inscripciones
+router.get('/inscripciones', checkAdmin, adminController.inscripciones);
+
 //categorias
 router.get('/categorias', checkAdmin, adminController.listarCategorias);
 router.get('/categorias/nueva', checkAdmin, adminController.mostrarFormularioCategoria);
 router.post('/categorias/crear', checkAdmin, adminController.crearCategoria);
+router.get('/categorias/:id/editar', checkAdmin, adminController.mostrarFormularioEditar);
+router.post('/categorias/:id/editar', checkAdmin, adminController.editarCategoria);
 
 module.exports = router;

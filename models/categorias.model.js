@@ -22,6 +22,22 @@ const Categoria = {
         const query = 'SELECT id FROM categorias WHERE nombre = ?';
         const result = await dbHandler.ejecutarQuery(query, [nombre]);
         return result !== undefined;
+    },
+
+    obtenerPorId: async (id) => {
+        const query = 'SELECT id, nombre, descripcion FROM categorias WHERE id = ?';
+        return await dbHandler.ejecutarQuery(query, [id]);
+    },
+
+    actualizar: async (id, categoria) => {
+        const query = 'UPDATE categorias SET nombre = ?, descripcion = ? WHERE id = ?';
+        return await dbHandler.ejecutarQuery(query, [categoria.nombre, categoria.descripcion, id]);
+    },
+
+    existeNombreExceptoId: async (nombre, id) => {
+        const query = 'SELECT id FROM categorias WHERE nombre = ? AND id != ?';
+        const result = await dbHandler.ejecutarQuery(query, [nombre, id]);
+        return result !== undefined;
     }
 };
 

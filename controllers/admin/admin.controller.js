@@ -314,4 +314,71 @@ adminController.crearCategoria = async (req, res) => {
     }
 };
 
+adminController.mostrarFormularioEditar = async (req, res) => {
+    const id = req.params.id;
+    
+    try {
+        const categoria = await Categoria.obtenerPorId(id);
+        
+        if (!categoria) {
+            return res.redirect('/admin/categorias');
+        }
+
+        res.render('admin/categorias/editar', {
+            categoria,
+            usuario: req.session.usuario || null,
+            error: null,
+            appName: 'eLEARNING'
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.redirect('/admin/categorias');
+    }
+};
+
+adminController.editarCategoria = async (req, res) => {
+    const id = req.params.id;
+    const { nombre, descripcion } = req.body;
+    const { error } = categoriaSchema.validate(req.body, { abortEarly: false });
+
+    if (error) {
+        return res.status(400).render('admin/categorias/editar', {
+            error: error.details.map(err => err.message).join('. '),
+            usuario: req.session.usuario || null,
+            categoria: { id, nombre, descripcion },
+            appName: 'eLEARNING'
+        });
+    }
+
+    try {
+        // Verificar si existe la categoría
+        const categoriaExistente = await Categoria.obtenerPorId(id);
+        if (!categoriaExistente) {
+            return res.redirect('/admin/categorias');
+        }
+
+        // Verificar si ya existe otra categoría con el mismo nombre
+        const existe = await Categoria.existeNombreExceptoId(nombre, id);
+        if (existe) {
+            return res.status(400).render('admin/categorias/editar', {
+                error: 'Ya existe otra categoría con ese nombre',
+                usuario: req.session.usuario || null,
+                categoria: { id, ...req.body },
+                appName: 'eLEARNING'
+            });
+        }
+
+        await Categoria.actualizar(id, { nombre, descripcion });
+        res.redirect('/admin/categorias');
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).render('admin/categorias/editar', {
+            error: 'Error al actualizar la categoría',
+            usuario: req.session.usuario || null,
+            categoria: { id, ...req.body },
+            appName: 'eLEARNING'
+        });
+    }
+};
+
 module.exports = adminController;
