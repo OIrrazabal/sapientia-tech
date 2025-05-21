@@ -19,8 +19,10 @@ router.get('/asignaciones/nueva', adminController.nuevaAsignacion);
 router.post('/asignaciones/crear', adminController.crearAsignacionDesdeListado);
 router.post('/asignaciones/:id/eliminar', adminController.eliminarAsignacion);
 
-//usuarios 
-router.get('/usuarios', checkAdmin, adminController.listarUsuarios); 
+//usuarios
+router.get('/usuarios', checkAdmin, adminController.listarUsuarios);
+router.get('/usuarios/nuevo', checkAdmin, adminController.mostrarFormularioUsuario);
+router.post('/usuarios/crear', checkAdmin, adminController.crearUsuario);
 
 //inscripciones
 router.get('/inscripciones', checkAdmin, adminController.inscripciones);

@@ -6,6 +6,8 @@ const cursoSchema = require('../../validators/curso.schema');
 const categoriaSchema = require('../../validators/categoria.schema');
 const db = require('../../db/conexion');
 const util = require('util');
+const usuarioSchema = require('../../validators/usuario.schema');
+const bcrypt = require('bcrypt');
 
 // Home del Admin
 adminController.home = (req, res) => {
@@ -376,6 +378,84 @@ adminController.editarCategoria = async (req, res) => {
             error: 'Error al actualizar la categoría',
             usuario: req.session.usuario || null,
             categoria: { id, ...req.body },
+            appName: 'eLEARNING'
+        });
+    }
+};
+
+// Mostrar formulario para crear usuario
+adminController.mostrarFormularioUsuario = async (req, res) => {
+    try {
+        res.render('admin/usuarios/nuevo', {
+            usuario: req.session.usuario || null,
+            error: null,
+            valores: {},
+            appName: 'eLEARNING'
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).render('admin/usuarios/nuevo', {
+            error: 'Error al cargar el formulario',
+            usuario: req.session.usuario || null,
+            valores: {},
+            appName: 'eLEARNING'
+        });
+    }
+};
+
+// Crear usuario
+adminController.crearUsuario = async (req, res) => {
+    const { nombre, email, password, rol, telefono, direccion } = req.body;
+    const es_admin = (rol === 'admin') ? 1 : 0;
+    
+    // Validar datos con Joi
+    const { error } = usuarioSchema.validate({
+        ...req.body,
+        es_admin
+    }, { abortEarly: false });
+    
+    if (error) {
+        return res.status(400).render('admin/usuarios/nuevo', {
+            error: error.details.map(err => err.message).join('. '),
+            usuario: req.session.usuario || null,
+            valores: req.body,
+            appName: 'eLEARNING'
+        });
+    }
+    
+    try {
+        // Verificar si ya existe un usuario con el mismo email
+        const existeUsuario = await Usuario.obtenerPorEmail(email);
+        if (existeUsuario) {
+            return res.status(400).render('admin/usuarios/nuevo', {
+                error: 'Ya existe un usuario con ese correo electrónico',
+                usuario: req.session.usuario || null,
+                valores: req.body,
+                appName: 'eLEARNING'
+            });
+        }
+        
+        // Encriptar contraseña
+        const contraseñaHash = await bcrypt.hash(password, 10);
+        
+        // Crear usuario
+        await Usuario.crear({
+            nombre,
+            email,
+            contraseña: contraseñaHash,
+            es_admin,
+            telefono: telefono || '',
+            direccion: direccion || '',
+            rol
+        });
+        
+        res.redirect('/admin/usuarios');
+    } catch (error) {
+        console.error('Error al crear usuario:', error);
+        res.status(500).render('admin/usuarios/nuevo', {
+            error: 'Error al crear el usuario',
+            usuario: req.session.usuario || null,
+            valores: req.body,
             appName: 'eLEARNING'
         });
     }
