@@ -461,4 +461,96 @@ adminController.crearUsuario = async (req, res) => {
     }
 };
 
+// Mostrar formulario para editar usuario
+adminController.mostrarFormularioEditar = async (req, res) => {
+    const id = req.params.id;
+    
+    try {
+        const usuarioData = await Usuario.obtenerPorId(id);
+        
+        if (!usuarioData) {
+            return res.redirect('/admin/usuarios');
+        }
+
+        res.render('admin/usuarios/editar', {
+            usuario: req.session.usuario || null,
+            usuarioData,
+            error: null,
+            appName: 'eLEARNING'
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.redirect('/admin/usuarios');
+    }
+};
+
+// Editar usuario
+adminController.editarUsuario = async (req, res) => {
+    const id = req.params.id;
+    const { nombre, email, password, rol, telefono, direccion } = req.body;
+    const es_admin = (rol === 'admin') ? 1 : 0;
+    
+    // Validar datos con el esquema
+    const { error } = usuarioSchema.validate({
+        ...req.body,
+        es_admin
+    }, { abortEarly: false });
+    
+    if (error) {
+        return res.status(400).render('admin/usuarios/editar', {
+            error: error.details.map(err => err.message).join('. '),
+            usuario: req.session.usuario || null,
+            usuarioData: { id, ...req.body },
+            appName: 'eLEARNING'
+        });
+    }
+    
+    try {
+        // Verificar si existe el usuario
+        const usuarioExistente = await Usuario.obtenerPorId(id);
+        if (!usuarioExistente) {
+            return res.redirect('/admin/usuarios');
+        }
+        
+        // Verificar si existe otro usuario con el mismo email
+        const existeEmail = await Usuario.existeEmailExceptoId(email, id);
+        if (existeEmail) {
+            return res.status(400).render('admin/usuarios/editar', {
+                error: 'Ya existe otro usuario con ese correo electrónico',
+                usuario: req.session.usuario || null,
+                usuarioData: { id, ...req.body },
+                appName: 'eLEARNING'
+            });
+        }
+        
+        // Preparar objeto con datos actualizados
+        const datosActualizados = {
+            nombre,
+            email,
+            es_admin,
+            telefono: telefono || '',
+            direccion: direccion || '',
+            rol
+        };
+        
+        // Si hay contraseña nueva, hasheamos y actualizamos
+        if (password && password.trim() !== '') {
+            datosActualizados.contraseña = await bcrypt.hash(password, 10);
+        }
+        
+        // Actualizar usuario
+        await Usuario.actualizar(id, datosActualizados);
+        
+        res.redirect('/admin/usuarios');
+    } catch (error) {
+        console.error('Error al editar usuario:', error);
+        res.status(500).render('admin/usuarios/editar', {
+            error: 'Error al actualizar el usuario',
+            usuario: req.session.usuario || null,
+            usuarioData: { id, ...req.body },
+            appName: 'eLEARNING'
+        });
+    }
+};
+
 module.exports = adminController;

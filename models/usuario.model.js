@@ -1,6 +1,7 @@
 const dbHandler = require('../db/db.handler');
 const db = require('../db/conexion');
 const util = require('util');
+const util = require('util');
 
 const Usuario = {
     listar: async () => {
@@ -95,6 +96,100 @@ const Usuario = {
             throw error;
         }
     },
+
+    // Obtener usuario por email
+    obtenerPorEmail: async (email) => {
+        try {
+            const query = 'SELECT * FROM usuarios WHERE email = ?';
+            const dbGet = util.promisify(db.get).bind(db);
+            return await dbGet(query, [email]);
+        } catch (error) {
+            console.error('Error al obtener usuario por email:', error);
+            throw error;
+        }
+    },
+
+    // Crear usuario
+    crear: async (usuario) => {
+        try {
+            const { nombre, email, contraseña, es_admin, telefono, direccion, rol } = usuario;
+            const query = `
+                INSERT INTO usuarios 
+                (nombre, email, contraseña, es_admin, telefono, direccion, rol) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            `;
+            const dbRun = util.promisify(db.run).bind(db);
+            return await dbRun(
+                query, 
+                [nombre, email, contraseña, es_admin, telefono || '', direccion || '', rol]
+            );
+        } catch (error) {
+            console.error('Error al crear usuario:', error);
+            throw error;
+        }
+    },
+
+    // Obtener usuario por id
+    obtenerPorId: async (id) => {
+        try {
+            const query = 'SELECT * FROM usuarios WHERE id = ?';
+            const dbGet = util.promisify(db.get).bind(db);
+            return await dbGet(query, [id]);
+        } catch (error) {
+            console.error('Error al obtener usuario por id:', error);
+            throw error;
+        }
+    },
+
+    // Verificar si existe email excepto para un id
+    existeEmailExceptoId: async (email, id) => {
+        try {
+            const query = 'SELECT COUNT(*) as count FROM usuarios WHERE email = ? AND id != ?';
+            const dbGet = util.promisify(db.get).bind(db);
+            const result = await dbGet(query, [email, id]);
+            return result.count > 0;
+        } catch (error) {
+            console.error('Error al verificar email:', error);
+            throw error;
+        }
+    },
+
+    // Actualizar usuario
+    actualizar: async (id, usuario) => {
+        try {
+            const { nombre, email, contraseña, es_admin, telefono, direccion, rol } = usuario;
+            
+            // Si hay contraseña nueva, actualizarla también
+            if (contraseña) {
+                const query = `
+                    UPDATE usuarios 
+                    SET nombre = ?, email = ?, contraseña = ?, es_admin = ?, telefono = ?, direccion = ?, rol = ?
+                    WHERE id = ?
+                `;
+                const dbRun = util.promisify(db.run).bind(db);
+                return await dbRun(
+                    query, 
+                    [nombre, email, contraseña, es_admin, telefono || '', direccion || '', rol, id]
+                );
+            } else {
+                // Si no hay contraseña nueva, mantener la existente
+                const query = `
+                    UPDATE usuarios 
+                    SET nombre = ?, email = ?, es_admin = ?, telefono = ?, direccion = ?, rol = ?
+                    WHERE id = ?
+                `;
+                const dbRun = util.promisify(db.run).bind(db);
+                return await dbRun(
+                    query, 
+                    [nombre, email, es_admin, telefono || '', direccion || '', rol, id]
+                );
+            }
+        } catch (error) {
+            console.error('Error al actualizar usuario:', error);
+            throw error;
+        }
+    },
 };
+
 
 module.exports = Usuario;
