@@ -66,6 +66,7 @@
             <div class="col-lg-10">
                 <div class="card wow fadeInUp" data-wow-delay="0.1s">
                     <div class="card-body">
+                        <!-- Añadir botón CREAR arriba de la tabla -->
                         <h2 class="card-title text-center mb-4">Usuarios Registrados</h2>
                         <div class="text-end mb-3">
                             <a href="/admin/usuarios/nuevo" class="btn btn-success">
@@ -81,6 +82,7 @@
                                         <th>Cursos como Alumno</th>
                                         <th>Cursos como Profesor</th>
                                         <th>Materias</th>
+                                        <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -100,6 +102,11 @@
                                                 <% if (!u.materias_alumno && !u.materias_profesor) { %>
                                                     -
                                                 <% } %>
+                                            </td>
+                                            <td>
+                                                <a href="/admin/usuarios/editar/<%= u.id %>" class="btn btn-sm btn-warning">
+                                                    <i class="fa fa-edit"></i> Editar
+                                                </a>
                                             </td>
                                         </tr>
                                     <% }) %>

@@ -19,6 +19,12 @@ router.get('/asignaciones/nueva', adminController.nuevaAsignacion);
 router.post('/asignaciones/crear', adminController.crearAsignacionDesdeListado);
 router.post('/asignaciones/:id/eliminar', adminController.eliminarAsignacion);
 
+// Gestión de usuarios
+router.get('/usuarios', checkAdmin, adminController.listarUsuarios);
+router.get('/usuarios/nuevo', checkAdmin, adminController.mostrarFormularioUsuario);
+router.post('/usuarios/crear', checkAdmin, adminController.crearUsuario);
+router.get('/usuarios/editar/:id', checkAdmin, adminController.mostrarFormularioEditar);
+router.post('/usuarios/editar/:id', checkAdmin, adminController.editarUsuario);
 //usuarios
 router.get('/usuarios', checkAdmin, adminController.listarUsuarios);
 router.get('/usuarios/nuevo', checkAdmin, adminController.mostrarFormularioUsuario);
