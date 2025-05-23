@@ -92,6 +92,7 @@ const Curso = {
             LEFT JOIN inscripciones i ON c.id = i.curso_id
             WHERE c.publicado = 1
             GROUP BY c.id
+            HAVING COUNT(i.alumno_id) > 0
             ORDER BY inscriptos DESC
             LIMIT ?`;
         return dbHandler.ejecutarQueryAll(query, [limite]);

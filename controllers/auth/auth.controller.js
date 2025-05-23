@@ -13,13 +13,17 @@ authController.home = async (req, res) => {
   try {
     const users = await Usuario.listar();
     const profesores = await Usuario.getProfesores();
+    const categoriasPopulares = await Curso.getCategoriasPopulares(4);
+    const cursosPopulares = await Curso.getCursosPopulares();
 
     //Pasamos los usuarios a la vista
     res.render('auth/home/index', {
       title: 'Inicio',
       usuario: req.session.usuario || null,
       active: 'inicio',
-      profesores: profesores 
+      profesores: profesores,
+      categoriasPopulares: categoriasPopulares,
+      cursosPopulares: cursosPopulares,
     });
   } catch (error) {
     res.status(500).send('server error');
