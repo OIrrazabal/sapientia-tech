@@ -1,7 +1,6 @@
 const dbHandler = require('../db/db.handler');
 const db = require('../db/conexion');
 const util = require('util');
-const util = require('util');
 
 const Usuario = {
     listar: async () => {
