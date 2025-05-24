@@ -2,33 +2,63 @@ const Usuario = require('../../models/usuario.model');
 const Curso = require('../../models/curso.model');
 const bcrypt = require('bcrypt');
 const loginSchema = require('../../validators/login.schema');
+const db = require('../../db/conexion');
 
 const publicController = {};
 
 publicController.showHome = async (req, res) => {
-    try {
-        const profesores = (await Usuario.listar()).filter(u => u.rol === 'profesor');
-        const profesoresUnicos = Array.from(new Map(profesores.map(p => [p.id, p])).values());
-        const categoriasPopulares = await Curso.getCategoriasPopulares(4);
-        // Obtener los 8 cursos más populares (publicados y con más inscriptos)
-        const cursosPopulares = await Curso.getCursosPopulares(8);
+  try {
+    const dbAll = require('util').promisify(db.all).bind(db);
 
-        res.render("public/home/index", {
-            usuario: req.session.usuario || null,
-            profesores: profesoresUnicos,
-            cursosPopulares,
-            categoriasPopulares: categoriasPopulares || []
+    // Obtener profesores asignados con el nombre del curso
+    const resultados = await dbAll(`
+      SELECT u.id, u.nombre, u.email, c.nombre AS curso
+      FROM usuarios u
+      JOIN asignaciones a ON u.id = a.id_profesor
+      JOIN cursos c ON a.id_curso = c.id
+    `);
+
+    // Agrupar por profesor
+    const profesoresAgrupados = [];
+    const mapa = new Map();
+
+    for (const p of resultados) {
+      if (!mapa.has(p.id)) {
+        mapa.set(p.id, {
+          id: p.id,
+          nombre: p.nombre,
+          email: p.email,
+          cursos: [p.curso]
         });
-    } catch (error) {
-        console.error("Error cargando profesores:", error);
-        res.render("public/home/index", {
-            usuario: req.session.usuario || null,
-            profesores: [],
-            cursosPopulares: [],
-            categoriasPopulares: []
-        });
+      } else {
+        mapa.get(p.id).cursos.push(p.curso);
+      }
     }
+
+    for (const entry of mapa.values()) {
+      profesoresAgrupados.push(entry);
+    }
+
+    const categoriasPopulares = await Curso.getCategoriasPopulares(4);
+    const cursosPopulares = await Curso.getCursosPopulares(8);
+
+    res.render("public/home/index", {
+      usuario: req.session.usuario || null,
+      profesores: profesoresAgrupados,
+      cursosPopulares,
+      categoriasPopulares: categoriasPopulares || []
+    });
+  } catch (error) {
+    console.error("Error cargando profesores en home:", error);
+    res.render("public/home/index", {
+      usuario: req.session.usuario || null,
+      profesores: [],
+      cursosPopulares: [],
+      categoriasPopulares: []
+    });
+  }
 };
+
 
 publicController.redirectToHome = (req, res) => {
     res.redirect('/public/home');
@@ -222,20 +252,43 @@ publicController.showHome = async (req, res) => {
     }
 };
 */
-publicController.profesores = async (req, res) => {
-    try {
-        let profesores = (await Usuario.listar()).filter(u => u.rol === 'profesor');
-        res.render('public/profesores', {
-            profesores,
-            usuario: req.session.usuario || null,
+publicController.verProfesores = async (req, res) => {
+  try {
+    const dbAll = require('util').promisify(db.all).bind(db);
+
+    // Usar la vista ya definida en la base
+    const resultados = await dbAll(`SELECT * FROM vista_profesores_con_cursos`);
+
+    // Agrupar por profesor
+    const profesoresAgrupados = [];
+    const mapa = new Map();
+
+    for (const p of resultados) {
+      if (!mapa.has(p.id)) {
+        mapa.set(p.id, {
+          id: p.id,
+          nombre: p.nombre,
+          email: p.email,
+          cursos: [p.curso]
         });
-    } catch (error) {
-        console.error('Error al cargar profesores:', error);
-        res.render('public/profesores', {
-            profesores: [],
-            usuario: req.session.usuario || null,
-        });
+      } else {
+        mapa.get(p.id).cursos.push(p.curso);
+      }
     }
+
+    for (const entry of mapa.values()) {
+      profesoresAgrupados.push(entry);
+    }
+
+    res.render('public/profesores', {
+      profesores: profesoresAgrupados,
+      appName: 'eLEARNING',
+      usuario: req.session.usuario || null
+    });
+  } catch (error) {
+    console.error('Error al obtener profesores desde la vista:', error);
+    res.status(500).send('Error al cargar los profesores');
+  }
 };
 
 publicController.showPrivacy = (req, res) => {
