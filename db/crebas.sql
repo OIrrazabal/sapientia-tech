@@ -51,3 +51,13 @@ CREATE TABLE asignaciones (
     id_curso INTEGER NOT NULL,
     id_profesor INTEGER NOT NULL
 );
+
+CREATE VIEW vista_profesores_con_cursos AS
+SELECT 
+  u.id, 
+  u.nombre, 
+  u.email, 
+  c.nombre AS curso
+FROM usuarios u
+JOIN asignaciones a ON u.id = a.id_profesor
+JOIN cursos c ON a.id_curso = c.id;

@@ -256,13 +256,8 @@ publicController.verProfesores = async (req, res) => {
   try {
     const dbAll = require('util').promisify(db.all).bind(db);
 
-    // Traer profesores asignados con nombre de curso
-    const resultados = await dbAll(`
-      SELECT u.id, u.nombre, u.email, c.nombre AS curso
-      FROM usuarios u
-      JOIN asignaciones a ON u.id = a.id_profesor
-      JOIN cursos c ON a.id_curso = c.id
-    `);
+    // Usar la vista ya definida en la base
+    const resultados = await dbAll(`SELECT * FROM vista_profesores_con_cursos`);
 
     // Agrupar por profesor
     const profesoresAgrupados = [];
@@ -291,7 +286,7 @@ publicController.verProfesores = async (req, res) => {
       usuario: req.session.usuario || null
     });
   } catch (error) {
-    console.error('Error al obtener profesores asignados:', error);
+    console.error('Error al obtener profesores desde la vista:', error);
     res.status(500).send('Error al cargar los profesores');
   }
 };
