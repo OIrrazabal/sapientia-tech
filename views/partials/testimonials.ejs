@@ -6,7 +6,15 @@
             <h6 class="section-title bg-white text-center text-primary px-3">Testimonial</h6>
             <h1 class="mb-5">Nuestros estudiantes</h1>
         </div>
-        <div class="owl-carousel testimonial-carousel position-relative">
+<div class="text-end mb-2">
+    <button class="btn btn-light rounded-circle me-2 owl-prev-custom">
+        <i class="fa fa-chevron-left"></i>
+    </button>
+    <button class="btn btn-light rounded-circle owl-next-custom">
+        <i class="fa fa-chevron-right"></i>
+    </button>
+</div>
+<div class="owl-carousel testimonial-carousel position-relative">
     <% if (alumnos && alumnos.length > 0) { %>
         <% alumnos.forEach(alumno => { %>
             <div class="testimonial-item text-center">
