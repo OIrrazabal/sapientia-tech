@@ -217,7 +217,7 @@ adminController.listarUsuarios = async (req, res) => {
 // inscripciones
 adminController.inscripciones = (req, res) => {
     const sql = `
-        SELECT 
+        SELECT
           u.id AS alumno_id,
           u.nombre AS alumno,
           c.nombre AS curso,
@@ -553,6 +553,25 @@ adminController.editarUsuario = async (req, res) => {
             appName: 'eLEARNING'
         });
     }
+};
+
+//eliminar inscripcion
+adminController.eliminarInscripcion = (req, res) => {
+    const { alumno_id, curso_id } = req.params;
+    const sql = `
+        DELETE FROM inscripciones
+        WHERE alumno_id = ? AND curso_id = ?
+    `;
+
+    db.run(sql, [alumno_id, curso_id], function (err) {
+        if (err) {
+            console.error('Error al eliminar inscripción:', err);
+            return res.status(500).send('Error al eliminar la inscripción');
+        }
+
+        // Redirigir al listado actualizado
+        res.redirect('/admin/inscripciones');
+    });
 };
 
 module.exports = adminController;

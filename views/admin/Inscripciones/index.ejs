@@ -22,6 +22,7 @@
                         <th>Alumno</th>
                         <th>Curso</th>
                         <th>Fecha de Inscripción</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -31,6 +32,13 @@
                             <td class="text-center"><%= ins.alumno %></td>
                             <td class="text-center"><%= ins.curso %></td>
                             <td class="text-center"><%= new Date(ins.fecha_inscripcion).toLocaleString('es-ES') %></td>
+                            <td class="text-center">
+                                <a href="/admin/inscripciones/<%= ins.alumno_id %>/<%= ins.curso_id %>/eliminar"
+                                    class="btn btn-sm btn-danger"
+                                    onclick="return confirm('¿Estás seguro de que deseas desinscribir al alumno?');">
+                                    Desinscribir
+                                </a>
+                            </td>
                         </tr>
                     <% }) %>
                 </tbody>
