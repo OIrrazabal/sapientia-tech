@@ -218,13 +218,15 @@ adminController.listarUsuarios = async (req, res) => {
 adminController.inscripciones = (req, res) => {
     const sql = `
         SELECT 
-            u.nombre AS alumno,
-            i.alumno_id,
-            i.curso_id,
-            i.fecha_inscripcion
-        FROM inscripciones i
-        JOIN usuarios u ON i.alumno_id = u.id
-        ORDER BY i.fecha_inscripcion DESC
+          u.id AS alumno_id,
+          u.nombre AS alumno,
+          c.nombre AS curso,
+          c.id AS curso_id,
+          i.fecha_inscripcion
+    FROM inscripciones i
+    JOIN usuarios u ON i.alumno_id = u.id
+    JOIN cursos c ON i.curso_id = c.id
+    ORDER BY i.fecha_inscripcion DESC
     `;
 
     db.all(sql, [], (err, filas) => {

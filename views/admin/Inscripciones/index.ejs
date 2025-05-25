@@ -18,18 +18,18 @@
             <table class="table table-bordered table-hover align-middle">
                 <thead class="table-primary text-center">
                     <tr>
-                        <th>Alumno</th>
                         <th>ID Alumno</th>
-                        <th>ID Curso</th>
+                        <th>Alumno</th>
+                        <th>Curso</th>
                         <th>Fecha de Inscripción</th>
                     </tr>
                 </thead>
                 <tbody>
                     <% inscripciones.forEach(ins => { %>
                         <tr>
-                            <td><%= ins.alumno %></td>
-                            <td class="text-center"><%= ins.alumno_id %></td>
-                            <td class="text-center"><%= ins.curso_id %></td>
+                            <td><%= ins.alumno_id %></td>
+                            <td class="text-center"><%= ins.alumno %></td>
+                            <td class="text-center"><%= ins.curso %></td>
                             <td class="text-center"><%= new Date(ins.fecha_inscripcion).toLocaleString('es-ES') %></td>
                         </tr>
                     <% }) %>
