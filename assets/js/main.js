@@ -84,7 +84,8 @@
 
 
     // Testimonials carousel
-    $(".testimonial-carousel").owlCarousel({
+var owl = $('.testimonial-carousel');
+owl.owlCarousel({
         autoplay: true,
         smartSpeed: 1000,
         center: true,
@@ -104,6 +105,12 @@
             }
         }
     });
-    
+$('.owl-prev-custom').click(function () {
+    owl.trigger('prev.owl.carousel');
+});
+$('.owl-next-custom').click(function () {
+    owl.trigger('next.owl.carousel');
+});
+
 })(jQuery);
 
