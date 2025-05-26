@@ -31,12 +31,15 @@ router.post('/usuarios/editar/:id', checkAdmin, adminController.editarUsuario);
 
 //inscripciones
 router.get('/inscripciones', checkAdmin, adminController.inscripciones);
+router.get('/inscripciones/:alumno_id/:curso_id/eliminar', checkAdmin, adminController.eliminarInscripcion);
+router.get('/inscripciones/nueva', checkAdmin, adminController.formNuevaInscripcion);
+router.post('/inscripciones/nueva', checkAdmin, adminController.registrarInscripcion);
 
 //categorias
 router.get('/categorias', checkAdmin, adminController.listarCategorias);
 router.get('/categorias/nueva', checkAdmin, adminController.mostrarFormularioCategoria);
 router.post('/categorias/crear', checkAdmin, adminController.crearCategoria);
-router.get('/categorias/:id/editar', checkAdmin, adminController.mostrarFormularioEditar);
+router.get('/categorias/:id/editar', checkAdmin, adminController.mostrarFormularioEditarCategoria);
 router.post('/categorias/:id/editar', checkAdmin, adminController.editarCategoria);
 
 module.exports = router;

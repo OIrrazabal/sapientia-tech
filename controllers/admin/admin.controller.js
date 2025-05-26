@@ -8,6 +8,7 @@ const db = require('../../db/conexion');
 const util = require('util');
 const usuarioSchema = require('../../validators/usuario.schema');
 const bcrypt = require('bcrypt');
+const Inscripcion = require('../../models/inscripcion.model');
 
 // Home del Admin
 adminController.home = (req, res) => {
@@ -232,7 +233,7 @@ adminController.listarUsuarios = async (req, res) => {
 // inscripciones
 adminController.inscripciones = (req, res) => {
     const sql = `
-        SELECT 
+        SELECT
           u.id AS alumno_id,
           u.nombre AS alumno,
           c.nombre AS curso,
@@ -334,6 +335,28 @@ adminController.crearCategoria = async (req, res) => {
 };
 
 adminController.mostrarFormularioEditar = async (req, res) => {
+    const id = req.params.id;
+    
+    try {
+        const categoria = await Categoria.obtenerPorId(id);
+        
+        if (!categoria) {
+            return res.redirect('/admin/categorias');
+        }
+
+        res.render('admin/categorias/editar', {
+            categoria,
+            usuario: req.session.usuario || null,
+            error: null,
+            appName: 'eLEARNING'
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.redirect('/admin/categorias');
+    }
+};
+
+adminController.mostrarFormularioEditarCategoria = async (req, res) => {
     const id = req.params.id;
     
     try {
@@ -568,27 +591,87 @@ adminController.editarUsuario = async (req, res) => {
     }
 };
 
-// Nueva función para el formulario de asignaciones
-adminController.asignacionesFormulario = async (req, res) => {
-    try {
-        // Obtener todos los cursos
-        const cursos = await Curso.obtenerCursosSinProfesor();
-        
-        // Obtener TODOS los usuarios, sin filtrar por rol o estado admin
-        const usuarios = await Usuario.listar();
-        
-        res.render('admin/asignaciones/index', {
-            cursos,
-            usuarios, // Todos los usuarios, incluidos los admin
-            error: null,
-            valores: null,
-            usuario: req.session.usuario,
-            appName: 'eLEARNING'
+// Eliminar inscripción
+adminController.eliminarInscripcion = (req, res) => {
+    const { alumno_id, curso_id } = req.params;
+    const sql = `
+        DELETE FROM inscripciones
+        WHERE alumno_id = ? AND curso_id = ?
+    `;
+
+    db.run(sql, [alumno_id, curso_id], function (err) {
+        if (err) {
+            console.error('Error al eliminar inscripción:', err);
+            return res.status(500).send('Error al eliminar la inscripción');
+        }
+
+        // Redirigir al listado actualizado
+        res.redirect('/admin/inscripciones');
+    });
+};
+
+// Nueva Inscripción - Formulario
+adminController.formNuevaInscripcion = (req, res) => {
+    Inscripcion.obtenerAlumnos((errAlumnos, alumnos) => {
+        if (errAlumnos) {
+            console.error('Error al obtener alumnos:', errAlumnos);
+            return res.status(500).send('Error al cargar los alumnos');
+        }
+
+        Inscripcion.obtenerCursosPublicados((errCursos, cursos) => {
+            if (errCursos) {
+                console.error('Error al obtener cursos:', errCursos);
+                return res.status(500).send('Error al cargar los cursos');
+            }
+            res.render('admin/Inscripciones/nueva', {
+                alumnos,
+                cursos,
+                error: null,
+                success: null,
+                usuario: req.session.usuario || null,
+                appName: 'Panel Admin'
+            });
         });
-    } catch (error) {
-        console.error('Error al cargar el formulario de asignaciones:', error);
-        res.status(500).send('Error al cargar la página');
-    }
+    });
+};
+
+// Validar que no exista ya la inscripción
+adminController.registrarInscripcion = (req, res) => {
+    const { alumno_id, curso_id } = req.body;
+
+    Inscripcion.existeInscripcion(alumno_id, curso_id, (err, existe) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Error al verificar inscripción existente.');
+        }
+
+        if (existe) {
+            return res.render('admin/Inscripciones/nueva', {
+                error: 'El alumno ya está inscrito en ese curso.',
+                success: null,
+                alumnos: [],
+                cursos: [],
+                usuario: req.session.usuario || null,
+                appName: 'Panel Admin'
+            });
+        }
+
+        Inscripcion.insertar(alumno_id, curso_id, (err2) => {
+            if (err2) {
+                console.error(err2);
+                return res.status(500).send('Error al guardar la inscripción.');
+            }
+
+            res.render('admin/Inscripciones/nueva', {
+                success: 'Inscripción realizada correctamente.',
+                error: null,
+                alumnos: [],
+                cursos: [],
+                usuario: req.session.usuario || null,
+                appName: 'Panel Admin'
+            });
+        });
+    });
 };
 
 module.exports = adminController;
