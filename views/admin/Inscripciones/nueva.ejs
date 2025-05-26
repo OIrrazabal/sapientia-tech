@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>eLEARNING - Nueva Inscripción</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link href="/assets/img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="/lib/animate/animate.min.css" rel="stylesheet">
+    <link href="/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+ <%- include('../../partials/navbar', { usuario: usuario, appName: appName }) %>
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="mb-3">Nueva Inscripción</h1>
+        <p class="text-muted">Seleccioná un alumno y un curso publicado para registrar la inscripción</p>
+    </div>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger text-center"><%= error %></div>
+    <% } %>
+    <% if (typeof success !== 'undefined' && success) { %>
+        <div class="alert alert-success text-center"><%= success %></div>
+    <% } %>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="bg-light p-4 rounded shadow-sm">
+                <h4 class="text-center mb-4">Inscribir Alumno a Curso</h4>
+                <form action="/admin/inscripciones/nueva" method="POST">
+                    <div class="mb-3">
+                        <label for="alumno_id" class="form-label">Alumno</label>
+                        <select name="alumno_id" class="form-select" required>
+                            <option value="" disabled selected>Seleccionar alumno</option>
+                            <% alumnos.forEach(alumno => { %>
+                                <option value="<%= alumno.id %>"><%= alumno.nombre %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="curso_id" class="form-label">Curso</label>
+                        <select name="curso_id" class="form-select" required>
+                            <option value="" disabled selected>Seleccionar curso</option>
+                            <% cursos.forEach(curso => { %>
+                                <option value="<%= curso.id %>"><%= curso.nombre %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="/admin/inscripciones" class="btn btn-outline-secondary px-4 py-2">
+                            <i class="fa fa-arrow-left me-2"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success px-4 py-2">
+                            <i class="fa fa-check me-2"></i> Inscribir
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../../partials/footer', { usuario: usuario, appName: appName }) %>
