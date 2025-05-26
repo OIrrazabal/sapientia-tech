@@ -18,7 +18,7 @@
           '/assets/img/profesor8.jpg'
         ];
       %>
-      <% if (Array.isArray(profesores) && profesores.length > 0) { %>
+      <% if (profesores && profesores.length > 0) { %>
         <% profesores.forEach((profesor, index) => { %>
           <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="<%= (0.1 + (index % 8) * 0.1).toFixed(1) %>s">
             <div class="team-item bg-light">
@@ -35,14 +35,17 @@
               <div class="text-center p-4">
                 <h5 class="mb-0"><%= profesor.nombre %></h5>
                 <small><%= profesor.email %></small><br>
-                <small>Cursos: <%= profesor.cursos.join(', ') %></small>
+                <small>
+                  Cursos:
+                  <%= profesor.cursos && Array.isArray(profesor.cursos) && profesor.cursos.length > 0 ? profesor.cursos.join(', ') : '-' %>
+                </small>
               </div>
             </div>
           </div>
         <% }); %>
       <% } else { %>
         <div class="col-12 text-center">
-          <p>No hay profesores registrados.</p>
+          <p class="text-center text-muted">No hay profesores asignados aún.</p>
         </div>
       <% } %>
     </div>

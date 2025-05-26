@@ -95,14 +95,9 @@
                                 <small class="text-muted">Mínimo 6 caracteres</small>
                             </div>
 
-                            <div class="mb-3">
-                                <label for="rol" class="form-label">Rol *</label>
-                                <select class="form-select" id="rol" name="rol" required>
-                                    <option value="" disabled <%= !valores || !valores.rol ? 'selected' : '' %>>Seleccione un rol</option>
-                                    <option value="estudiante" <%= valores && valores.rol === 'estudiante' ? 'selected' : '' %>>Estudiante</option>
-                                    <option value="profesor" <%= valores && valores.rol === 'profesor' ? 'selected' : '' %>>Profesor</option>
-                                    <option value="admin" <%= valores && valores.rol === 'admin' ? 'selected' : '' %>>Administrador</option>
-                                </select>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="es_admin" name="es_admin" <%= valores && valores.es_admin ? 'checked' : '' %>>
+                                <label class="form-check-label" for="es_admin">¿Es administrador?</label>
                             </div>
 
                             <div class="mb-3">
@@ -116,6 +111,7 @@
                                 <input type="text" class="form-control" id="direccion" name="direccion" 
                                        value="<%= valores && valores.direccion ? valores.direccion : '' %>">
                             </div>
+
 
                             <div class="d-grid gap-2 mt-4">
                                 <button type="submit" class="btn btn-primary py-3">

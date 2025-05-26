@@ -95,15 +95,7 @@
                                 <small class="text-muted">Dejar en blanco para mantener la contraseña actual. Mínimo 6 caracteres si se cambia.</small>
                             </div>
 
-                            <div class="mb-3">
-                                <label for="rol" class="form-label">Rol *</label>
-                                <select class="form-select" id="rol" name="rol" required>
-                                    <option value="estudiante" <%= usuarioData.rol === 'estudiante' ? 'selected' : '' %>>Estudiante</option>
-                                    <option value="profesor" <%= usuarioData.rol === 'profesor' ? 'selected' : '' %>>Profesor</option>
-                                    <option value="admin" <%= usuarioData.rol === 'admin' ? 'selected' : '' %>>Administrador</option>
-                                </select>
-                            </div>
-
+                            
                             <div class="mb-3">
                                 <label for="telefono" class="form-label">Teléfono</label>
                                 <input type="text" class="form-control" id="telefono" name="telefono" 
@@ -114,6 +106,11 @@
                                 <label for="direccion" class="form-label">Dirección</label>
                                 <input type="text" class="form-control" id="direccion" name="direccion" 
                                        value="<%= usuarioData.direccion %>">
+                            </div>
+
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="es_admin" name="es_admin" <%= usuarioData.es_admin ? 'checked' : '' %>>
+                                <label class="form-check-label" for="es_admin">¿Es administrador?</label>
                             </div>
 
                             <div class="d-grid gap-2 mt-4">

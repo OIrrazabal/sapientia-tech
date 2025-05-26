@@ -11,17 +11,18 @@ authController.redirectHome = (req, res) => {
 
 authController.home = async (req, res) => {
   try {
-    const users = await Usuario.listar();
+    const usuarios = await Usuario.listar();
     const profesores = await Usuario.getProfesores();
     const categoriasPopulares = await Curso.getCategoriasPopulares(4);
     const cursosPopulares = await Curso.getCursosPopulares();
+
 
     //Pasamos los usuarios a la vista
     res.render('auth/home/index', {
       title: 'Inicio',
       usuario: req.session.usuario || null,
       active: 'inicio',
-      profesores: profesores,
+      profesores,
       categoriasPopulares: categoriasPopulares,
       cursosPopulares: cursosPopulares,
     });
@@ -68,31 +69,42 @@ authController.logout = (req, res) => {
 
 //Obtener cursos donde el usuario es profesor
 authController.misCursos = async (req, res) => {
-    const usuario = req.session.usuario;
-
-    if (!usuario || usuario.rol !== 'profesor') {
-        return res.status(403).send("Acceso denegado");
-    }
-
     try {
+        const usuario = req.session.usuario;
+        
+        // Obtener cursos donde soy profesor
         const cursos = await Curso.getCursosByProfesor(usuario.id);
-        res.render('auth/mis-cursos', { cursos, usuario });
+        
+        // Obtener cursos donde estoy inscrito como alumno
+        const cursosComoAlumno = await Curso.getCursosByAlumno(usuario.id);
+        
+        res.render('auth/mis-cursos', { 
+            cursos: cursos || [], 
+            cursosComoAlumno: cursosComoAlumno || [],
+            usuario: req.session.usuario 
+        });
     } catch (error) {
         console.error("Error al obtener cursos:", error);
-        res.render('auth/mis-cursos', { cursos: [], usuario });
+        res.render('auth/mis-cursos', { 
+            cursos: [],
+            cursosComoAlumno: [], 
+            usuario: req.session.usuario 
+        });
     }
 };
 
 // Listar cursos donde el usuario es alumno
 authController.misCursosAlumno = async (req, res) => {
     const usuario = req.session.usuario;
-
-    if (!usuario || usuario.rol !== 'estudiante') {
+    if (!usuario) {
         return res.status(403).send("Acceso denegado");
     }
-
     try {
+        // Busca cursos donde el usuario es alumno
         const cursos = await Curso.getCursosByAlumno(usuario.id);
+        if (!cursos || cursos.length === 0) {
+            return res.status(403).send("No tienes cursos como alumno");
+        }
         res.render('auth/mis-cursos-alumno', { cursos, usuario });
     } catch (error) {
         console.error("Error al obtener cursos:", error);
@@ -122,18 +134,24 @@ authController.buscarCursos = async (req, res) => {
 };
 
 // ver todos los cursos
-authController.redirectMisCursos = (req, res) => {
-  if (req.session.usuario) {
-      if (req.session.usuario.rol === 'profesor') {
-          res.redirect('/auth/mis-cursos');
-      } else if (req.session.usuario.rol === 'estudiante') {
-          res.redirect('/auth/mis-cursos-alumno');
-      } else {
-          res.redirect('/auth/home');
-      }
-  } else {
-      res.redirect('/public/login');
-  }
+authController.redirectMisCursos = async (req, res) => {
+    if (req.session.usuario) {
+        const usuario = req.session.usuario;
+        // Consulta si tiene cursos como profesor
+        const cursosProfesor = await Curso.getCursosByProfesor(usuario.id);
+        if (cursosProfesor && cursosProfesor.length > 0) {
+            return res.redirect('/auth/mis-cursos');
+        }
+        // Consulta si tiene cursos como alumno
+        const cursosAlumno = await Curso.getCursosByAlumno(usuario.id);
+        if (cursosAlumno && cursosAlumno.length > 0) {
+            return res.redirect('/auth/mis-cursos-alumno');
+        }
+        // Si no tiene cursos, redirige al home
+        return res.redirect('/auth/home');
+    } else {
+        return res.redirect('/public/login');
+    }
 };
 
 // ver curso

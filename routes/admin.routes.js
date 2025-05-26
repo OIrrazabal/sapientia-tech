@@ -12,23 +12,22 @@ router.post('/crear-curso', checkAdmin, adminController.crearCurso);
 
 //asignar profesores
 router.get('/asignar-profesor', checkAdmin, adminController.mostrarFormularioAsignar);
+router.post('/asignar-profesor', checkAdmin, adminController.procesarAsignacionProfesor);
 
-router.post('/asignar-profesor', checkAdmin, adminController.asignarProfesor);
-router.get('/asignaciones', adminController.verAsignaciones);
-router.get('/asignaciones/nueva', adminController.nuevaAsignacion);
-router.post('/asignaciones/crear', adminController.crearAsignacionDesdeListado);
-router.post('/asignaciones/:id/eliminar', adminController.eliminarAsignacion);
+// Agregar esta línea para ver asignaciones:
+router.get('/asignaciones', checkAdmin, adminController.verAsignaciones);
+
+// También agregar rutas para nuevas asignaciones si las necesitas:
+router.get('/asignaciones/nueva', checkAdmin, adminController.nuevaAsignacion);
+router.post('/asignaciones/crear', checkAdmin, adminController.crearAsignacionDesdeListado);
+router.post('/asignaciones/eliminar/:id', checkAdmin, adminController.eliminarAsignacion);
 
 // Gestión de usuarios
 router.get('/usuarios', checkAdmin, adminController.listarUsuarios);
 router.get('/usuarios/nuevo', checkAdmin, adminController.mostrarFormularioUsuario);
-router.post('/usuarios/crear', checkAdmin, adminController.crearUsuario);
+router.post('/usuarios/crear', checkAdmin, adminController.crearUsuario); // ✅
 router.get('/usuarios/editar/:id', checkAdmin, adminController.mostrarFormularioEditar);
 router.post('/usuarios/editar/:id', checkAdmin, adminController.editarUsuario);
-//usuarios
-router.get('/usuarios', checkAdmin, adminController.listarUsuarios);
-router.get('/usuarios/nuevo', checkAdmin, adminController.mostrarFormularioUsuario);
-router.post('/usuarios/crear', checkAdmin, adminController.crearUsuario);
 
 //inscripciones
 router.get('/inscripciones', checkAdmin, adminController.inscripciones);
@@ -40,7 +39,7 @@ router.post('/inscripciones/nueva', checkAdmin, adminController.registrarInscrip
 router.get('/categorias', checkAdmin, adminController.listarCategorias);
 router.get('/categorias/nueva', checkAdmin, adminController.mostrarFormularioCategoria);
 router.post('/categorias/crear', checkAdmin, adminController.crearCategoria);
-router.get('/categorias/:id/editar', checkAdmin, adminController.mostrarFormularioEditar);
+router.get('/categorias/:id/editar', checkAdmin, adminController.mostrarFormularioEditarCategoria);
 router.post('/categorias/:id/editar', checkAdmin, adminController.editarCategoria);
 
 module.exports = router;

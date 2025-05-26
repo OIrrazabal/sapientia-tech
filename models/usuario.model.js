@@ -4,7 +4,14 @@ const util = require('util');
 
 const Usuario = {
     listar: async () => {
-        return await dbHandler.ejecutarQueryAll('SELECT * FROM usuarios');
+        try {
+            // Asegúrate de hacer await y devolver el resultado, no la conexión
+            const usuarios = await dbHandler.ejecutarQueryAll("SELECT * FROM usuarios");
+            return usuarios; // Esto debería ser un array
+        } catch (error) {
+            console.error("Error al listar usuarios:", error);
+            return []; // Devuelve array vacío en caso de error
+        }
     },
 
     findOne: async ({ email }) => {
@@ -33,35 +40,22 @@ const Usuario = {
         return inputPassword === storedPassword;
     },
 
-    getProfesores: async () => {
-        return await dbHandler.ejecutarQueryAll(
-            'SELECT * FROM usuarios WHERE rol = ?', 
-            ['profesor']
-        );
-    },
-
     obtenerUsuariosConContadores: async function() {
         const sql = `
-            SELECT u.id, u.nombre, u.email, u.rol,
-                (SELECT COUNT(*) FROM inscripciones i WHERE i.alumno_id = u.id) AS cursos_alumno,
-                (SELECT COUNT(*) FROM cursos c WHERE c.profesor_id = u.id) AS cursos_profesor,
-                (SELECT GROUP_CONCAT(c2.nombre, ', ') 
-                    FROM inscripciones i2 
-                    JOIN cursos c2 ON i2.curso_id = c2.id 
-                    WHERE i2.alumno_id = u.id
-                ) AS materias_alumno,
-                (SELECT GROUP_CONCAT(c3.nombre, ', ') 
-                    FROM cursos c3 
-                    WHERE c3.profesor_id = u.id
-                ) AS materias_profesor
+            SELECT 
+                u.id, u.nombre, u.email, u.es_admin,
+                COUNT(DISTINCT c_prof.id) AS cursos_profesor,
+                COUNT(DISTINCT i.curso_id) AS cursos_alumno,
+                GROUP_CONCAT(DISTINCT c_prof.nombre) AS materias_profesor,
+                GROUP_CONCAT(DISTINCT c_alum.nombre) AS materias_alumno
             FROM usuarios u
+            LEFT JOIN cursos c_prof ON c_prof.profesor_id = u.id
+            LEFT JOIN inscripciones i ON i.alumno_id = u.id
+            LEFT JOIN cursos c_alum ON c_alum.id = i.curso_id
+            GROUP BY u.id
         `;
-        return new Promise((resolve, reject) => {
-            db.all(sql, [], (err, rows) => {
-                if (err) return reject(err);
-                resolve(rows);
-            });
-        });
+        
+        return dbHandler.ejecutarQueryAll(sql);
     },
 
     // Obtener usuario por email
@@ -79,48 +73,16 @@ const Usuario = {
     // Crear usuario
     crear: async (usuario) => {
         try {
-            const { nombre, email, contraseña, es_admin, telefono, direccion, rol } = usuario;
+            const { nombre, email, contraseña, es_admin, telefono, direccion } = usuario;
             const query = `
                 INSERT INTO usuarios 
-                (nombre, email, contraseña, es_admin, telefono, direccion, rol) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                (nombre, email, contraseña, es_admin, telefono, direccion) 
+                VALUES (?, ?, ?, ?, ?, ?)
             `;
             const dbRun = util.promisify(db.run).bind(db);
             return await dbRun(
                 query, 
-                [nombre, email, contraseña, es_admin, telefono || '', direccion || '', rol]
-            );
-        } catch (error) {
-            console.error('Error al crear usuario:', error);
-            throw error;
-        }
-    },
-
-    // Obtener usuario por email
-    obtenerPorEmail: async (email) => {
-        try {
-            const query = 'SELECT * FROM usuarios WHERE email = ?';
-            const dbGet = util.promisify(db.get).bind(db);
-            return await dbGet(query, [email]);
-        } catch (error) {
-            console.error('Error al obtener usuario por email:', error);
-            throw error;
-        }
-    },
-
-    // Crear usuario
-    crear: async (usuario) => {
-        try {
-            const { nombre, email, contraseña, es_admin, telefono, direccion, rol } = usuario;
-            const query = `
-                INSERT INTO usuarios 
-                (nombre, email, contraseña, es_admin, telefono, direccion, rol) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            `;
-            const dbRun = util.promisify(db.run).bind(db);
-            return await dbRun(
-                query, 
-                [nombre, email, contraseña, es_admin, telefono || '', direccion || '', rol]
+                [nombre, email, contraseña, es_admin, telefono || '', direccion || '']
             );
         } catch (error) {
             console.error('Error al crear usuario:', error);
@@ -156,37 +118,51 @@ const Usuario = {
     // Actualizar usuario
     actualizar: async (id, usuario) => {
         try {
-            const { nombre, email, contraseña, es_admin, telefono, direccion, rol } = usuario;
+            const { nombre, email, contraseña, es_admin, telefono, direccion } = usuario;
             
             // Si hay contraseña nueva, actualizarla también
             if (contraseña) {
                 const query = `
                     UPDATE usuarios 
-                    SET nombre = ?, email = ?, contraseña = ?, es_admin = ?, telefono = ?, direccion = ?, rol = ?
+                    SET nombre = ?, email = ?, contraseña = ?, es_admin = ?, telefono = ?, direccion = ?
                     WHERE id = ?
                 `;
                 const dbRun = util.promisify(db.run).bind(db);
                 return await dbRun(
                     query, 
-                    [nombre, email, contraseña, es_admin, telefono || '', direccion || '', rol, id]
+                    [nombre, email, contraseña, es_admin, telefono || '', direccion || '', id]
                 );
             } else {
                 // Si no hay contraseña nueva, mantener la existente
                 const query = `
                     UPDATE usuarios 
-                    SET nombre = ?, email = ?, es_admin = ?, telefono = ?, direccion = ?, rol = ?
+                    SET nombre = ?, email = ?, es_admin = ?, telefono = ?, direccion = ?
                     WHERE id = ?
                 `;
                 const dbRun = util.promisify(db.run).bind(db);
                 return await dbRun(
                     query, 
-                    [nombre, email, es_admin, telefono || '', direccion || '', rol, id]
+                    [nombre, email, es_admin, telefono || '', direccion || '', id]
                 );
             }
         } catch (error) {
             console.error('Error al actualizar usuario:', error);
             throw error;
         }
+    },
+
+    getProfesores: async () => {
+        const sql = `
+            SELECT u.*, GROUP_CONCAT(c.nombre, ', ') AS cursos
+            FROM usuarios u
+            JOIN cursos c ON c.profesor_id = u.id
+            GROUP BY u.id
+        `;
+        const rows = await dbHandler.ejecutarQueryAll(sql);
+        return rows.map(row => ({
+            ...row,
+            cursos: row.cursos ? row.cursos.split(', ') : []
+        }));
     },
 };
 
