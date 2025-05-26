@@ -33,16 +33,6 @@ const usuarioSchema = Joi.object({
             'any.required': 'La contraseña es obligatoria'
         }),
 
-    rol: Joi.string()
-        .required()
-        .valid('estudiante', 'profesor', 'admin')
-        .messages({
-            'string.base': 'El rol debe ser texto',
-            'string.empty': 'El rol es obligatorio',
-            'any.only': 'El rol debe ser: estudiante, profesor o admin',
-            'any.required': 'El rol es obligatorio'
-        }),
-
     es_admin: Joi.number()
         .valid(0, 1)
         .default(0)

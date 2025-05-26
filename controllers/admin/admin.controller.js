@@ -60,49 +60,51 @@ adminController.crearCurso = async (req, res) => {
 // Asignar profesores 
 adminController.mostrarFormularioAsignar = async (req, res) => {
   try {
-    const profesores = await Usuario.listar().then(users => users.filter(u => u.rol === 'profesor'));
-    const cursos = await Curso.listarDisponibles();
-
+    // Usar las funciones que SÍ existen en tu modelo
+    const cursos = await Curso.listarDisponibles(); // Esta función debe existir en Curso
+    
+    // Obtener todos los usuarios (para seleccionar profesores)
+    const usuarios = await Usuario.listar();
+    
     res.render('admin/asignar-profesor/index', {
-      profesores,
-      cursos,
-      usuario: req.session.usuario || null,
-      error: null
+      cursos: Array.isArray(cursos) ? cursos : [],
+      profesores: Array.isArray(usuarios) ? usuarios : [],
+      error: null,
+      usuario: req.session.usuario,
+      appName: 'eLEARNING'
     });
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).render('admin/asignar-profesor/index', {
-      error: 'Error al cargar el formulario',
-      profesores: [],
-      cursos: [],
-      usuario: req.session.usuario || null
-    });
+    console.error('Error al mostrar formulario de asignación:', error);
+    res.status(500).send('Error al cargar el formulario');
   }
 };
 
-adminController.asignarProfesor = async (req, res) => {
-  const { curso_id, profesor_id } = req.body;
-
-  if (!curso_id || !profesor_id) {
-    return res.status(400).render('admin/asignar-profesor/index', {
-      error: 'Todos los campos son requeridos',
-      profesores: await Usuario.listar().then(users => users.filter(u => u.rol === 'profesor')),
-      cursos: await Curso.listarDisponibles(),
-      usuario: req.session.usuario || null
-    });
-  }
-
+adminController.procesarAsignacionProfesor = async (req, res) => {
   try {
-    await Curso.asignarProfesor(curso_id, profesor_id);
-    res.redirect('/admin/home');
+    const { curso_id, profesor_id } = req.body;
+    
+    if (!curso_id || !profesor_id) {
+      const cursos = await Curso.listarDisponibles();
+      const usuarios = await Usuario.listar();
+      
+      return res.render('admin/asignar-profesor/index', {
+        cursos: Array.isArray(cursos) ? cursos : [],
+        profesores: Array.isArray(usuarios) ? usuarios : [],
+        error: 'Debes seleccionar un curso y un profesor',
+        usuario: req.session.usuario,
+        appName: 'eLEARNING'
+      });
+    }
+    
+    const resultado = await Curso.asignarProfesor(curso_id, profesor_id);
+    
+    // Cambiar la redirección a una página que SÍ EXISTE:
+    res.redirect('/admin/home?mensaje=Profesor asignado correctamente');
+    // O a otra página que tengas configurada:
+    // res.redirect('/admin/crear-curso?mensaje=Profesor asignado correctamente');
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).render('admin/asignar-profesor/index', {
-      error: 'Error al asignar profesor',
-      profesores: await Usuario.listar().then(users => users.filter(u => u.rol === 'profesor')),
-      cursos: await Curso.listarDisponibles(),
-      usuario: req.session.usuario || null
-    });
+    console.error('Error al asignar profesor:', error);
+    res.status(500).send('Error al procesar la asignación');
   }
 };
 
@@ -139,17 +141,30 @@ adminController.verAsignaciones = async (req, res) => {
 // Formulario para nueva asignación (desde botón CREAR)
 adminController.nuevaAsignacion = async (req, res) => {
   try {
-    const profesores = await Usuario.listar().then(users => users.filter(u => u.rol === 'profesor'));
-    const cursos = await Curso.listar();
+    // Obtener cursos disponibles
+    const cursos = await Curso.listarDisponibles();
+    
+    // Obtener usuarios y asegurar que sea un array
+    let usuarios = await Usuario.listar();
+    // Protección en caso de que no sea array
+    if (!Array.isArray(usuarios)) {
+      console.warn("Usuario.listar() no devolvió un array:", usuarios);
+      usuarios = [];
+    }
+    
+    // Log para depurar
+    console.log("Usuarios obtenidos:", usuarios.length);
+    
     res.render('admin/asignaciones/nueva', {
-      profesores,
-      cursos,
-      usuario: req.session.usuario || null,
-      error: null
+      cursos: Array.isArray(cursos) ? cursos : [],
+      profesores: usuarios, 
+      error: null,
+      usuario: req.session.usuario,
+      appName: 'eLEARNING'
     });
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).send('Error al cargar formulario de asignación');
+    console.error('Error al cargar formulario de nueva asignación:', error);
+    res.status(500).send('Error al cargar el formulario');
   }
 };
 
@@ -167,7 +182,7 @@ adminController.crearAsignacionDesdeListado = async (req, res) => {
     const existente = await dbGet(query, [curso_id, profesor_id]);
 
     if (existente) {
-      const profesores = await Usuario.listar().then(users => users.filter(u => u.rol === 'profesor'));
+      const profesores = await Usuario.listar();
       const cursos = await Curso.listar();
       return res.status(400).render('admin/asignaciones/nueva', {
         profesores,
@@ -407,13 +422,13 @@ adminController.mostrarFormularioUsuario = async (req, res) => {
 
 // Crear usuario
 adminController.crearUsuario = async (req, res) => {
-    const { nombre, email, password, rol, telefono, direccion } = req.body;
-    const es_admin = (rol === 'admin') ? 1 : 0;
+    const { nombre, email, password, es_admin, telefono, direccion } = req.body;
+    const admin = (es_admin === '1' || es_admin === 'true') ? 1 : 0;
     
     // Validar datos con Joi
     const { error } = usuarioSchema.validate({
         ...req.body,
-        es_admin
+        es_admin: admin
     }, { abortEarly: false });
     
     if (error) {
@@ -445,10 +460,9 @@ adminController.crearUsuario = async (req, res) => {
             nombre,
             email,
             contraseña: contraseñaHash,
-            es_admin,
+            es_admin: es_admin ? 1 : 0,
             telefono: telefono || '',
-            direccion: direccion || '',
-            rol
+            direccion: direccion || ''
         });
         
         res.redirect('/admin/usuarios');
@@ -489,13 +503,13 @@ adminController.mostrarFormularioEditar = async (req, res) => {
 // Editar usuario
 adminController.editarUsuario = async (req, res) => {
     const id = req.params.id;
-    const { nombre, email, password, rol, telefono, direccion } = req.body;
-    const es_admin = (rol === 'admin') ? 1 : 0;
+    const { nombre, email, password, es_admin, telefono, direccion } = req.body;
+    const admin = (es_admin === '1' || es_admin === 'true') ? 1 : 0;
     
     // Validar datos con el esquema
     const { error } = usuarioSchema.validate({
         ...req.body,
-        es_admin
+        es_admin: admin
     }, { abortEarly: false });
     
     if (error) {
@@ -529,10 +543,9 @@ adminController.editarUsuario = async (req, res) => {
         const datosActualizados = {
             nombre,
             email,
-            es_admin,
+            es_admin: es_admin ? 1 : 0,
             telefono: telefono || '',
-            direccion: direccion || '',
-            rol
+            direccion: direccion || ''
         };
         
         // Si hay contraseña nueva, hasheamos y actualizamos
@@ -552,6 +565,29 @@ adminController.editarUsuario = async (req, res) => {
             usuarioData: { id, ...req.body },
             appName: 'eLEARNING'
         });
+    }
+};
+
+// Nueva función para el formulario de asignaciones
+adminController.asignacionesFormulario = async (req, res) => {
+    try {
+        // Obtener todos los cursos
+        const cursos = await Curso.obtenerCursosSinProfesor();
+        
+        // Obtener TODOS los usuarios, sin filtrar por rol o estado admin
+        const usuarios = await Usuario.listar();
+        
+        res.render('admin/asignaciones/index', {
+            cursos,
+            usuarios, // Todos los usuarios, incluidos los admin
+            error: null,
+            valores: null,
+            usuario: req.session.usuario,
+            appName: 'eLEARNING'
+        });
+    } catch (error) {
+        console.error('Error al cargar el formulario de asignaciones:', error);
+        res.status(500).send('Error al cargar la página');
     }
 };
 
