@@ -33,6 +33,8 @@ router.post('/usuarios/crear', checkAdmin, adminController.crearUsuario);
 //inscripciones
 router.get('/inscripciones', checkAdmin, adminController.inscripciones);
 router.get('/inscripciones/:alumno_id/:curso_id/eliminar', checkAdmin, adminController.eliminarInscripcion);
+router.get('/inscripciones/nueva', checkAdmin, adminController.formNuevaInscripcion);
+router.post('/inscripciones/nueva', checkAdmin, adminController.registrarInscripcion);
 
 //categorias
 router.get('/categorias', checkAdmin, adminController.listarCategorias);

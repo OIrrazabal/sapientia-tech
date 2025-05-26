@@ -574,4 +574,69 @@ adminController.eliminarInscripcion = (req, res) => {
     });
 };
 
+//Nueva Inscripcion
+const Inscripcion = require('../../models/inscripcion.model'); // asegurate de importar el modelo
+
+adminController.formNuevaInscripcion = (req, res) => {
+    Inscripcion.obtenerAlumnos((errAlumnos, alumnos) => {
+        if (errAlumnos) {
+            console.error('Error al obtener alumnos:', errAlumnos);
+            return res.status(500).send('Error al cargar los alumnos');
+        }
+
+        Inscripcion.obtenerCursosPublicados((errCursos, cursos) => {
+            if (errCursos) {
+                console.error('Error al obtener cursos:', errCursos);
+                return res.status(500).send('Error al cargar los cursos');
+            }
+            res.render('admin/Inscripciones/nueva', {
+                alumnos,
+                cursos,
+                error: null,
+                success: null,
+                usuario: req.session.usuario || null,
+                appName: 'Panel Admin'
+            });
+        });
+    });
+};
+//Validar que no exista ya la inscripción
+adminController.registrarInscripcion = (req, res) => {
+    const { alumno_id, curso_id } = req.body;
+
+    Inscripcion.existeInscripcion(alumno_id, curso_id, (err, existe) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Error al verificar inscripción existente.');
+        }
+
+        if (existe) {
+            return res.render('admin/Inscripciones/nueva', {
+                error: 'El alumno ya está inscrito en ese curso.',
+                success: null,
+                alumnos: [],
+                cursos: [],
+                usuario: req.session.usuario || null,
+                appName: 'Panel Admin'
+            });
+        }
+
+        Inscripcion.insertar(alumno_id, curso_id, (err2) => {
+            if (err2) {
+                console.error(err2);
+                return res.status(500).send('Error al guardar la inscripción.');
+            }
+
+            res.render('admin/Inscripciones/nueva', {
+                success: 'Inscripción realizada correctamente.',
+                error: null,
+                alumnos: [],
+                cursos: [],
+                usuario: req.session.usuario || null,
+                appName: 'Panel Admin'
+            });
+        });
+    });
+};
+
 module.exports = adminController;
