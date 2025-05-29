@@ -79,37 +79,55 @@
                             <div class="mb-3">
                                 <label for="nombre" class="form-label">Nombre completo *</label>
                                 <input type="text" class="form-control" id="nombre" name="nombre" 
-                                       value="<%= valores && valores.nombre ? valores.nombre : '' %>" required>
-                                <small class="text-muted">Mínimo 3 caracteres</small>
+                                       value="<%= valores && valores.nombre ? valores.nombre : '' %>" 
+                                       required 
+                                       minlength="3" 
+                                       maxlength="100"
+                                       pattern="[A-Za-zÀ-ÿ\s]+"
+                                       title="El nombre debe contener solo letras y espacios, mínimo 3 caracteres">
+                                <small class="text-muted">Mínimo 3 caracteres, solo letras y espacios</small>
                             </div>
 
                             <div class="mb-3">
                                 <label for="email" class="form-label">Correo electrónico *</label>
                                 <input type="email" class="form-control" id="email" name="email" 
-                                       value="<%= valores && valores.email ? valores.email : '' %>" required>
+                                       value="<%= valores && valores.email ? valores.email : '' %>" 
+                                       required 
+                                       maxlength="255"
+                                       pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                                       title="Ingrese un email válido">
                             </div>
 
                             <div class="mb-3">
                                 <label for="password" class="form-label">Contraseña *</label>
-                                <input type="password" class="form-control" id="password" name="password" required>
+                                <input type="password" class="form-control" id="password" name="password" 
+                                       required 
+                                       minlength="6" 
+                                       maxlength="255"
+                                       title="Mínimo 6 caracteres">
                                 <small class="text-muted">Mínimo 6 caracteres</small>
                             </div>
 
                             <div class="mb-3 form-check">
-                                <input type="checkbox" class="form-check-input" id="es_admin" name="es_admin" <%= valores && valores.es_admin ? 'checked' : '' %>>
+                                <input type="checkbox" class="form-check-input" id="es_admin" name="es_admin" 
+                                       <%= valores && valores.es_admin ? 'checked' : '' %>>
                                 <label class="form-check-label" for="es_admin">¿Es administrador?</label>
                             </div>
 
                             <div class="mb-3">
                                 <label for="telefono" class="form-label">Teléfono</label>
                                 <input type="text" class="form-control" id="telefono" name="telefono" 
-                                       value="<%= valores && valores.telefono ? valores.telefono : '' %>">
+                                       value="<%= valores && valores.telefono ? valores.telefono : '' %>"
+                                       pattern="[0-9\-\+\s\(\)]+"
+                                       maxlength="20"
+                                       title="Solo números, espacios, guiones, paréntesis y signo +">
                             </div>
 
                             <div class="mb-3">
                                 <label for="direccion" class="form-label">Dirección</label>
                                 <input type="text" class="form-control" id="direccion" name="direccion" 
-                                       value="<%= valores && valores.direccion ? valores.direccion : '' %>">
+                                       value="<%= valores && valores.direccion ? valores.direccion : '' %>"
+                                       maxlength="200">
                             </div>
 
 
@@ -144,6 +162,161 @@
 
     <!-- Template Javascript -->
     <script src="/js/main.js"></script>
-</body>
 
+    <!-- Validaciones del lado cliente -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const nombreInput = document.getElementById('nombre');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const telefonoInput = document.getElementById('telefono');
+
+        // Validación en tiempo real del nombre
+        nombreInput.addEventListener('blur', function() {
+            const nombre = this.value.trim();
+            
+            // Limpiar errores previos
+            this.classList.remove('is-invalid', 'is-valid');
+            const errorMsg = this.parentNode.querySelector('.error-message');
+            if (errorMsg) errorMsg.remove();
+            
+            if (!nombre) {
+                showError(this, 'El nombre es obligatorio');
+            } else if (nombre.length < 3) {
+                showError(this, 'El nombre debe tener al menos 3 caracteres');
+            } else if (!/^[A-Za-zÀ-ÿ\s]+$/.test(nombre)) {
+                showError(this, 'El nombre solo puede contener letras y espacios');
+            } else {
+                this.classList.add('is-valid');
+            }
+        });
+
+        // Validación en tiempo real del email
+        emailInput.addEventListener('blur', function() {
+            const email = this.value.trim();
+            
+            this.classList.remove('is-invalid', 'is-valid');
+            const errorMsg = this.parentNode.querySelector('.error-message');
+            if (errorMsg) errorMsg.remove();
+            
+            if (!email) {
+                showError(this, 'El email es obligatorio');
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showError(this, 'Ingrese un email válido');
+            } else {
+                this.classList.add('is-valid');
+            }
+        });
+
+        // Validación en tiempo real de la contraseña
+        passwordInput.addEventListener('blur', function() {
+            const password = this.value;
+            
+            this.classList.remove('is-invalid', 'is-valid');
+            const errorMsg = this.parentNode.querySelector('.error-message');
+            if (errorMsg) errorMsg.remove();
+            
+            if (!password) {
+                showError(this, 'La contraseña es obligatoria');
+            } else if (password.length < 6) {
+                showError(this, 'La contraseña debe tener al menos 6 caracteres');
+            } else {
+                this.classList.add('is-valid');
+            }
+        });
+
+        // Validación del teléfono (opcional)
+        telefonoInput.addEventListener('blur', function() {
+            const telefono = this.value.trim();
+            
+            this.classList.remove('is-invalid', 'is-valid');
+            const errorMsg = this.parentNode.querySelector('.error-message');
+            if (errorMsg) errorMsg.remove();
+            
+            if (telefono && !/^[0-9\-\+\s\(\)]+$/.test(telefono)) {
+                showError(this, 'El teléfono solo puede contener números, espacios, guiones, paréntesis y signo +');
+            } else if (telefono) {
+                this.classList.add('is-valid');
+            }
+        });
+
+        // Validación final antes de enviar
+        form.addEventListener('submit', function(e) {
+            const errors = [];
+            
+            // Validar nombre
+            const nombre = nombreInput.value.trim();
+            if (!nombre) {
+                errors.push('El nombre es obligatorio');
+                nombreInput.classList.add('is-invalid');
+            } else if (nombre.length < 3) {
+                errors.push('El nombre debe tener al menos 3 caracteres');
+                nombreInput.classList.add('is-invalid');
+            } else if (!/^[A-Za-zÀ-ÿ\s]+$/.test(nombre)) {
+                errors.push('El nombre solo puede contener letras y espacios');
+                nombreInput.classList.add('is-invalid');
+            }
+            
+            // Validar email
+            const email = emailInput.value.trim();
+            if (!email) {
+                errors.push('El email es obligatorio');
+                emailInput.classList.add('is-invalid');
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                errors.push('El email no es válido');
+                emailInput.classList.add('is-invalid');
+            }
+            
+            // Validar contraseña
+            const password = passwordInput.value;
+            if (!password) {
+                errors.push('La contraseña es obligatoria');
+                passwordInput.classList.add('is-invalid');
+            } else if (password.length < 6) {
+                errors.push('La contraseña debe tener al menos 6 caracteres');
+                passwordInput.classList.add('is-invalid');
+            }
+            
+            // Validar teléfono (si tiene contenido)
+            const telefono = telefonoInput.value.trim();
+            if (telefono && !/^[0-9\-\+\s\(\)]+$/.test(telefono)) {
+                errors.push('El teléfono tiene un formato inválido');
+                telefonoInput.classList.add('is-invalid');
+            }
+            
+            // Si hay errores, no enviar el formulario
+            if (errors.length > 0) {
+                e.preventDefault(); // ESTO EVITA QUE SE ENVÍE EL FORMULARIO
+                alert('Por favor corrige los siguientes errores:\n\n• ' + errors.join('\n• '));
+                
+                // Hacer foco en el primer campo con error
+                const firstError = document.querySelector('.is-invalid');
+                if (firstError) firstError.focus();
+            }
+        });
+
+        // Función auxiliar para mostrar errores
+        function showError(field, message) {
+            field.classList.add('is-invalid');
+            const errorDiv = document.createElement('small');
+            errorDiv.className = 'text-danger error-message';
+            errorDiv.textContent = message;
+            field.parentNode.appendChild(errorDiv);
+        }
+
+        // Limpiar validaciones cuando el usuario empiece a escribir
+        [nombreInput, emailInput, passwordInput, telefonoInput].forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.classList.contains('is-invalid')) {
+                    this.classList.remove('is-invalid');
+                    const errorMsg = this.parentNode.querySelector('.error-message');
+                    if (errorMsg) errorMsg.remove();
+                }
+            });
+        });
+    });
+    </script>
+
+</body>
 </html>
