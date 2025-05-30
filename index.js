@@ -1,8 +1,12 @@
+
 //Para la conexion a la base de datos
 const db = require("./db/conexion");
 
 //Para uso de dotenv
 require("dotenv").config();
+
+// Importar logger
+const logger = require('./logger');
 
 //importar express
 const express = require("express");
@@ -28,17 +32,17 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 app.use(
-	session({
-		name: "is3-session-name",
-		store: new SQLiteStore({
-			db: "database.sqlite",
-			dir: "./db",
-		}),
-		secret: "clave-aleatoria-y-secreta",
-		resave: false,
-		saveUninitialized: false,
-		cookie: { maxAge: 24 * 60 * 60 * 1000 },
-	})
+    session({
+        name: "is3-session-name",
+        store: new SQLiteStore({
+            db: "database.sqlite",
+            dir: "./db",
+        }),
+        secret: "clave-aleatoria-y-secreta",
+        resave: false,
+        saveUninitialized: false,
+        cookie: { maxAge: 24 * 60 * 60 * 1000 },
+    })
 );
 
 app.use(express.urlencoded({ extended: true }));
@@ -79,13 +83,29 @@ app.use('/', publicRoutes);
 
 // Ruta para manejar errores 404
 app.all("*", (req, res) => {
-	res.status(404).render("404", {
-		usuario: req.session.usuario || null,
-	});
+    res.status(404).render("404", {
+        usuario: req.session.usuario || null,
+    });
 });
 
 // iniciar app escuchando puerto parametro
 const port = process.env.PORT;
-app.listen(port, () => {
-	console.log("Servidor corriendo en el puerto:" + port);
+const server = app.listen(port, () => {
+    console.log("Servidor corriendo en el puerto:" + port);
+    logger.info("Servidor iniciado en puerto " + port);
+});
+
+// Manejadores para cierre graceful del servidor
+process.on('SIGINT', () => {
+    logger.info('Servidor finalizado - SIGINT');
+    server.close(() => {
+        process.exit(0);
+    });
+});
+
+process.on('SIGTERM', () => {
+    logger.info('Servidor finalizado - SIGTERM');
+    server.close(() => {
+        process.exit(0);
+    });
 });
