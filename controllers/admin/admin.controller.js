@@ -9,12 +9,20 @@ const util = require('util');
 const usuarioSchema = require('../../validators/usuario.schema');
 const bcrypt = require('bcrypt');
 const Inscripcion = require('../../models/inscripcion.model');
+const { homeLogger } = require('../../logger');
 
 // Home del Admin
 adminController.home = (req, res) => {
-  res.render('admin/home/index', {
-    usuario: req.session.usuario || null
-  });
+    const usuario = req.session.usuario;
+    const logMessage = usuario ? 
+    `Admin home access - User ID: ${usuario.id}, Email: ${usuario.email}` :
+    'Admin home access - No user session';
+
+    homeLogger.debug(logMessage);
+
+    res.render('admin/home/index', {
+    usuario: usuario || null
+    });
 };
 
 // Crear cursos

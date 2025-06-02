@@ -3,11 +3,19 @@ const Curso = require('../../models/curso.model');
 const bcrypt = require('bcrypt');
 const loginSchema = require('../../validators/login.schema');
 const db = require('../../db/conexion');
+const { homeLogger } = require('../../logger');
 
 const publicController = {};
 
 publicController.showHome = async (req, res) => {
   try {
+    const usuario = req.session.usuario;
+    const logMessage = usuario ? 
+      `Public home access - User ID: ${usuario.id}, Email: ${usuario.email}` :
+      'Public home access - No user session';
+    
+    homeLogger.debug(logMessage);
+
     const dbAll = require('util').promisify(db.all).bind(db);
 
     // Obtener profesores asignados con el nombre del curso
@@ -43,7 +51,7 @@ publicController.showHome = async (req, res) => {
     const cursosPopulares = await Curso.getCursosPopulares(8);
 
     res.render("public/home/index", {
-      usuario: req.session.usuario || null,
+      usuario: usuario || null,
       profesores: profesoresAgrupados,
       cursosPopulares,
       categoriasPopulares: categoriasPopulares || []
