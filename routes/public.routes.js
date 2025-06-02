@@ -31,5 +31,6 @@ router.get('/privacy', publicController.showPrivacy);
 router.get('/terms', publicController.showTerms);
 router.get('/faqs', publicController.showFaqs);
 router.get('/profesores', publicController.verProfesores);
+router.get('/curso/:id', publicController.verCurso);
 
 module.exports = router;
