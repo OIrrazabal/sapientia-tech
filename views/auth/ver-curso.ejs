@@ -130,6 +130,106 @@
                         <% } %>
                     </div>
 
+                    <!-- Sección de valoraciones -->
+                    <div class="mt-5 valoraciones-container">
+                        <h3 class="mb-3">Valoraciones del curso</h3>
+                        
+                        <!-- Resumen de valoraciones -->
+                        <% if (estadisticas && estadisticas.total > 0) { %>
+                            <div class="valoracion-summary mb-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="rating-big me-3">
+                                        <% for (let i = 1; i <= 5; i++) { %>
+                                            <i class="fas fa-star <%= i <= Math.round(estadisticas.promedio) ? 'active' : '' %>"></i>
+                                        <% } %>
+                                    </div>
+                                    <div>
+                                        <h4 class="mb-0"><%= parseFloat(estadisticas.promedio).toFixed(1) %>/5</h4>
+                                        <p class="text-muted mb-0"><%= estadisticas.total %> valoraciones</p>
+                                    </div>
+                                </div>
+                            </div>
+                        <% } else { %>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i> Este curso aún no tiene valoraciones.
+                            </div>
+                        <% } %>
+                        
+                        <!-- Formulario para valorar (solo visible para inscritos que no han valorado) -->
+                        <% if (estaInscrito && !esProfesor && !yaValorado) { %>
+                            <div class="card mb-4 valoracion-form">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0"><i class="fas fa-star me-2"></i>Deja tu valoración</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form action="/auth/curso/<%= curso.id %>/valorar" method="POST" id="valoracionForm">
+                                        <div class="mb-3">
+                                            <label class="form-label">¿Cómo calificarías este curso?</label>
+                                            <div class="star-rating-input">
+                                                <% for (let i = 5; i >= 1; i--) { %>
+                                                    <input type="radio" id="star<%= i %>" name="estrellas" value="<%= i %>" required />
+                                                    <label for="star<%= i %>" title="<%= i %> estrellas">
+                                                        <i class="fas fa-star"></i>
+                                                    </label>
+                                                <% } %>
+                                            </div>
+                                            <div class="selected-rating mt-2 fw-bold">
+                                                <span id="rating-value">Selecciona una valoración</span>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="comentario" class="form-label">Comparte detalles sobre tu experiencia en este curso</label>
+                                            <textarea class="form-control" id="comentario" name="comentario" rows="4" 
+                                                      minlength="5" maxlength="500" required 
+                                                      placeholder="¿Qué te gustó? ¿Qué podría mejorar?"></textarea>
+                                            <div class="form-text text-end"><span id="char-count">0</span>/500 caracteres</div>
+                                        </div>
+                                        <div class="d-grid">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-paper-plane me-2"></i>Enviar valoración
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        <% } else if (estaInscrito && yaValorado) { %>
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i> Ya has valorado este curso. ¡Gracias por tu aporte!
+                            </div>
+                        <% } %>
+                        
+                        <!-- Listado de valoraciones existentes -->
+                        <% if (valoraciones && valoraciones.length > 0) { %>
+                            <div class="valoraciones-list mt-4">
+                                <h4 class="mb-3">Opiniones de los estudiantes</h4>
+                                
+                                <% valoraciones.forEach(valoracion => { %>
+                                    <div class="valoracion-item card mb-3">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar-circle me-2">
+                                                        <%= valoracion.alumno_nombre.charAt(0).toUpperCase() %>
+                                                    </div>
+                                                    <h5 class="mb-0 fw-bold"><%= valoracion.alumno_nombre %></h5>
+                                                </div>
+                                                <small class="text-muted">
+                                                    <%= new Date(valoracion.fecha_creacion).toLocaleDateString() %>
+                                                </small>
+                                            </div>
+                                            <div class="rating-stars mb-2">
+                                                <% for (let i = 1; i <= 5; i++) { %>
+                                                    <i class="fas fa-star <%= i <= valoracion.estrellas ? 'active' : '' %>"></i>
+                                                <% } %>
+                                            </div>
+                                            <p class="card-text"><%= valoracion.comentario %></p>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            </div>
+                        <% } %>
+                    </div>
+
                     <!-- Botón volver -->
                     <div class="mt-4">
                         <a href="/auth/home" class="btn btn-primary">
@@ -174,5 +274,56 @@
 
     <!-- Template Javascript -->
     <script src="/js/main.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Manejo de selección de estrellas
+            const ratingInputs = document.querySelectorAll('input[name="estrellas"]');
+            const ratingValue = document.getElementById('rating-value');
+            
+            ratingInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    const value = this.value;
+                    ratingValue.textContent = `${value} estrella${value > 1 ? 's' : ''}`;
+                });
+            });
+            
+            // Contador de caracteres
+            const comentarioInput = document.getElementById('comentario');
+            const charCount = document.getElementById('char-count');
+            
+            if (comentarioInput && charCount) {
+                comentarioInput.addEventListener('input', function() {
+                    const currentLength = this.value.length;
+                    charCount.textContent = currentLength;
+                    
+                    if (currentLength >= 450) {
+                        charCount.style.color = '#dc3545'; // Rojo cuando se acerca al límite
+                    } else {
+                        charCount.style.color = ''; // Color por defecto
+                    }
+                });
+            }
+            
+            // Validación del formulario
+            const form = document.getElementById('valoracionForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const comentario = document.getElementById('comentario').value;
+                    const estrellas = document.querySelector('input[name="estrellas"]:checked');
+                    
+                    if (!comentario || comentario.length < 5) {
+                        e.preventDefault();
+                        alert('Por favor, escribe un comentario de al menos 5 caracteres.');
+                    }
+                    
+                    if (!estrellas) {
+                        e.preventDefault();
+                        alert('Por favor, selecciona una valoración de 1 a 5 estrellas.');
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

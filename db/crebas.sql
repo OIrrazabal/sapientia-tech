@@ -32,7 +32,7 @@ CREATE TABLE cursos (
     profesor_id INTEGER,
     categoria_id INTEGER,
     publicado INTEGER DEFAULT 0,
-    FOREIGN KEY (profesor_id) REFERENCES usuarios(id)
+    FOREIGN KEY (profesor_id) REFERENCES usuarios(id),
     FOREIGN KEY (categoria_id) REFERENCES categorias(id)
 );
 
@@ -50,6 +50,18 @@ CREATE TABLE asignaciones (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     id_curso INTEGER NOT NULL,
     id_profesor INTEGER NOT NULL
+);
+
+CREATE TABLE valoraciones (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    curso_id INTEGER NOT NULL,
+    alumno_id INTEGER NOT NULL,
+    comentario TEXT NOT NULL,
+    estrellas INTEGER NOT NULL CHECK (estrellas >= 1 AND estrellas <= 5),
+    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (curso_id) REFERENCES cursos(id),
+    FOREIGN KEY (alumno_id) REFERENCES usuarios(id),
+    UNIQUE (curso_id, alumno_id)
 );
 
 CREATE VIEW vista_profesores_con_cursos AS

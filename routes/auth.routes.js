@@ -49,4 +49,7 @@ router.post('/curso/:id/publicar', checkLogin, authController.publicarCurso);
 // Ruta para inscripción a curso
 router.post('/curso/:id/inscribir', checkLogin, authController.inscribirAlumno);
 
+// Añadir ruta para valoraciones
+router.post('/curso/:id/valorar', checkLogin, authController.crearValoracion);
+
 module.exports = router;

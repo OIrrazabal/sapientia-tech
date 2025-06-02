@@ -1,7 +1,9 @@
 const Usuario = require('../../models/usuario.model');
 const Curso = require('../../models/curso.model');
+const Valoracion = require('../../models/valoracion.model'); // Agregar importación
 const bcrypt = require('bcrypt');
 const inscripcionSchema = require('../../validators/inscripcion.schema');
+const valoracionSchema = require('../../validators/valoracion.schema'); // Agregar importación
 
 const authController = {};
 
@@ -167,13 +169,23 @@ authController.verCurso = async (req, res) => {
 
         const inscripcion = await Curso.verificarInscripcion(cursoId, usuario.id);
         const secciones = await Curso.getSeccionesByCurso(cursoId);
-
+        
+        // Obtener valoraciones del curso
+        const valoraciones = await Valoracion.getValoracionesByCurso(cursoId);
+        const estadisticas = await Valoracion.getPromedioByCurso(cursoId);
+        
+        // Verificar si el usuario ya ha valorado el curso
+        const valoracionUsuario = await Valoracion.existeValoracion(cursoId, usuario.id);
+        
         res.render('auth/ver-curso', {
             curso,
             secciones,
             usuario,
             esProfesor: curso.profesor_id === usuario.id,
-            estaInscrito: !!inscripcion
+            estaInscrito: !!inscripcion,
+            valoraciones: valoraciones || [],
+            estadisticas: estadisticas || { promedio: 0, total: 0 },
+            yaValorado: !!valoracionUsuario
         });
     } catch (error) {
         console.error('Error al obtener curso:', error);
@@ -327,6 +339,60 @@ authController.inscribirAlumno = async (req, res) => {
         console.error('Error al inscribir alumno:', error);
         res.status(500).json({
             error: 'Error al procesar la inscripción'
+        });
+    }
+};
+
+// Añadir método para crear una valoración
+authController.crearValoracion = async (req, res) => {
+    const cursoId = req.params.id;
+    const usuario = req.session.usuario;
+    const { comentario, estrellas } = req.body;
+
+    try {
+        // Verificar si el usuario está inscrito
+        const inscripcion = await Curso.verificarInscripcion(cursoId, usuario.id);
+        if (!inscripcion) {
+            return res.status(403).json({
+                error: 'Debes estar inscrito en el curso para valorarlo'
+            });
+        }
+
+        // Verificar si ya ha valorado el curso
+        const valoracionExistente = await Valoracion.existeValoracion(cursoId, usuario.id);
+        if (valoracionExistente) {
+            return res.status(400).json({
+                error: 'Ya has valorado este curso anteriormente'
+            });
+        }
+
+        // Validar datos
+        const { error } = valoracionSchema.validate({
+            curso_id: parseInt(cursoId),
+            alumno_id: usuario.id,
+            comentario,
+            estrellas: parseInt(estrellas)
+        });
+
+        if (error) {
+            return res.status(400).json({
+                error: error.details[0].message
+            });
+        }
+
+        // Crear la valoración
+        await Valoracion.crear({
+            curso_id: cursoId,
+            alumno_id: usuario.id,
+            comentario,
+            estrellas
+        });
+
+        res.redirect('/auth/curso/' + cursoId);
+    } catch (error) {
+        console.error('Error al crear valoración:', error);
+        res.status(500).json({
+            error: 'Error al procesar la valoración'
         });
     }
 };
