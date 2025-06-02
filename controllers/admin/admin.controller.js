@@ -10,6 +10,8 @@ const usuarioSchema = require('../../validators/usuario.schema');
 const bcrypt = require('bcrypt');
 const Inscripcion = require('../../models/inscripcion.model');
 const { homeLogger } = require('../../logger');
+const path = require('path');
+const fs = require('fs').promises;
 
 // Home del Admin
 adminController.home = (req, res) => {
@@ -307,6 +309,7 @@ adminController.mostrarFormularioCategoria = async (req, res) => {
 adminController.crearCategoria = async (req, res) => {
     const { nombre, descripcion } = req.body;
     const { error } = categoriaSchema.validate(req.body, { abortEarly: false });
+    let imagen = null;
 
     if (error) {
         return res.status(400).render('admin/categorias/nueva', {
@@ -318,9 +321,17 @@ adminController.crearCategoria = async (req, res) => {
     }
 
     try {
+        // Si hay archivo subido, usar su nombre
+        if (req.file) {
+            imagen = req.file.filename;
+        }
+
         // Verificar si ya existe una categoría con el mismo nombre
         const existe = await Categoria.existeNombre(nombre);
         if (existe) {
+            if (req.file) {
+                await Categoria.eliminarImagen(req.file.path);
+            }
             return res.status(400).render('admin/categorias/nueva', {
                 error: 'Ya existe una categoría con ese nombre',
                 usuario: req.session.usuario || null,
@@ -329,10 +340,18 @@ adminController.crearCategoria = async (req, res) => {
             });
         }
 
-        await Categoria.crear({ nombre, descripcion });
+        await Categoria.crear({ 
+            nombre, 
+            descripcion,
+            imagen: imagen || 'default.jpg'
+        });
+        
         res.redirect('/admin/categorias');
     } catch (error) {
         console.error('Error:', error);
+        if (req.file) {
+            await Categoria.eliminarImagen(req.file.path);
+        }
         res.status(500).render('admin/categorias/nueva', {
             error: 'Error al crear la categoría',
             usuario: req.session.usuario || null,
@@ -395,7 +414,7 @@ adminController.editarCategoria = async (req, res) => {
         return res.status(400).render('admin/categorias/editar', {
             error: error.details.map(err => err.message).join('. '),
             usuario: req.session.usuario || null,
-            categoria: { id, nombre, descripcion },
+            categoria: { id, ...req.body },
             appName: 'eLEARNING'
         });
     }
@@ -404,12 +423,18 @@ adminController.editarCategoria = async (req, res) => {
         // Verificar si existe la categoría
         const categoriaExistente = await Categoria.obtenerPorId(id);
         if (!categoriaExistente) {
+            if (req.file) {
+                await Categoria.eliminarImagen(req.file.path);
+            }
             return res.redirect('/admin/categorias');
         }
 
-        // Verificar si ya existe otra categoría con el mismo nombre
+        // Verificar nombre duplicado
         const existe = await Categoria.existeNombreExceptoId(nombre, id);
         if (existe) {
+            if (req.file) {
+                await Categoria.eliminarImagen(req.file.path);
+            }
             return res.status(400).render('admin/categorias/editar', {
                 error: 'Ya existe otra categoría con ese nombre',
                 usuario: req.session.usuario || null,
@@ -418,10 +443,23 @@ adminController.editarCategoria = async (req, res) => {
             });
         }
 
-        await Categoria.actualizar(id, { nombre, descripcion });
+        let imagen = categoriaExistente.imagen;
+        if (req.file) {
+            if (categoriaExistente.imagen && categoriaExistente.imagen !== 'default.jpg') {
+                await Categoria.eliminarImagen(
+                    path.join(__dirname, '../../assets/categorias', categoriaExistente.imagen)
+                );
+            }
+            imagen = req.file.filename;
+        }
+        
+        await Categoria.actualizar(id, { nombre, descripcion, imagen });
         res.redirect('/admin/categorias');
     } catch (error) {
         console.error('Error:', error);
+        if (req.file) {
+            await Categoria.eliminarImagen(req.file.path);
+        }
         res.status(500).render('admin/categorias/editar', {
             error: 'Error al actualizar la categoría',
             usuario: req.session.usuario || null,
