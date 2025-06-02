@@ -2,6 +2,7 @@ const express = require('express');
 const adminController = require('../controllers/admin/admin.controller');
 const { checkAdmin } = require('../middleware/admin.middleware');
 const router = express.Router();
+const upload = require('../middleware/upload.middleware');
 
 router.get('/home', checkAdmin, adminController.home);
 
@@ -38,8 +39,8 @@ router.post('/inscripciones/nueva', checkAdmin, adminController.registrarInscrip
 //categorias
 router.get('/categorias', checkAdmin, adminController.listarCategorias);
 router.get('/categorias/nueva', checkAdmin, adminController.mostrarFormularioCategoria);
-router.post('/categorias/crear', checkAdmin, adminController.crearCategoria);
+router.post('/categorias/crear', checkAdmin, upload.single('imagen'), adminController.crearCategoria);
 router.get('/categorias/:id/editar', checkAdmin, adminController.mostrarFormularioEditarCategoria);
-router.post('/categorias/:id/editar', checkAdmin, adminController.editarCategoria);
+router.post('/categorias/:id/editar', checkAdmin, upload.single('imagen'), adminController.editarCategoria);
 
 module.exports = router;
