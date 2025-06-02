@@ -10,9 +10,9 @@ if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir);
 }
 
-// Configurar el logger
-const logger = winston.createLogger({
-  level: 'info',//nivel de log tipo info 
+// Logger para servidor
+const serverLogger = winston.createLogger({
+  level: 'info',
   format: winston.format.combine(
     winston.format.timestamp({
       format: 'YYYY-MM-DD HH:mm:ss'
@@ -26,4 +26,23 @@ const logger = winston.createLogger({
   ]
 });
 
-module.exports = logger;
+// Logger para accesos a home
+const homeLogger = winston.createLogger({
+  level: 'debug',
+  format: winston.format.combine(
+    winston.format.timestamp({
+      format: 'YYYY-MM-DD HH:mm:ss'
+    }),
+    winston.format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
+  ),
+  transports: [
+    new winston.transports.File({ 
+      filename: path.join(logDir, 'home.log')
+    })
+  ]
+});
+
+module.exports = {
+  serverLogger,
+  homeLogger
+};

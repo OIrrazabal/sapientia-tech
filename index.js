@@ -6,7 +6,7 @@ const db = require("./db/conexion");
 require("dotenv").config();
 
 // Importar logger
-const logger = require('./logger');
+const { serverLogger } = require('./logger');
 
 //importar express
 const express = require("express");
@@ -92,19 +92,19 @@ app.all("*", (req, res) => {
 const port = process.env.PORT;
 const server = app.listen(port, () => {
     console.log("Servidor corriendo en el puerto:" + port);
-    logger.info("Servidor iniciado en puerto " + port);
+    serverLogger.info("Servidor iniciado en puerto " + port);
 });
 
 // Manejadores para cierre graceful del servidor
 process.on('SIGINT', () => {
-    logger.info('Servidor finalizado - SIGINT');
+    serverLogger.info('Servidor finalizado - SIGINT');
     server.close(() => {
         process.exit(0);
     });
 });
 
 process.on('SIGTERM', () => {
-    logger.info('Servidor finalizado - SIGTERM');
+    serverLogger.info('Servidor finalizado - SIGTERM');
     server.close(() => {
         process.exit(0);
     });

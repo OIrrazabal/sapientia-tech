@@ -4,6 +4,7 @@ const Valoracion = require('../../models/valoracion.model'); // Agregar importac
 const bcrypt = require('bcrypt');
 const inscripcionSchema = require('../../validators/inscripcion.schema');
 const valoracionSchema = require('../../validators/valoracion.schema'); // Agregar importación
+const { homeLogger } = require('../../logger');
 
 const authController = {};
 
@@ -13,6 +14,13 @@ authController.redirectHome = (req, res) => {
 
 authController.home = async (req, res) => {
   try {
+    const usuario = req.session.usuario;
+    const logMessage = usuario ? 
+      `Auth home access - User ID: ${usuario.id}, Email: ${usuario.email}` :
+      'Auth home access - No user session';
+    
+    homeLogger.debug(logMessage);
+
     const usuarios = await Usuario.listar();
     const profesores = await Usuario.getProfesores();
     const categoriasPopulares = await Curso.getCategoriasPopulares(4);
@@ -22,7 +30,7 @@ authController.home = async (req, res) => {
     //Pasamos los usuarios a la vista
     res.render('auth/home/index', {
       title: 'Inicio',
-      usuario: req.session.usuario || null,
+      usuario: usuario || null,
       active: 'inicio',
       profesores,
       categoriasPopulares: categoriasPopulares,
