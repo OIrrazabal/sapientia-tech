@@ -43,21 +43,27 @@ const usuarioSchema = Joi.object({
         }),
 
     telefono: Joi.string()
-        .allow('')
-        .optional()
+        .required()
+        .min(7)
         .max(20)
         .messages({
             'string.base': 'El teléfono debe ser texto',
-            'string.max': 'El teléfono no debe exceder los 20 caracteres'
+            'string.empty': 'El teléfono es obligatorio',
+            'string.min': 'El teléfono debe tener al menos 7 caracteres',
+            'string.max': 'El teléfono no debe exceder los 20 caracteres',
+            'any.required': 'El teléfono es obligatorio'
         }),
 
     direccion: Joi.string()
-        .allow('')
-        .optional()
+        .required()
+        .min(1)
         .max(200)
         .messages({
             'string.base': 'La dirección debe ser texto',
-            'string.max': 'La dirección no debe exceder los 200 caracteres'
+            'string.empty': 'La dirección es obligatoria', 
+            'string.min': 'La dirección debe tener al menos 1 caracter',
+            'string.max': 'La dirección no debe exceder los 200 caracteres',
+            'any.required': 'La dirección es obligatoria'
         })
 });
 

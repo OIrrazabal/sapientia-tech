@@ -52,4 +52,8 @@ router.post('/curso/:id/inscribir', checkLogin, authController.inscribirAlumno);
 // Añadir ruta para valoraciones
 router.post('/curso/:id/valorar', checkLogin, authController.crearValoracion);
 
+// Perfil de usuario
+router.get('/perfil', checkLogin, authController.mostrarPerfil);
+router.post('/perfil', checkLogin, authController.actualizarPerfil);
+
 module.exports = router;

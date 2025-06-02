@@ -33,10 +33,19 @@
         
         <% if (typeof usuario !== 'undefined' && usuario) { %>
             <div class="d-flex align-items-center">
-                <span class="text-primary px-3">Bienvenido, <%= usuario.nombre %></span>
-                <a href="/public/logout" class="btn btn-primary py-4 px-lg-5">
-                    Salir<i class="fa fa-sign-out ms-3"></i>
-                </a>
+                <div class="nav-item dropdown">
+                    <a href="#" class="nav-link dropdown-toggle text-primary" data-bs-toggle="dropdown">
+                        <%= usuario.nombre %>
+                    </a>
+                    <div class="dropdown-menu fade-down m-0">
+                        <a href="/auth/perfil" class="dropdown-item">
+                            <i class="fa fa-user me-2"></i>Mis Datos Personales
+                        </a>
+                        <a href="/public/logout" class="dropdown-item">
+                            <i class="fa fa-sign-out me-2"></i>Cerrar Sesión
+                        </a>
+                    </div>
+                </div>
             </div>
         <% } else { %>
             <div class="nav-item dropdown d-none d-lg-block">
