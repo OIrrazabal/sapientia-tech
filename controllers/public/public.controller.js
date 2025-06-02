@@ -1,5 +1,6 @@
 const Usuario = require('../../models/usuario.model');
 const Curso = require('../../models/curso.model');
+const Valoracion = require('../../models/valoracion.model');
 const bcrypt = require('bcrypt');
 const loginSchema = require('../../validators/login.schema');
 const db = require('../../db/conexion');
@@ -320,5 +321,38 @@ publicController.showFaqs = (req, res) => {
     });
 };
 
+publicController.verCurso = async (req, res) => {
+    const cursoId = req.params.id;
+    
+    // Verificar si el usuario está autenticado
+    if (req.session.usuario) {
+        // Si está autenticado, redirigir a la versión autenticada
+        return res.redirect(`/auth/curso/${cursoId}`);
+    }
+
+    try {
+        // Continuar con el código existente para usuarios no autenticados
+        const curso = await Curso.getCursoById(cursoId);
+        
+        if (!curso || curso.publicado !== 1) {
+            return res.redirect('/public/home');
+        }
+
+        const secciones = await Curso.getSeccionesByCurso(cursoId);
+        const valoraciones = await Valoracion.getValoracionesByCurso(cursoId);
+        const estadisticas = await Valoracion.getPromedioByCurso(cursoId);
+        
+        res.render('public/ver-curso', {
+            curso,
+            secciones: secciones || [],
+            valoraciones: valoraciones || [],
+            estadisticas: estadisticas || { promedio: 0, total: 0 },
+            usuario: null
+        });
+    } catch (error) {
+        console.error('Error al obtener curso:', error);
+        res.redirect('/public/home');
+    }
+};
 
 module.exports = publicController;
