@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const inscripcionSchema = require('../../validators/inscripcion.schema');
 const valoracionSchema = require('../../validators/valoracion.schema'); // Agregar importación
 const { homeLogger } = require('../../logger');
+const usuarioSchema = require('../../validators/usuario.schema');
 
 const authController = {};
 
@@ -401,6 +402,85 @@ authController.crearValoracion = async (req, res) => {
         console.error('Error al crear valoración:', error);
         res.status(500).json({
             error: 'Error al procesar la valoración'
+        });
+    }
+};
+
+// Agregar estos métodos al authController
+
+// Mostrar perfil
+authController.mostrarPerfil = async (req, res) => {
+    try {
+        const usuario = await Usuario.obtenerPorId(req.session.usuario.id);
+        res.render('auth/perfil', {
+            usuario: req.session.usuario,
+            usuarioData: usuario,
+            error: null,
+            success: null
+        });
+    } catch (error) {
+        console.error('Error al obtener perfil:', error);
+        res.redirect('/auth/home');
+    }
+};
+
+// Actualizar perfil
+authController.actualizarPerfil = async (req, res) => {
+    const { nombre, telefono, direccion } = req.body;
+    const usuarioId = req.session.usuario.id;
+
+    try {
+        // Validar datos
+        const { error } = usuarioSchema.validate({
+            nombre,
+            telefono,
+            direccion,
+            // Incluimos estos campos para que pase la validación del schema
+            email: req.session.usuario.email,
+            password: 'dummypassword'
+        }, {
+            abortEarly: false,
+            allowUnknown: true
+        });
+
+        if (error) {
+            const usuario = await Usuario.obtenerPorId(usuarioId);
+            return res.render('auth/perfil', {
+                usuario: req.session.usuario,
+                usuarioData: usuario,
+                error: error.details.map(err => err.message).join('. '),
+                success: null
+            });
+        }
+
+        // Actualizar solo campos permitidos
+        await Usuario.actualizar(usuarioId, {
+            nombre,
+            telefono,
+            direccion,
+            email: req.session.usuario.email,
+            es_admin: req.session.usuario.es_admin
+        });
+
+        // Actualizar datos de sesión
+        req.session.usuario.nombre = nombre;
+
+        const usuarioActualizado = await Usuario.obtenerPorId(usuarioId);
+        res.render('auth/perfil', {
+            usuario: req.session.usuario,
+            usuarioData: usuarioActualizado,
+            error: null,
+            success: 'Datos actualizados correctamente'
+        });
+
+    } catch (error) {
+        console.error('Error al actualizar perfil:', error);
+        const usuario = await Usuario.obtenerPorId(usuarioId);
+        res.render('auth/perfil', {
+            usuario: req.session.usuario,
+            usuarioData: usuario,
+            error: 'Error al actualizar los datos',
+            success: null
         });
     }
 };
