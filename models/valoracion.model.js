@@ -45,4 +45,26 @@ Valoracion.getPromedioByCurso = async (curso_id) => {
     return dbHandler.ejecutarQuery(query, [curso_id]);
 };
 
+// Obtener las últimas valoraciones
+Valoracion.getUltimasValoraciones = async (limite = 10) => {
+    try {
+        const query = `
+            SELECT 
+                v.*,
+                u.nombre as alumno_nombre,
+                c.nombre as curso_nombre,
+                c.id as curso_id
+            FROM valoraciones v
+            INNER JOIN usuarios u ON v.alumno_id = u.id
+            INNER JOIN cursos c ON v.curso_id = c.id
+            ORDER BY v.fecha_creacion DESC
+            LIMIT ?`;
+            
+        return await dbHandler.ejecutarQueryAll(query, [limite]);
+    } catch (error) {
+        console.error("Error al obtener últimas valoraciones:", error);
+        return [];
+    }
+};
+
 module.exports = Valoracion;

@@ -1,42 +1,53 @@
-<% if (typeof alumnos === 'undefined') { alumnos = []; } %>
+<% if (typeof valoraciones === 'undefined') { valoraciones = []; } %>
 <!-- Testimonial Start -->
 <div class="container-xxl py-5 wow fadeInUp" data-wow-delay="0.1s">
     <div class="container">
         <div class="text-center">
             <h6 class="section-title bg-white text-center text-primary px-3">Testimonial</h6>
-            <h1 class="mb-5">Nuestros estudiantes</h1>
+            <h1 class="mb-5">Opiniones de nuestros estudiantes</h1>
+            <p class="text-muted mb-4"><i class="fa fa-comment-dots me-2"></i>Mostrando los últimos 10 comentarios</p>
         </div>
-<div class="text-end mb-2">
-    <button class="btn btn-light rounded-circle me-2 owl-prev-custom">
-        <i class="fa fa-chevron-left"></i>
-    </button>
-    <button class="btn btn-light rounded-circle owl-next-custom">
-        <i class="fa fa-chevron-right"></i>
-    </button>
-</div>
-<div class="owl-carousel testimonial-carousel position-relative">
-    <% if (alumnos && alumnos.length > 0) { %>
-        <% alumnos.forEach(alumno => { %>
-            <div class="testimonial-item text-center">
-                <img class="border rounded-circle p-2 mx-auto mb-3"
-                    src="/assets/img/default-avatar.png"
-                    style="width: 80px; height: 80px;">
-                <h5 class="mb-0"><%= alumno.nombre %></h5>
-                <p class="text-muted mb-1"><%= alumno.email %></p>
-                <p class="text-muted mb-1"><%= alumno.direccion %></p>
-                <p class="text-muted mb-1"><%= alumno.telefono %></p>
-                <div class="testimonial-text bg-light text-center p-3">
-                    <small class="mb-0">
-                        Registrado el:
-                        <%= new Date(alumno.fecha_registro).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) %>
-                    </small>
+        <div class="text-end mb-2">
+            <button class="btn btn-light rounded-circle me-2 owl-prev-custom">
+                <i class="fa fa-chevron-left"></i>
+            </button>
+            <button class="btn btn-light rounded-circle owl-next-custom">
+                <i class="fa fa-chevron-right"></i>
+            </button>
+        </div>
+        <div class="owl-carousel testimonial-carousel position-relative">
+            <% if (valoraciones && valoraciones.length > 0) { %>
+                <% valoraciones.forEach((valoracion, index) => { %>
+                    <div class="testimonial-item text-center">
+                        <div class="position-absolute top-0 end-0 mt-2 me-2">
+                            <span class="badge rounded-pill bg-secondary">#<%= index + 1 %> de <%= valoraciones.length < 10 ? valoraciones.length : 10 %></span>
+                        </div>
+                        <img class="border rounded-circle p-2 mx-auto mb-3"
+                            src="/assets/img/default-avatar.png"
+                            style="width: 80px; height: 80px;">
+                        <h5 class="mb-0"><%= valoracion.alumno_nombre %></h5>
+                        <p class="text-primary mb-1">
+                            <a href="/public/curso/<%= valoracion.curso_id %>"><%= valoracion.curso_nombre %></a>
+                        </p>
+                        <div class="rating-stars mb-2">
+                            <% for (let i = 1; i <= 5; i++) { %>
+                                <i class="fa fa-star <%= i <= valoracion.estrellas ? 'text-warning' : 'text-muted' %>"></i>
+                            <% } %>
+                        </div>
+                        <div class="testimonial-text bg-light text-center p-4">
+                            <p class="mb-0"><%= valoracion.comentario %></p>
+                            <small class="text-muted mt-2 d-block">
+                                <i class="fa fa-clock me-1"></i><%= new Date(valoracion.fecha_creacion).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+                            </small>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <div class="text-center">
+                    <p>No hay valoraciones disponibles aún.</p>
                 </div>
-            </div>
-        <% }) %>
-    <% } else { %>
-        <div class="text-center">
-            <p>No hay testimonios disponibles aún.</p>
+            <% } %>
         </div>
-    <% } %>
+    </div>
 </div>
 <!-- Testimonial End -->
