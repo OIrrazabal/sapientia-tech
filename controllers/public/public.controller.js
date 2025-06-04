@@ -50,12 +50,16 @@ publicController.showHome = async (req, res) => {
 
     const categoriasPopulares = await Curso.getCategoriasPopulares(4);
     const cursosPopulares = await Curso.getCursosPopulares(8);
+    
+    // Obtener las últimas valoraciones para testimoniales
+    const ultimasValoraciones = await Valoracion.getUltimasValoraciones(10);
 
     res.render("public/home/index", {
       usuario: usuario || null,
       profesores: profesoresAgrupados,
       cursosPopulares,
-      categoriasPopulares: categoriasPopulares || []
+      categoriasPopulares: categoriasPopulares || [],
+      valoraciones: ultimasValoraciones || []
     });
   } catch (error) {
     console.error("Error cargando profesores en home:", error);
@@ -63,7 +67,8 @@ publicController.showHome = async (req, res) => {
       usuario: req.session.usuario || null,
       profesores: [],
       cursosPopulares: [],
-      categoriasPopulares: []
+      categoriasPopulares: [],
+      valoraciones: []
     });
   }
 };
