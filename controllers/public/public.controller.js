@@ -4,7 +4,15 @@ const Valoracion = require('../../models/valoracion.model');
 const bcrypt = require('bcrypt');
 const loginSchema = require('../../validators/login.schema');
 const db = require('../../db/conexion');
-const { homeLogger } = require('../../logger');
+const { homeLogger, loginLogger } = require('../../logger');
+
+// Función para registrar intentos de login en logs/auth.log
+function registrarIntentoLogin({ username, rol, exito, motivo = '' }) {
+    const estado = exito ? 'ÉXITO' : `FALLÓ - ${motivo}`;
+    const rolTexto = rol === 'admin' ? 'Admin' : 'Usuario';
+    const mensaje = `Login ${estado} | Usuario: ${username} | Rol: ${rolTexto}`;
+    loginLogger.warn(mensaje);
+}
 
 const publicController = {};
 
@@ -107,20 +115,25 @@ publicController.loginTry = async (req, res) => {
                 }
         
         if (!usuario) {
+            registrarIntentoLogin({ username: email, rol: 'usuario', exito: false, motivo: 'Usuario no encontrado' });
             return res.redirect('/public/login?error=Usuario no encontrado');
         }
 
         if (usuario.es_admin === 1) {
+            registrarIntentoLogin({ username: email, rol: 'admin', exito: false, motivo: 'Admin intentando login desde usuario' });
             return res.redirect('/public/login?error=Los administradores deben usar el login de administrador');
         }
 
         // Verificar contraseña
         const match = await bcrypt.compare(password, usuario.contraseña);
         if (!match) {
+            registrarIntentoLogin({ username: email, rol: 'usuario', exito: false, motivo: 'Contraseña incorrecta' });
             return res.redirect('/public/login?error=Contraseña incorrecta');
         }
 
-        // Crear sesión
+        // Login exitoso
+        registrarIntentoLogin({ username: email, rol: 'usuario', exito: true });
+
         req.session.usuario = usuario;
         req.session.userId = usuario.id;
         req.session.isAdmin = usuario.es_admin === 1;
@@ -136,15 +149,18 @@ publicController.adminLoginTry = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email?.trim() || !password?.trim()) {
+        registrarIntentoLogin({ username: email, rol: 'admin', exito: false, motivo: 'Campos vacíos' });
         return res.status(400).send('contraseña o email vacio');
     }
 
     if (password.length < 6) {
+        registrarIntentoLogin({ username: email, rol: 'admin', exito: false, motivo: 'Contraseña muy corta' });
         return res.status(400).send('contraseña muy corta');
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
+        registrarIntentoLogin({ username: email, rol: 'admin', exito: false, motivo: 'Email inválido' });
         return res.status(400).send('Email invalido');
     }
 
@@ -152,19 +168,24 @@ publicController.adminLoginTry = async (req, res) => {
         const usuario = await Usuario.findOne({ email });
         
         if (!usuario) {
+            registrarIntentoLogin({ username: email, rol: 'admin', exito: false, motivo: 'Usuario no encontrado' });
             return res.redirect('/public/admin-login?error=Usuario no encontrado');
         }
 
         // Verificar que sea un admin
         if (usuario.es_admin !== 1) {
+            registrarIntentoLogin({ username: email, rol: 'usuario', exito: false, motivo: 'Usuario no es admin' });
             return res.redirect('/public/admin-login?error=Acceso denegado. Use el login de usuario normal');
         }
 
         // Verificar contraseña
         const match = await bcrypt.compare(password, usuario.contraseña);
         if (!match) {
+            registrarIntentoLogin({ username: email, rol: 'admin', exito: false, motivo: 'Contraseña incorrecta' });
             return res.redirect('/public/admin-login?error=Contraseña incorrecta');
         }
+
+        registrarIntentoLogin({ username: email, rol: 'admin', exito: true });
 
         req.session.usuario = usuario;
         req.session.userId = usuario.id;
