@@ -1,6 +1,7 @@
 const Usuario = require('../../models/usuario.model');
 const Curso = require('../../models/curso.model');
 const Valoracion = require('../../models/valoracion.model');
+const Categoria = require('../../models/categorias.model');
 const bcrypt = require('bcrypt');
 const loginSchema = require('../../validators/login.schema');
 const db = require('../../db/conexion');
@@ -346,6 +347,32 @@ publicController.showFaqs = (req, res) => {
         usuario: req.session.usuario || null
     });
 };
+
+publicController.verCategoria = async (req, res) => {
+    const categoriaId = req.params.id;
+    
+    try {
+        // Obtener información de la categoría
+        const categoria = await Categoria.obtenerPorId(categoriaId);
+        console.log('Categoria obtenida:', categoria);
+        if (!categoria) {
+            return res.redirect('/public/home');
+        }
+
+        // Obtener cursos de la categoría
+        const cursos = await Curso.getCursosByCategoria(categoriaId);
+
+        res.render('public/categoria/index', {
+            categoria,
+            cursos: cursos || [],
+            usuario: req.session.usuario || null
+        });
+    } catch (error) {
+        console.error('Error al obtener cursos de categoría:', error);
+        res.redirect('/public/home');
+    }
+};
+
 
 publicController.verCurso = async (req, res) => {
     const cursoId = req.params.id;

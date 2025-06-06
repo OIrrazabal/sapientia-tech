@@ -99,17 +99,30 @@ const Curso = {
     },
 
     getCategoriasPopulares: async (limite = 4) => {
-    const query = `
-        SELECT cat.id, cat.nombre, COUNT(c.id) as total_cursos
-        FROM categorias cat
-        JOIN cursos c ON c.categoria_id = cat.id
-        GROUP BY cat.id
-        ORDER BY total_cursos DESC
-        LIMIT ?
-    `;
-    return dbHandler.ejecutarQueryAll(query, [limite]);
-}
+        const query = `
+            SELECT cat.id, cat.nombre, cat.imagen, COUNT(c.id) as total_cursos
+            FROM categorias cat
+            JOIN cursos c ON c.categoria_id = cat.id
+            WHERE c.publicado = 1
+            GROUP BY cat.id
+            ORDER BY total_cursos DESC
+            LIMIT ?
+        `;
+        return dbHandler.ejecutarQueryAll(query, [limite]);
+    },
 
+    getCursosByCategoria: async (categoriaId) => {
+        const query = `
+            SELECT c.*, u.nombre as profesor_nombre,
+                (SELECT COUNT(*) FROM inscripciones i WHERE i.curso_id = c.id) as inscriptos
+            FROM cursos c
+            LEFT JOIN asignaciones a ON c.id = a.id_curso
+            LEFT JOIN usuarios u ON a.id_profesor = u.id
+            WHERE c.categoria_id = ? AND c.publicado = 1
+            ORDER BY c.nombre ASC
+        `;
+        return await dbHandler.ejecutarQueryAll(query, [categoriaId]);
+    }
 };
 
 module.exports = Curso;

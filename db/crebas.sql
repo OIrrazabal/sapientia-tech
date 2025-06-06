@@ -22,7 +22,8 @@ CREATE TABLE inscripciones (
 CREATE TABLE categorias (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre TEXT NOT NULL UNIQUE,
-    descripcion TEXT
+    descripcion TEXT,
+    imagen TEXT
 );
 
 CREATE TABLE cursos (
