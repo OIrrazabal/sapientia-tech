@@ -103,6 +103,7 @@ const Curso = {
             SELECT cat.id, cat.nombre, cat.imagen, COUNT(c.id) as total_cursos
             FROM categorias cat
             JOIN cursos c ON c.categoria_id = cat.id
+            WHERE c.publicado = 1
             GROUP BY cat.id
             ORDER BY total_cursos DESC
             LIMIT ?
