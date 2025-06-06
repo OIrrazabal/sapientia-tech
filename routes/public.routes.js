@@ -32,4 +32,7 @@ router.get('/terms', publicController.showTerms);
 router.get('/faqs', publicController.showFaqs);
 router.get('/profesores', publicController.verProfesores);
 
+// Rutas de categorías
+router.get('/categoria/:id', publicController.verCategoria);
+
 module.exports = router;
