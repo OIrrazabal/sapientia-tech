@@ -22,22 +22,31 @@ authController.home = async (req, res) => {
     
     homeLogger.debug(logMessage);
 
+    // Obtener datos necesarios
     const usuarios = await Usuario.listar();
     const profesores = await Usuario.getProfesores();
     const categoriasPopulares = await Curso.getCategoriasPopulares(4);
     const cursosPopulares = await Curso.getCursosPopulares();
 
+    // Intenta obtener valoraciones, pero maneja posibles errores
+    let valoraciones = [];
+    try {
+      valoraciones = await Valoracion.getUltimasValoraciones(10);
+    } catch (error) {
+      console.error("Error obteniendo valoraciones:", error);
+      // Continúa sin valoraciones
+    }
 
-    //Pasamos los usuarios a la vista
-    res.render('auth/home/index', {
-      title: 'Inicio',
-      usuario: usuario || null,
-      active: 'inicio',
-      profesores,
-      categoriasPopulares: categoriasPopulares,
-      cursosPopulares: cursosPopulares,
+    res.render("auth/home/index", {
+      usuario: req.session.usuario || null,
+      appName: process.env.APP_NAME || "eLEARNING",
+      profesores: profesores || [], // Usa profesores en lugar de profesoresAgrupados
+      cursosPopulares,
+      categoriasPopulares: categoriasPopulares || [],
+      valoraciones: valoraciones || []
     });
   } catch (error) {
+    console.error("Error en auth/home:", error);
     res.status(500).send('server error');
   }
 };

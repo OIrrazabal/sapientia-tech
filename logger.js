@@ -42,7 +42,22 @@ const homeLogger = winston.createLogger({
   ]
 });
 
+// Logger para intentos de login
+const loginLogger = winston.createLogger({
+  level: 'warn',
+  format: winston.format.combine(
+    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    winston.format.printf(info => `${info.timestamp} ${info.level.toUpperCase()}: ${info.message}`)
+  ),
+  transports: [
+    new winston.transports.File({
+      filename: path.join(logDir, 'auth.log')
+    })
+  ]
+});
+
 module.exports = {
   serverLogger,
-  homeLogger
+  homeLogger,
+  loginLogger
 };
