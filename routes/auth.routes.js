@@ -16,6 +16,10 @@ router.get('/login', authController.loginForm);
 // Procesar login
 router.post('/login', authController.login);
 
+//dar de baja 
+router.get('/dar-de-baja', authController.confirmarBaja);
+router.post('/dar-de-baja', authController.procesarBaja);
+
 // Agregar logout (GET para probar desde el navegador)
 router.get('/logout', authController.logout);
 

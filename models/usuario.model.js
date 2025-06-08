@@ -165,6 +165,16 @@ const Usuario = {
         }));
     },
 };
+marcarComoInactivo: async (id) => {
+    const db = require('../db/conexion');
+    return new Promise((resolve, reject) => {
+        db.run('UPDATE usuarios SET activo = 0 WHERE id = ?', [id], function (err) {
+            if (err) reject(err);
+            else resolve();
+        });
+    });
+}
+
 
 
 module.exports = Usuario;

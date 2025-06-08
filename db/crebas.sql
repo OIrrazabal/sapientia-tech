@@ -8,6 +8,7 @@ CREATE TABLE "usuarios" (
     direccion TEXT,
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     rol TEXT
+    activo INTEGER DEFAULT 1 -- 1: activo, 0: dado de baja (borrado lógico)
 );
 
 CREATE TABLE inscripciones (

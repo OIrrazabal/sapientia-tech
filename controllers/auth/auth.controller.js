@@ -59,14 +59,20 @@ authController.login = async (req, res) => {
   try {
       const { email, password } = req.body;
       const usuario = await Usuario.findOne({ email });
- 
+
       if (!usuario) {
           return res.redirect('/public/login?error=Usuario no encontrado');
       }
+
+      if (usuario.activo === 0) {
+          return res.redirect('/public/login?error=Tu cuenta está desactivada');
+      }
+
       const match = await bcrypt.compare(password, usuario.contraseña);
       if (!match) {
           return res.redirect('/public/login?error=Contraseña incorrecta');
       }
+
       req.session.usuario = usuario;
       res.redirect('/auth/home');
   } catch (error) {
@@ -75,6 +81,49 @@ authController.login = async (req, res) => {
   }
 };
 
+// Confirmar baja de cuenta
+authController.confirmarBaja = (req, res) => {
+  if (!req.session.usuario) {
+    return res.redirect('/public/login');
+  }
+
+  if (req.session.usuario.es_admin) {
+    return res.redirect('/auth/home');
+  }
+
+  res.render('auth/dar-de-baja', {
+    usuario: req.session.usuario
+  });
+};
+// Procesar baja de cuenta
+authController.procesarBaja = async (req, res) => {
+  const usuario = req.session.usuario;
+  if (!usuario || usuario.es_admin) {
+    return res.redirect('/auth/home');
+  }
+
+  try {
+    // Enviar todos los campos obligatorios
+    await Usuario.actualizar(usuario.id, {
+      nombre: usuario.nombre,
+      email: usuario.email,
+      contraseña: usuario.contraseña,
+      telefono: usuario.telefono,
+      direccion: usuario.direccion,
+      es_admin: usuario.es_admin,
+      activo: 0
+    });
+
+    req.session.destroy(err => {
+      if (err) console.error('Error al cerrar sesión después de la baja');
+    });
+
+    res.redirect('/public/login?error=Cuenta desactivada');
+  } catch (error) {
+    console.error('Error al dar de baja:', error);
+    res.redirect('/auth/home');
+  }
+};
 // Nuevo método logout
 authController.logout = (req, res) => {
   req.session.destroy((err) => {
@@ -493,5 +542,28 @@ authController.actualizarPerfil = async (req, res) => {
         });
     }
 };
+authController.darDeBajaCuenta = async (req, res) => {
+    const usuario = req.session.usuario;
+
+    if (!usuario) {
+        return res.redirect('/public/login');
+    }
+
+    if (usuario.es_admin) {
+        return res.status(403).send("Un administrador no puede darse de baja.");
+    }
+
+    try {
+        await Usuario.marcarComoInactivo(usuario.id);
+        req.session.destroy(() => {
+            res.clearCookie('connect.sid');
+            return res.redirect('/public/login');
+        });
+    } catch (error) {
+        console.error("Error al dar de baja cuenta:", error);
+        return res.status(500).send("Error al procesar la solicitud.");
+    }
+};
+
 
 module.exports = authController;
