@@ -74,4 +74,8 @@ router.post(
     authController.actualizarPerfil
 );
 
+//Modificar contraseña
+router.get('/micontrasena', checkLogin, authController.formCambiarContrasena);
+router.post('/micontrasena', checkLogin, authController.cambiarContrasena);
+
 module.exports = router;

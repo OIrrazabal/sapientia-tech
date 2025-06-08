@@ -588,5 +588,82 @@ authController.darDeBajaCuenta = async (req, res) => {
     }
 };
 
+authController.formCambiarContrasena = (req, res) => {
+    res.render('auth/micontrasena', {
+        error: null,
+        success: null,
+        usuario: req.session.usuario,
+    });
+};
+
+authController.cambiarContrasena = async (req, res) => {
+    try {
+        const { actual, nueva, repetir } = req.body;
+        const id = req.session.usuario.id;
+
+        if (!actual || !nueva || !repetir) {
+            return res.render('auth/micontrasena', {
+                error: 'Todos los campos son obligatorios.',
+                success: null,
+                usuario: req.session.usuario
+            });
+        }
+
+        if (nueva.length < 6) {
+            return res.render('auth/micontrasena', {
+                error: 'La nueva contraseña debe tener al menos 6 caracteres.',
+                success: null,
+                usuario: req.session.usuario
+            });
+        }
+
+        if (nueva !== repetir) {
+            return res.render('auth/micontrasena', {
+                error: 'Las nuevas contraseñas no coinciden.',
+                success: null,
+                usuario: req.session.usuario
+            });
+        }
+
+        const usuario = await Usuario.obtenerPorId(id);
+
+        if (!usuario) {
+            return res.render('auth/micontrasena', {
+                error: 'Usuario no encontrado.',
+                success: null,
+                usuario: req.session.usuario
+            });
+        }
+
+        const bcrypt = require('bcryptjs');
+        const match = await bcrypt.compare(actual, usuario.contraseña);
+
+        if (!match) {
+            return res.render('auth/micontrasena', {
+                error: 'La contraseña actual no es correcta.',
+                success: null,
+                usuario: req.session.usuario
+            });
+        }
+
+        const nuevoHash = await bcrypt.hash(nueva, 10);
+        await Usuario.actualizar(id, { contraseña: nuevoHash });
+
+        return res.render('auth/micontrasena', {
+            success: 'Contraseña actualizada con éxito.',
+            error: null,
+            usuario: req.session.usuario
+        });
+
+    } catch (error) {
+        console.error("Error en cambio de contraseña:", error);
+        return res.render('auth/micontrasena', {
+            error: 'Error inesperado al actualizar contraseña.',
+            success: null,
+            usuario: req.session.usuario
+        });
+    }
+};
+
 
 module.exports = authController;

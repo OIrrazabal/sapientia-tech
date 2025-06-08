@@ -48,6 +48,12 @@
                         <a href="/auth/mis-cursos" class="dropdown-item">
                             <i class="fa fa-book me-2"></i>Mis Cursos
                         </a>
+
+                        <!-- Enlace a cambio de contraseña -->
+                        <a href="/auth/micontrasena" class="dropdown-item">
+                            <i class="fa fa-key me-2"></i>Mi Contraseña
+                        </a>
+
                         <% if (!usuario.es_admin) { %>
                             <form action="/auth/dar-de-baja" method="POST" onsubmit="return confirm('¿Estás seguro que querés darte de baja? Esta acción es irreversible.')">
                                 <button type="submit" class="dropdown-item text-danger">
