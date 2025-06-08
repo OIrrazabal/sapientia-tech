@@ -48,4 +48,6 @@ router.post(
 router.get('/categorias/:id/editar', checkAdmin, adminController.mostrarFormularioEditarCategoria);
 router.post('/categorias/:id/editar', checkAdmin, uploadCategoria.single('imagen'), adminController.editarCategoria);
 
+router.get('/estadisticas', checkAdmin, adminController.verEstadisticas);
+
 module.exports = router;

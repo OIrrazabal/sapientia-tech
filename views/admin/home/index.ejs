@@ -5,11 +5,7 @@
     <meta charset="utf-8">
     <title>eLEARNING - Admin Panel</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta content="" name="keywords">
-    <meta content="" name="description">
-
-<!-- Favicon -->
-<link href="/assets/img/favicon.ico" rel="icon">
+    <link href="/assets/img/favicon.ico" rel="icon">
 
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,125 +36,130 @@
     </div>
     <!-- Spinner End -->
 
-
     <%- include('../../partials/navbar', { usuario: usuario, appName: appName }) %>
 
-
     <% if (usuario && usuario.es_admin === 1) { %>
-<!-- Admin Panel Start -->
-<div class="container-xxl py-5">
-    <div class="container">
-        <div class="text-center wow fadeInUp">
-            <h6 class="section-title bg-white text-center text-primary px-3">Panel de Administración</h6>
-            <h1 class="mb-5">Gestión del Sistema</h1>
-        </div>
-        <div class="row g-4">
-            <!-- Crear Curso Card -->
-            <div class="col-lg-4 col-md-6 wow fadeInUp">
-                <div class="service-item bg-light rounded h-100 p-5">
-                    <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle mb-4" style="width: 65px; height: 65px;">
-                        <i class="fa fa-plus text-white fs-4"></i>
-                    </div>
-                    <h4 class="mb-3">Crear Nuevo Curso</h4>
-                    <p class="mb-4">Añade nuevos cursos a la plataforma especificando nombre y descripción.</p>
-                    <a class="btn btn-primary py-3 px-5" href="/admin/crear-curso">
-                        Crear Curso
-                        <i class="fa fa-arrow-right ms-2"></i>
-                    </a>
-                </div>
+    <!-- Admin Panel Start -->
+    <div class="container-xxl py-5">
+        <div class="container">
+            <div class="text-center wow fadeInUp">
+                <h6 class="section-title bg-white text-center text-primary px-3">Panel de Administración</h6>
+                <h1 class="mb-5">Gestión del Sistema</h1>
             </div>
-            <!-- Asignar Profesor Card -->
-            <div class="col-lg-4 col-md-6 wow fadeInUp">
-                <div class="service-item bg-light rounded h-100 p-5">
-                    <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle mb-4" style="width: 65px; height: 65px;">
-                        <i class="fa fa-user-plus text-white fs-4"></i>
+            <div class="row g-4">
+                <!-- Crear Curso Card -->
+                <div class="col-lg-4 col-md-6 wow fadeInUp">
+                    <div class="service-item bg-light rounded h-100 p-5">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle mb-4" style="width: 65px; height: 65px;">
+                            <i class="fa fa-plus text-white fs-4"></i>
+                        </div>
+                        <h4 class="mb-3">Crear Nuevo Curso</h4>
+                        <p class="mb-4">Añade nuevos cursos a la plataforma especificando nombre y descripción.</p>
+                        <a class="btn btn-primary py-3 px-5" href="/admin/crear-curso">
+                            Crear Curso
+                            <i class="fa fa-arrow-right ms-2"></i>
+                        </a>
                     </div>
-                    <h4 class="mb-3">Asignar Profesor</h4>
-                    <p class="mb-4">Vincula profesores a los cursos disponibles para comenzar las clases.</p>
-                    <a class="btn btn-primary py-3 px-5" href="/admin/asignar-profesor">
-                        Asignar Profesor
-                        <i class="fa fa-arrow-right ms-2"></i>
-                    </a>
                 </div>
-            </div>
-            <!-- Ver Asignaciones Card -->
-            <div class="col-lg-4 col-md-6 wow fadeInUp">
-                <div class="service-item bg-light rounded h-100 p-5">
-                    <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle mb-4" style="width: 65px; height: 65px;">
-                        <i class="fa fa-list text-white fs-4"></i>
+                <!-- Asignar Profesor Card -->
+                <div class="col-lg-4 col-md-6 wow fadeInUp">
+                    <div class="service-item bg-light rounded h-100 p-5">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle mb-4" style="width: 65px; height: 65px;">
+                            <i class="fa fa-user-plus text-white fs-4"></i>
+                        </div>
+                        <h4 class="mb-3">Asignar Profesor</h4>
+                        <p class="mb-4">Vincula profesores a los cursos disponibles para comenzar las clases.</p>
+                        <a class="btn btn-primary py-3 px-5" href="/admin/asignar-profesor">
+                            Asignar Profesor
+                            <i class="fa fa-arrow-right ms-2"></i>
+                        </a>
                     </div>
-                    <h4 class="mb-3">Ver Asignaciones</h4>
-                    <p class="mb-4">Consulta qué profesores están asignados a qué cursos.</p>
+                </div>
+                <!-- Ver Asignaciones Card -->
+                <div class="col-lg-4 col-md-6 wow fadeInUp">
+                    <div class="service-item bg-light rounded h-100 p-5">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle mb-4" style="width: 65px; height: 65px;">
+                            <i class="fa fa-list text-white fs-4"></i>
+                        </div>
+                        <h4 class="mb-3">Ver Asignaciones</h4>
+                        <p class="mb-4">Consulta qué profesores están asignados a qué cursos.</p>
                         <a class="btn btn-primary py-3 px-5" href="/admin/asignaciones">
                             Ver Asignaciones
                             <i class="fa fa-arrow-right ms-2"></i>
                         </a>
-                </div>
-            </div>
-            <!-- Listado de Usuarios Card -->
-            <div class="col-lg-4 col-md-6 wow fadeInUp">
-                <div class="service-item bg-light rounded h-100 p-5">
-                    <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle mb-4" style="width: 65px; height: 65px;">
-                        <i class="fa fa-users text-white fs-4"></i>
                     </div>
-                    <h4 class="mb-3">Listado de Usuarios</h4>
-                    <p class="mb-4">Consulta todos los usuarios y visualiza en cuántos cursos es alumno y en cuántos es profesor cada uno.</p>
-                    <a class="btn btn-primary py-3 px-5" href="/admin/usuarios">
-                        Ver Usuarios
-                        <i class="fa fa-arrow-right ms-2"></i>
-                    </a>
                 </div>
-            </div>
-            <!-- Listado de Inscripciones Card -->
-            <div class="col-lg-4 col-md-6 wow fadeInUp">
-                <div class="service-item bg-light rounded h-100 p-5">
-                    <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle mb-4" style="width: 65px; height: 65px;">
-                        <i class="fa fa-address-book text-white fs-4"></i>
+                <!-- Listado de Usuarios Card -->
+                <div class="col-lg-4 col-md-6 wow fadeInUp">
+                    <div class="service-item bg-light rounded h-100 p-5">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle mb-4" style="width: 65px; height: 65px;">
+                            <i class="fa fa-users text-white fs-4"></i>
+                        </div>
+                        <h4 class="mb-3">Listado de Usuarios</h4>
+                        <p class="mb-4">Consulta todos los usuarios y visualiza en cuántos cursos es alumno y en cuántos es profesor cada uno.</p>
+                        <a class="btn btn-primary py-3 px-5" href="/admin/usuarios">
+                            Ver Usuarios
+                            <i class="fa fa-arrow-right ms-2"></i>
+                        </a>
                     </div>
-                    <h4 class="mb-3">Listado de Inscripciones</h4>
-                    <p class="mb-4">Visualiza qué alumnos están inscriptos en qué cursos y en qué fecha lo hicieron.</p>
-                    <a class="btn btn-primary py-3 px-5" href="/admin/inscripciones">
-                        Ver Inscripciones
-                        <i class="fa fa-arrow-right ms-2"></i>
-                    </a>
                 </div>
-            </div>
-             <!-- Categorías Card -->
-            <div class="col-lg-4 col-md-6 wow fadeInUp">
-                <div class="service-item bg-light rounded h-100 p-5">
-                    <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle mb-4" style="width: 65px; height: 65px;">
-                        <i class="fa fa-tags text-white fs-4"></i>
+                <!-- Listado de Inscripciones Card -->
+                <div class="col-lg-4 col-md-6 wow fadeInUp">
+                    <div class="service-item bg-light rounded h-100 p-5">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle mb-4" style="width: 65px; height: 65px;">
+                            <i class="fa fa-address-book text-white fs-4"></i>
+                        </div>
+                        <h4 class="mb-3">Listado de Inscripciones</h4>
+                        <p class="mb-4">Visualiza qué alumnos están inscriptos en qué cursos y en qué fecha lo hicieron.</p>
+                        <a class="btn btn-primary py-3 px-5" href="/admin/inscripciones">
+                            Ver Inscripciones
+                            <i class="fa fa-arrow-right ms-2"></i>
+                        </a>
                     </div>
-                    <h4 class="mb-3">Categorías</h4>
-                    <p class="mb-4">Visualiza todas las categorías disponibles y sus cursos asociados.</p>
-                    <a class="btn btn-primary py-3 px-5" href="/admin/categorias">
-                        Ver Categorías
-                        <i class="fa fa-arrow-right ms-2"></i>
-                    </a>
+                </div>
+                <!-- Categorías Card -->
+                <div class="col-lg-4 col-md-6 wow fadeInUp">
+                    <div class="service-item bg-light rounded h-100 p-5">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle mb-4" style="width: 65px; height: 65px;">
+                            <i class="fa fa-tags text-white fs-4"></i>
+                        </div>
+                        <h4 class="mb-3">Categorías</h4>
+                        <p class="mb-4">Visualiza todas las categorías disponibles y sus cursos asociados.</p>
+                        <a class="btn btn-primary py-3 px-5" href="/admin/categorias">
+                            Ver Categorías
+                            <i class="fa fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+                <!-- ✅ Estadísticas Generales Card -->
+                <div class="col-lg-4 col-md-6 wow fadeInUp">
+                    <div class="service-item bg-light rounded h-100 p-5">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle mb-4" style="width: 65px; height: 65px;">
+                            <i class="fa fa-chart-bar text-white fs-4"></i>
+                        </div>
+                        <h4 class="mb-3">Estadísticas Generales</h4>
+                        <p class="mb-4">Visualiza los datos globales del sistema: cursos, alumnos y profesores.</p>
+                        <a class="btn btn-primary py-3 px-5" href="/admin/estadisticas">
+                            Ver Estadísticas
+                            <i class="fa fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<!-- Admin Panel End -->
     <% } %>
 
     <%- include('../../partials/footer') %>
 
-
-    <!-- Back to Top -->
     <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
 
-
-    <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/lib/wow/wow.min.js"></script>
     <script src="/lib/easing/easing.min.js"></script>
     <script src="/lib/waypoints/waypoints.min.js"></script>
     <script src="/lib/owlcarousel/owl.carousel.min.js"></script>
-
-    <!-- Template Javascript -->
     <script src="/js/main.js"></script>
 </body>
 

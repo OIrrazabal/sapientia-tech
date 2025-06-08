@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Estadísticas Generales - Admin</title>
+    <link rel="icon" href="/assets/img/favicon.ico">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('../../partials/navbar', { usuario: usuario, appName: appName }) %>
+
+    <div class="container-xxl py-5">
+        <div class="container">
+            <div class="text-center wow fadeInUp">
+                <h6 class="section-title bg-white text-center text-primary px-3">Resumen</h6>
+                <h1 class="mb-5">Estadísticas Generales del Sistema</h1>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6 wow fadeInUp">
+                    <div class="service-item bg-light rounded h-100 p-5 text-center">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle mb-4" style="width: 65px; height: 65px;">
+                            <i class="fa fa-check text-white fs-4"></i>
+                        </div>
+                        <h4 class="mb-3">Cursos Publicados</h4>
+                        <h2><%= totalCursosPublicados %></h2>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow fadeInUp">
+                    <div class="service-item bg-light rounded h-100 p-5 text-center">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle mb-4" style="width: 65px; height: 65px;">
+                            <i class="fa fa-times text-white fs-4"></i>
+                        </div>
+                        <h4 class="mb-3">Cursos No Publicados</h4>
+                        <h2><%= totalCursosNoPublicados %></h2>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow fadeInUp">
+                    <div class="service-item bg-light rounded h-100 p-5 text-center">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle mb-4" style="width: 65px; height: 65px;">
+                            <i class="fa fa-users text-white fs-4"></i>
+                        </div>
+                        <h4 class="mb-3">Total de Usuarios</h4>
+                        <h2><%= totalUsuarios %></h2>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 wow fadeInUp">
+                    <div class="service-item bg-light rounded h-100 p-5 text-center">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle mb-4" style="width: 65px; height: 65px;">
+                            <i class="fa fa-user-graduate text-white fs-4"></i>
+                        </div>
+                        <h4 class="mb-3">Usuarios Inscriptos como Alumnos</h4>
+                        <h2><%= totalAlumnosInscriptos %></h2>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 wow fadeInUp">
+                    <div class="service-item bg-light rounded h-100 p-5 text-center">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle mb-4" style="width: 65px; height: 65px;">
+                            <i class="fa fa-chalkboard-teacher text-white fs-4"></i>
+                        </div>
+                        <h4 class="mb-3">Usuarios Asignados como Profesores</h4>
+                        <h2><%= totalProfesoresAsignados %></h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-5">
+                <a href="/admin/home" class="btn btn-secondary px-4 py-2">
+                    <i class="fa fa-arrow-left me-2"></i>Volver al Panel
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../../partials/footer') %>
+</body>
+</html>
