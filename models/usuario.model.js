@@ -5,18 +5,16 @@ const util = require('util');
 const Usuario = {
     listar: async () => {
         try {
-            // Asegúrate de hacer await y devolver el resultado, no la conexión
             const usuarios = await dbHandler.ejecutarQueryAll("SELECT * FROM usuarios");
-            return usuarios; // Esto debería ser un array
+            return usuarios;
         } catch (error) {
             console.error("Error al listar usuarios:", error);
-            return []; // Devuelve array vacío en caso de error
+            return [];
         }
     },
-
     findOne: async ({ email }) => {
         return await dbHandler.ejecutarQuery(
-            'SELECT * FROM usuarios WHERE email = ?', 
+            'SELECT * FROM usuarios WHERE email = ? AND activo = 1', 
             [email]
         );
     },
@@ -40,7 +38,7 @@ const Usuario = {
         return inputPassword === storedPassword;
     },
 
-    obtenerUsuariosConContadores: async function() {
+    obtenerUsuariosConContadores: async function () {
         const sql = `
             SELECT 
                 u.id, u.nombre, u.email, u.es_admin,
@@ -54,11 +52,9 @@ const Usuario = {
             LEFT JOIN cursos c_alum ON c_alum.id = i.curso_id
             GROUP BY u.id
         `;
-        
         return dbHandler.ejecutarQueryAll(sql);
     },
 
-    // Obtener usuario por email
     obtenerPorEmail: async (email) => {
         try {
             const query = 'SELECT * FROM usuarios WHERE email = ?';
@@ -70,27 +66,22 @@ const Usuario = {
         }
     },
 
-    // Crear usuario
     crear: async (usuario) => {
         try {
             const { nombre, email, contraseña, es_admin, telefono, direccion } = usuario;
             const query = `
                 INSERT INTO usuarios 
-                (nombre, email, contraseña, es_admin, telefono, direccion) 
-                VALUES (?, ?, ?, ?, ?, ?)
+                (nombre, email, contraseña, es_admin, telefono, direccion, activo) 
+                VALUES (?, ?, ?, ?, ?, ?, 1)
             `;
             const dbRun = util.promisify(db.run).bind(db);
-            return await dbRun(
-                query, 
-                [nombre, email, contraseña, es_admin, telefono || '', direccion || '']
-            );
+            return await dbRun(query, [nombre, email, contraseña, es_admin, telefono || '', direccion || '']);
         } catch (error) {
             console.error('Error al crear usuario:', error);
             throw error;
         }
     },
 
-    // Obtener usuario por id
     obtenerPorId: async (id) => {
         try {
             const query = 'SELECT * FROM usuarios WHERE id = ?';
@@ -102,7 +93,6 @@ const Usuario = {
         }
     },
 
-    // Verificar si existe email excepto para un id
     existeEmailExceptoId: async (email, id) => {
         try {
             const query = 'SELECT COUNT(*) as count FROM usuarios WHERE email = ? AND id != ?';
@@ -115,38 +105,58 @@ const Usuario = {
         }
     },
 
-    // Actualizar usuario
     actualizar: async (id, usuario) => {
         try {
-            const { nombre, email, contraseña, es_admin, telefono, direccion } = usuario;
-            
-            // Si hay contraseña nueva, actualizarla también
-            if (contraseña) {
-                const query = `
-                    UPDATE usuarios 
-                    SET nombre = ?, email = ?, contraseña = ?, es_admin = ?, telefono = ?, direccion = ?
-                    WHERE id = ?
-                `;
-                const dbRun = util.promisify(db.run).bind(db);
-                return await dbRun(
-                    query, 
-                    [nombre, email, contraseña, es_admin, telefono || '', direccion || '', id]
-                );
-            } else {
-                // Si no hay contraseña nueva, mantener la existente
-                const query = `
-                    UPDATE usuarios 
-                    SET nombre = ?, email = ?, es_admin = ?, telefono = ?, direccion = ?
-                    WHERE id = ?
-                `;
-                const dbRun = util.promisify(db.run).bind(db);
-                return await dbRun(
-                    query, 
-                    [nombre, email, es_admin, telefono || '', direccion || '', id]
-                );
+            const { nombre, email, contraseña, es_admin, telefono, direccion, activo } = usuario;
+
+            const campos = [];
+            const valores = [];
+
+            if (nombre !== undefined) {
+                campos.push("nombre = ?");
+                valores.push(nombre);
             }
+            if (email !== undefined) {
+                campos.push("email = ?");
+                valores.push(email);
+            }
+            if (contraseña !== undefined) {
+                campos.push("contraseña = ?");
+                valores.push(contraseña);
+            }
+            if (es_admin !== undefined) {
+                campos.push("es_admin = ?");
+                valores.push(es_admin);
+            }
+            if (telefono !== undefined) {
+                campos.push("telefono = ?");
+                valores.push(telefono);
+            }
+            if (direccion !== undefined) {
+                campos.push("direccion = ?");
+                valores.push(direccion);
+            }
+            if (activo !== undefined) {
+                campos.push("activo = ?");
+                valores.push(activo);
+            }
+
+            const query = `UPDATE usuarios SET ${campos.join(', ')} WHERE id = ?`;
+            const dbRun = util.promisify(db.run).bind(db);
+            return await dbRun(query, [...valores, id]);
         } catch (error) {
             console.error('Error al actualizar usuario:', error);
+            throw error;
+        }
+    },
+
+    marcarComoInactivo: async (id) => {
+        try {
+            const query = 'UPDATE usuarios SET activo = 0 WHERE id = ?';
+            const dbRun = util.promisify(db.run).bind(db);
+            await dbRun(query, [id]);
+        } catch (error) {
+            console.error('Error al marcar como inactivo:', error);
             throw error;
         }
     },
@@ -163,18 +173,7 @@ const Usuario = {
             ...row,
             cursos: row.cursos ? row.cursos.split(', ') : []
         }));
-    },
+    }
 };
-marcarComoInactivo: async (id) => {
-    const db = require('../db/conexion');
-    return new Promise((resolve, reject) => {
-        db.run('UPDATE usuarios SET activo = 0 WHERE id = ?', [id], function (err) {
-            if (err) reject(err);
-            else resolve();
-        });
-    });
-}
-
-
 
 module.exports = Usuario;

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/auth/auth.controller');
-const { checkLogin } = require('../middleware/auth.middleware');
+const { checkLogin, verificarAutenticacion } = require('../middleware/auth.middleware');
 const Usuario = require('../models/usuario.model');
 
 // Redirección inicial
@@ -16,17 +16,25 @@ router.get('/login', authController.loginForm);
 // Procesar login
 router.post('/login', authController.login);
 
-//dar de baja 
-router.get('/dar-de-baja', authController.confirmarBaja);
-router.post('/dar-de-baja', authController.procesarBaja);
 
-// Agregar logout (GET para probar desde el navegador)
+
+// Paso 1: Mostrar confirmación inicial
+// Mostrar formulario (GET) y procesar baja (POST)
+router
+  .route('/dar-de-baja')
+  .get(verificarAutenticacion, authController.confirmarBajaPaso1)
+  .post(verificarAutenticacion, authController.confirmarBajaPaso2);
+
+// Paso final: aplicar baja lógica y cerrar sesión
+router.post('/dar-de-baja-definitivo', verificarAutenticacion, authController.darDeBajaUsuario);
+
+// --------------------------
+
+// Logout (GET y POST)
 router.get('/logout', authController.logout);
-
-// Nuevo endpoint para logout
 router.post('/logout', authController.logout);
 
-//Listar mis cursos como profesor
+// Listar mis cursos como profesor
 router.get('/mis-cursos', checkLogin, authController.misCursos);
 
 // Listar mis cursos como alumno
@@ -35,28 +43,28 @@ router.get('/mis-cursos-alumno', checkLogin, authController.misCursosAlumno);
 // Ruta para buscar cursos
 router.get('/buscar', checkLogin, authController.buscarCursos);
 
-//ver curso
+// Ver curso
 router.get('/curso/:id', checkLogin, authController.verCurso);
 
 // Mostrar formulario para agregar sección
 router.get('/cursos/:id/secciones', checkLogin, authController.mostrarFormularioSeccion);
 
-// Procesar el formulario de nueva sección
+// Procesar formulario de nueva sección
 router.post('/cursos/:id/secciones', checkLogin, authController.agregarSeccion);
 
-// ver todos los cursos publicados
+// Ver todos los cursos publicados
 router.get('/mis-cursos-redirect', checkLogin, authController.redirectMisCursos);
 
-// Ruta para publicar curso
+// Publicar curso
 router.post('/curso/:id/publicar', checkLogin, authController.publicarCurso);
 
-// Ruta para inscripción a curso
+// Inscripción a curso
 router.post('/curso/:id/inscribir', checkLogin, authController.inscribirAlumno);
 
-// Añadir ruta para valoraciones
+// Crear valoración
 router.post('/curso/:id/valorar', checkLogin, authController.crearValoracion);
 
-// Perfil de usuario
+// Perfil
 router.get('/perfil', checkLogin, authController.mostrarPerfil);
 router.post('/perfil', checkLogin, authController.actualizarPerfil);
 

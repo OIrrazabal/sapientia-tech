@@ -1,9 +1,9 @@
 const Usuario = require('../../models/usuario.model');
 const Curso = require('../../models/curso.model');
-const Valoracion = require('../../models/valoracion.model'); // Agregar importación
+const Valoracion = require('../../models/valoracion.model');
 const bcrypt = require('bcrypt');
 const inscripcionSchema = require('../../validators/inscripcion.schema');
-const valoracionSchema = require('../../validators/valoracion.schema'); // Agregar importación
+const valoracionSchema = require('../../validators/valoracion.schema');
 const { homeLogger } = require('../../logger');
 const usuarioSchema = require('../../validators/usuario.schema');
 
@@ -19,28 +19,25 @@ authController.home = async (req, res) => {
     const logMessage = usuario ? 
       `Auth home access - User ID: ${usuario.id}, Email: ${usuario.email}` :
       'Auth home access - No user session';
-    
+
     homeLogger.debug(logMessage);
 
-    // Obtener datos necesarios
     const usuarios = await Usuario.listar();
     const profesores = await Usuario.getProfesores();
     const categoriasPopulares = await Curso.getCategoriasPopulares(4);
     const cursosPopulares = await Curso.getCursosPopulares();
 
-    // Intenta obtener valoraciones, pero maneja posibles errores
     let valoraciones = [];
     try {
       valoraciones = await Valoracion.getUltimasValoraciones(10);
     } catch (error) {
       console.error("Error obteniendo valoraciones:", error);
-      // Continúa sin valoraciones
     }
 
     res.render("auth/home/index", {
       usuario: req.session.usuario || null,
       appName: process.env.APP_NAME || "eLEARNING",
-      profesores: profesores || [], // Usa profesores en lugar de profesoresAgrupados
+      profesores: profesores || [],
       cursosPopulares,
       categoriasPopulares: categoriasPopulares || [],
       valoraciones: valoraciones || []
@@ -57,53 +54,55 @@ authController.loginForm = (req, res) => {
 
 authController.login = async (req, res) => {
   try {
-      const { email, password } = req.body;
-      const usuario = await Usuario.findOne({ email });
+    const { email, password } = req.body;
+    const usuarios = await Usuario.findOne({ email });
+    const usuario = Array.isArray(usuarios) ? usuarios[0] : usuarios;
 
-      if (!usuario) {
-          return res.redirect('/public/login?error=Usuario no encontrado');
-      }
+    if (!usuario) {
+      return res.redirect('/public/login?error=Usuario no encontrado');
+    }
 
-      if (usuario.activo === 0) {
-          return res.redirect('/public/login?error=Tu cuenta está desactivada');
-      }
+    if (usuario.activo === 0) {
+      return res.redirect('/public/login?error=La cuenta está desactivada');
+    }
 
-      const match = await bcrypt.compare(password, usuario.contraseña);
-      if (!match) {
-          return res.redirect('/public/login?error=Contraseña incorrecta');
-      }
+    const match = await bcrypt.compare(password, usuario.contraseña);
+    if (!match) {
+      return res.redirect('/public/login?error=Contraseña incorrecta');
+    }
 
-      req.session.usuario = usuario;
-      res.redirect('/auth/home');
+    req.session.usuario = usuario;
+    res.redirect('/auth/home');
   } catch (error) {
-      console.error(error);
-      res.redirect('/public/login?error=Error de servidor');
+    console.error(error);
+    res.redirect('/public/login?error=Error de servidor');
   }
 };
 
-// Confirmar baja de cuenta
-authController.confirmarBaja = (req, res) => {
-  if (!req.session.usuario) {
-    return res.redirect('/public/login');
-  }
-
-  if (req.session.usuario.es_admin) {
-    return res.redirect('/auth/home');
-  }
-
+authController.confirmarBajaPaso1 = (req, res) => {
   res.render('auth/dar-de-baja', {
-    usuario: req.session.usuario
+    paso: 1,
+    usuario: req.session.usuario,
+    appName: process.env.APP_NAME || 'eLEARNING'
   });
 };
-// Procesar baja de cuenta
-authController.procesarBaja = async (req, res) => {
+
+authController.confirmarBajaPaso2 = async (req, res) => {
   const usuario = req.session.usuario;
+
   if (!usuario || usuario.es_admin) {
     return res.redirect('/auth/home');
   }
 
+  if (!req.body.confirmado) {
+    return res.render('auth/dar-de-baja', {
+      paso: 2,
+      usuario: req.session.usuario,
+      appName: process.env.APP_NAME || 'eLEARNING'
+    });
+  }
+
   try {
-    // Enviar todos los campos obligatorios
     await Usuario.actualizar(usuario.id, {
       nombre: usuario.nombre,
       email: usuario.email,
@@ -114,25 +113,52 @@ authController.procesarBaja = async (req, res) => {
       activo: 0
     });
 
-    req.session.destroy(err => {
-      if (err) console.error('Error al cerrar sesión después de la baja');
+    req.session.destroy(() => {
+      res.clearCookie('connect.sid');
+      res.redirect('/public/login?error=Cuenta desactivada');
     });
-
-    res.redirect('/public/login?error=Cuenta desactivada');
   } catch (error) {
     console.error('Error al dar de baja:', error);
     res.redirect('/auth/home');
   }
 };
-// Nuevo método logout
+
+authController.darDeBajaUsuario = async (req, res) => {
+  const usuario = req.session.usuario;
+
+  if (!usuario || usuario.es_admin) {
+    return res.redirect('/auth/home');
+  }
+
+  try {
+    await Usuario.actualizar(usuario.id, {
+      nombre: usuario.nombre,
+      email: usuario.email,
+      contraseña: usuario.contraseña,
+      telefono: usuario.telefono,
+      direccion: usuario.direccion,
+      es_admin: usuario.es_admin,
+      activo: 0
+    });
+
+    req.session.destroy(() => {
+      res.clearCookie('connect.sid');
+      return res.redirect('/public/login?mensaje=Cuenta desactivada');
+    });
+  } catch (error) {
+    console.error('Error al dar de baja:', error);
+    res.status(500).send('Error del servidor');
+  }
+};
+
 authController.logout = (req, res) => {
   req.session.destroy((err) => {
     if (err) {
       console.error('Error al cerrar sesión:', err);
       return res.status(500).send({ message: 'Error al cerrar sesión' });
     }
-    res.clearCookie('connect.sid'); // elimina la cookie de sesión
-     res.redirect('/public/login'); // redirige al inicio después de cerrar sesión
+    res.clearCookie('connect.sid');
+    res.redirect('/public/login');
   });
 };
 
