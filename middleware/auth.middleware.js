@@ -4,5 +4,11 @@ const checkLogin = (req, res, next) => {
     }
     next();
 };
-
-module.exports = { checkLogin };
+function verificarAutenticacion(req, res, next) {
+  if (req.session && req.session.usuario) {
+    return next();
+  } else {
+    return res.redirect('/public/login');
+  }
+}
+module.exports = { checkLogin, verificarAutenticacion };

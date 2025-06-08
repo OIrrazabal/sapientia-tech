@@ -30,7 +30,7 @@
             </div>
             <a href="/public/contact" class="nav-item nav-link">Contactos</a>
         </div>
-        
+
         <% if (typeof usuario !== 'undefined' && usuario) { %>
             <div class="d-flex align-items-center">
                 <div class="nav-item dropdown">
@@ -41,6 +41,15 @@
                         <a href="/auth/perfil" class="dropdown-item">
                             <i class="fa fa-user me-2"></i>Mis Datos Personales
                         </a>
+
+                        <% if (!usuario.es_admin) { %>
+                            <form action="/auth/dar-de-baja" method="POST" onsubmit="return confirm('¿Estás seguro que querés darte de baja? Esta acción es irreversible.')">
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="fa fa-user-slash me-2"></i>Dar de baja
+                                </button>
+                            </form>
+                        <% } %>
+
                         <a href="/public/logout" class="dropdown-item">
                             <i class="fa fa-sign-out me-2"></i>Cerrar Sesión
                         </a>
