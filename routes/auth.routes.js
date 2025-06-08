@@ -68,4 +68,8 @@ router.post('/curso/:id/valorar', checkLogin, authController.crearValoracion);
 router.get('/perfil', checkLogin, authController.mostrarPerfil);
 router.post('/perfil', checkLogin, authController.actualizarPerfil);
 
+//Modificar contraseña
+router.get('/micontrasena', checkLogin, authController.formCambiarContrasena);
+router.post('/micontrasena', checkLogin, authController.cambiarContrasena);
+
 module.exports = router;

@@ -41,6 +41,10 @@
                         <a href="/auth/perfil" class="dropdown-item">
                             <i class="fa fa-user me-2"></i>Mis Datos Personales
                         </a>
+                        <!-- Enlace a cambio de contraseña -->
+                        <a href="/auth/micontrasena" class="dropdown-item">
+                            <i class="fa fa-key me-2"></i>Mi Contraseña
+                        </a>
 
                         <% if (!usuario.es_admin) { %>
                             <form action="/auth/dar-de-baja" method="POST" onsubmit="return confirm('¿Estás seguro que querés darte de baja? Esta acción es irreversible.')">

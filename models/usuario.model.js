@@ -132,4 +132,16 @@ const Usuario = {
   }
 
 };
+//Modificar contraseña
+Usuario.obtenerPorId = async (id) => {
+    try {
+        const query = 'SELECT * FROM usuarios WHERE id = ?';
+        const dbGet = util.promisify(db.get).bind(db);
+        return await dbGet(query, [id]);
+    } catch (error) {
+        console.error('Error al obtener usuario por id:', error);
+        throw error;
+    }
+};
+
 module.exports = Usuario;
