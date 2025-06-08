@@ -105,47 +105,29 @@ const Usuario = {
         }
     },
 
-    actualizar: async (id, usuario) => {
+    actualizar: async (id, datosUsuario) => {
         try {
-            const { nombre, email, contraseña, es_admin, telefono, direccion, activo } = usuario;
-
-            const campos = [];
-            const valores = [];
-
-            if (nombre !== undefined) {
-                campos.push("nombre = ?");
-                valores.push(nombre);
-            }
-            if (email !== undefined) {
-                campos.push("email = ?");
-                valores.push(email);
-            }
-            if (contraseña !== undefined) {
-                campos.push("contraseña = ?");
-                valores.push(contraseña);
-            }
-            if (es_admin !== undefined) {
-                campos.push("es_admin = ?");
-                valores.push(es_admin);
-            }
-            if (telefono !== undefined) {
-                campos.push("telefono = ?");
-                valores.push(telefono);
-            }
-            if (direccion !== undefined) {
-                campos.push("direccion = ?");
-                valores.push(direccion);
-            }
-            if (activo !== undefined) {
-                campos.push("activo = ?");
-                valores.push(activo);
-            }
-
-            const query = `UPDATE usuarios SET ${campos.join(', ')} WHERE id = ?`;
-            const dbRun = util.promisify(db.run).bind(db);
-            return await dbRun(query, [...valores, id]);
+            const campos = Object.keys(datosUsuario)
+                .filter(key => datosUsuario[key] !== undefined)
+                .map(key => `${key} = ?`)
+                .join(', ');
+            
+            const valores = Object.keys(datosUsuario)
+                .filter(key => datosUsuario[key] !== undefined)
+                .map(key => datosUsuario[key]);
+            
+            valores.push(id);
+            
+            const query = `UPDATE usuarios SET ${campos} WHERE id = ?`;
+            await new Promise((resolve, reject) => {
+                db.run(query, valores, function(err) {
+                    if (err) reject(err);
+                    else resolve(this);
+                });
+            });
+            return true;
         } catch (error) {
-            console.error('Error al actualizar usuario:', error);
+            console.error('Error actualizando usuario:', error);
             throw error;
         }
     },

@@ -3,6 +3,7 @@ const router = express.Router();
 const authController = require('../controllers/auth/auth.controller');
 const { checkLogin, verificarAutenticacion } = require('../middleware/auth.middleware');
 const Usuario = require('../models/usuario.model');
+const { uploadProfile, deleteOldProfilePhotos } = require('../middleware/upload.middleware');
 
 // Redirección inicial
 router.get('/', authController.redirectHome);
@@ -66,6 +67,11 @@ router.post('/curso/:id/valorar', checkLogin, authController.crearValoracion);
 
 // Perfil
 router.get('/perfil', checkLogin, authController.mostrarPerfil);
-router.post('/perfil', checkLogin, authController.actualizarPerfil);
+router.post(
+    '/actualizar-perfil',
+    deleteOldProfilePhotos,              // Primero elimina las fotos viejas
+    uploadProfile.single('foto_perfil'), // Luego sube la nueva
+    authController.actualizarPerfil
+);
 
 module.exports = router;

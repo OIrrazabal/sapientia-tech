@@ -6,6 +6,8 @@ const inscripcionSchema = require('../../validators/inscripcion.schema');
 const valoracionSchema = require('../../validators/valoracion.schema');
 const { homeLogger } = require('../../logger');
 const usuarioSchema = require('../../validators/usuario.schema');
+const path = require('path');
+const fs = require('fs');
 
 const authController = {};
 
@@ -500,7 +502,8 @@ authController.mostrarPerfil = async (req, res) => {
             usuario: req.session.usuario,
             usuarioData: usuario,
             error: null,
-            success: null
+            success: null,
+            actualizado: false // <-- Agrega esto
         });
     } catch (error) {
         console.error('Error al obtener perfil:', error);
@@ -512,51 +515,44 @@ authController.mostrarPerfil = async (req, res) => {
 authController.actualizarPerfil = async (req, res) => {
     const { nombre, telefono, direccion } = req.body;
     const usuarioId = req.session.usuario.id;
+    let nuevaFoto = null;
 
     try {
-        // Validar datos
-        const { error } = usuarioSchema.validate({
-            nombre,
-            telefono,
-            direccion,
-            // Incluimos estos campos para que pase la validación del schema
-            email: req.session.usuario.email,
-            password: 'dummypassword'
-        }, {
-            abortEarly: false,
-            allowUnknown: true
-        });
-
-        if (error) {
-            const usuario = await Usuario.obtenerPorId(usuarioId);
-            return res.render('auth/perfil', {
-                usuario: req.session.usuario,
-                usuarioData: usuario,
-                error: error.details.map(err => err.message).join('. '),
-                success: null
-            });
+        // Si se subió una nueva foto
+        if (req.file) {
+            // Eliminar cualquier foto anterior del usuario (todas las extensiones)
+            const exts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            const profileDir = path.join(__dirname, '../assets/profile');
+            for (const ext of exts) {
+                const filePath = path.join(profileDir, `${usuarioId}.${ext}`);
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+            }
+            // La nueva foto ya debe tener el nombre `${usuarioId}.${ext}`
+            nuevaFoto = req.file.filename;
         }
 
-        // Actualizar solo campos permitidos
+        // Actualizar usuario en la base de datos
         await Usuario.actualizar(usuarioId, {
             nombre,
             telefono,
             direccion,
-            email: req.session.usuario.email,
-            es_admin: req.session.usuario.es_admin
+            foto_perfil: nuevaFoto || req.session.usuario.foto_perfil
         });
 
-        // Actualizar datos de sesión
+        // Actualizar sesión
         req.session.usuario.nombre = nombre;
+        if (nuevaFoto) req.session.usuario.foto_perfil = nuevaFoto;
 
+        // Recargar datos y renderizar
         const usuarioActualizado = await Usuario.obtenerPorId(usuarioId);
         res.render('auth/perfil', {
             usuario: req.session.usuario,
             usuarioData: usuarioActualizado,
             error: null,
-            success: 'Datos actualizados correctamente'
+            success: 'Perfil actualizado correctamente'
         });
-
     } catch (error) {
         console.error('Error al actualizar perfil:', error);
         const usuario = await Usuario.obtenerPorId(usuarioId);
@@ -564,7 +560,8 @@ authController.actualizarPerfil = async (req, res) => {
             usuario: req.session.usuario,
             usuarioData: usuario,
             error: 'Error al actualizar los datos',
-            success: null
+            success: null,
+            actualizado: false
         });
     }
 };
