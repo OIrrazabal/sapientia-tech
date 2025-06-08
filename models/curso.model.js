@@ -64,11 +64,12 @@ const Curso = {
         return dbHandler.ejecutarQuery(query, [nombre, descripcion, cursoId]);
     },
 
-    crear: async (curso) => {
-        const { nombre, descripcion } = curso;
-        const query = 'INSERT INTO cursos (nombre, descripcion, publicado) VALUES (?, ?, ?)';
-        return dbHandler.ejecutarQuery(query, [nombre, descripcion, 0]);
-    },
+crear: async (curso) => {
+    const { nombre, descripcion } = curso;
+    const query = 'INSERT INTO cursos (nombre, descripcion, publicado) VALUES (?, ?, ?)';
+    const resultado = await dbHandler.ejecutarQueryConResultado(query, [nombre, descripcion, 0]);
+    return { id: resultado.lastID }; 
+},
 
     asignarProfesor: async (curso_id, profesor_id) => {
         const query = 'UPDATE cursos SET profesor_id = ? WHERE id = ?';

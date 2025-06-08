@@ -12,6 +12,7 @@ const Inscripcion = require('../../models/inscripcion.model');
 const { homeLogger } = require('../../logger');
 const path = require('path');
 const fs = require('fs').promises;
+const { adminLogger } = require('../../logger');
 
 // Home del Admin
 adminController.home = (req, res) => {
@@ -43,6 +44,7 @@ adminController.mostrarFormulario = async (req, res) => {
   }
 };
 
+ // 
 adminController.crearCurso = async (req, res) => {
   const { nombre, descripcion } = req.body;
   const { error } = cursoSchema.validate(req.body, { abortEarly: false });
@@ -56,7 +58,12 @@ adminController.crearCurso = async (req, res) => {
   }
 
   try {
-    await Curso.crear({ nombre, descripcion });
+    const cursoCreado = await Curso.crear({ nombre, descripcion });
+
+    if (req.session.usuario?.es_admin) {
+      adminLogger.debug(`Recurso: Curso, ID: ${cursoCreado.id} creado por admin (${req.session.usuario.email})`);
+    }
+
     res.redirect('/admin/home');
   } catch (error) {
     console.error('Error:', error);
@@ -205,6 +212,10 @@ adminController.crearAsignacionDesdeListado = async (req, res) => {
 
     const dbRun = util.promisify(db.run).bind(db);
     await dbRun(`INSERT INTO asignaciones (id_curso, id_profesor) VALUES (?, ?)`, [curso_id, profesor_id]);
+    const lastInsert = await dbGet(`SELECT last_insert_rowid() AS id`);
+    if (req.session.usuario?.es_admin) {
+    adminLogger.debug(`Recurso: Asignación, ID: ${lastInsert.id} creada por admin (${req.session.usuario.email})`);
+    }
 
     res.redirect('/admin/asignaciones');
   } catch (error) {
@@ -219,7 +230,6 @@ adminController.eliminarAsignacion = async (req, res) => {
     const dbRun = util.promisify(db.run).bind(db);
     await dbRun(`DELETE FROM asignaciones WHERE id = ?`, [id]);
 
-    // Mensaje opcional usando flash o query params si lo deseas
     res.redirect('/admin/asignaciones');
   } catch (error) {
     console.error('Error al eliminar asignación:', error);
