@@ -14,6 +14,8 @@ const path = require('path');
 const fs = require('fs').promises;
 const { adminLogger } = require('../../logger');
 
+
+
 // Home del Admin
 adminController.home = (req, res) => {
     const usuario = req.session.usuario;
@@ -737,5 +739,35 @@ adminController.registrarInscripcion = (req, res) => {
         });
     });
 };
+const verEstadisticas = async (req, res) => {
+    try {
+        const [
+            totalCursosPublicados,
+            totalCursosNoPublicados,
+            totalUsuarios,
+            totalAlumnosInscriptos,
+            totalProfesoresAsignados
+        ] = await Promise.all([
+            Curso.contarPublicados(true),
+            Curso.contarPublicados(false),
+            Usuario.contarTodos(),
+            Curso.contarInscriptosUnicos(),
+            Curso.contarProfesoresUnicos()
+        ]);
 
+        res.render('admin/estadisticas/estadisticas', {
+            usuario: req.session.usuario,
+            appName: 'eLEARNING',
+            totalCursosPublicados,
+            totalCursosNoPublicados,
+            totalUsuarios,
+            totalAlumnosInscriptos,
+            totalProfesoresAsignados
+        });
+    } catch (error) {
+        console.error('Error al mostrar estadísticas:', error);
+        res.status(500).send('Error al cargar las estadísticas');
+    }
+};
+adminController.verEstadisticas = verEstadisticas;
 module.exports = adminController;

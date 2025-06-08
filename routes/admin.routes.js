@@ -43,4 +43,6 @@ router.post('/categorias/crear', checkAdmin, upload.single('imagen'), adminContr
 router.get('/categorias/:id/editar', checkAdmin, adminController.mostrarFormularioEditarCategoria);
 router.post('/categorias/:id/editar', checkAdmin, upload.single('imagen'), adminController.editarCategoria);
 
+router.get('/estadisticas', checkAdmin, adminController.verEstadisticas);
+
 module.exports = router;
