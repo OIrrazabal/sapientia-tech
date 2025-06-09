@@ -7,9 +7,10 @@ const upload = require('../middleware/upload.middleware');
 router.get('/home', checkAdmin, adminController.home);
 
 //crear cursos
-router.get('/crear-curso', checkAdmin, adminController.mostrarFormulario);
-
-router.post('/crear-curso', checkAdmin, adminController.crearCurso);
+router.get('/crear-curso', checkAdmin, adminController.mostrarFormularioCurso);           // crear
+router.get('/crear-curso/:id', checkAdmin, adminController.mostrarFormularioCurso);        // editar
+router.post('/crear-curso/:id?', checkAdmin, upload.single('imagen'), adminController.guardarCurso); // ambos
+router.get('/editar-curso', checkAdmin, adminController.listarCursos);
 
 //asignar profesores
 router.get('/asignar-profesor', checkAdmin, adminController.mostrarFormularioAsignar);
