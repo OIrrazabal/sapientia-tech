@@ -2,14 +2,14 @@ const express = require('express');
 const adminController = require('../controllers/admin/admin.controller');
 const { checkAdmin } = require('../middleware/admin.middleware');
 const router = express.Router();
-const { uploadCategoria } = require('../middleware/upload.middleware');
+const { uploadCategoria, uploadProfile } = require('../middleware/upload.middleware');
 
 router.get('/home', checkAdmin, adminController.home);
 
 //crear cursos
 router.get('/crear-curso', checkAdmin, adminController.mostrarFormularioCurso);           // crear
 router.get('/crear-curso/:id', checkAdmin, adminController.mostrarFormularioCurso);        // editar
-router.post('/crear-curso/:id?', checkAdmin, upload.single('imagen'), adminController.guardarCurso); // ambos
+router.post('/crear-curso/:id?', checkAdmin, uploadCategoria.single('imagen'), adminController.guardarCurso); // ambos
 router.get('/editar-curso', checkAdmin, adminController.listarCursos);
 
 //asignar profesores
