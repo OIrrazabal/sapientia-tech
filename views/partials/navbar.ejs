@@ -67,7 +67,7 @@
                     </div>
                 </div>
             </div>
-        <% } else { %>
+       <% } else { %>
             <% if (typeof alerta !== 'undefined' && alerta) { %>
                 <div class="alert alert-warning alert-dismissible fade show mb-2" role="alert" style="position:absolute;right:20px;top:70px;z-index:2000;min-width:250px;">
                     <%= alerta %>
@@ -84,6 +84,9 @@
                     </a>
                     <a href="/public/admin-login" class="dropdown-item">
                         <i class="fa fa-lock me-2"></i>Login Admin
+                    </a>
+                    <a href="/registro" class="dropdown-item">
+                        <i class="fa fa-user-plus me-2"></i>Registrarse
                     </a>
                 </div>
             </div>

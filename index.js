@@ -44,7 +44,11 @@ app.use(
         cookie: { maxAge: 24 * 60 * 60 * 1000 },
     })
 );
-
+app.use((req, res, next) => {
+    res.locals.usuario = req.session.usuario || null;
+    res.locals.appName = process.env.APP_NAME || "";
+    next();
+});
 app.use(express.urlencoded({ extended: true }));
 
 //rutas
