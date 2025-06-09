@@ -1,34 +1,46 @@
+const fs = require('fs');
 const multer = require('multer');
 const path = require('path');
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'assets/categorias');
+// Configuración para fotos de perfil
+const storageProfile = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, '../assets/profile'));
     },
-    filename: (req, file, cb) => {
-        const extension = path.extname(file.originalname);
-        const id = req.params.id || Date.now();
-        cb(null, `${id}${extension}`);
+    filename: function (req, file, cb) {
+        const ext = path.extname(file.originalname);
+        cb(null, req.session.usuario.id + ext);
     }
 });
+const uploadProfile = multer({ storage: storageProfile });
 
-const fileFilter = (req, file, cb) => {
-    const allowedTypes = ['.jpg', '.jpeg', '.png'];
-    const extension = path.extname(file.originalname).toLowerCase();
-    
-    if (allowedTypes.includes(extension)) {
-        cb(null, true);
-    } else {
-        cb(new Error('Tipo de archivo no válido. Solo se permiten: ' + allowedTypes.join(', ')));
+// Configuración para otras imágenes (ej: categorías)
+const storageCategoria = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, '../assets/categorias'));
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname));
     }
+});
+const uploadCategoria = multer({ storage: storageCategoria });
+
+// Middleware para eliminar fotos anteriores de perfil
+function deleteOldProfilePhotos(req, res, next) {
+    const usuarioId = req.session.usuario.id;
+    const exts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    const profileDir = path.join(__dirname, '../assets/profile');
+    for (const ext of exts) {
+        const filePath = path.join(profileDir, `${usuarioId}.${ext}`);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+    }
+    next();
+}
+
+module.exports = {
+    uploadProfile,    // Para fotos de perfil
+    uploadCategoria,  // Para imágenes de categorías
+    deleteOldProfilePhotos // Para limpiar fotos viejas antes de subir una nueva
 };
-
-const upload = multer({ 
-    storage: storage,
-    fileFilter: fileFilter,
-    limits: {
-        fileSize: 5 * 1024 * 1024
-    }
-});
-
-module.exports = upload;

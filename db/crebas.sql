@@ -7,8 +7,9 @@ CREATE TABLE "usuarios" (
     telefono TEXT,
     direccion TEXT,
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    rol TEXT
-    activo INTEGER DEFAULT 1 -- 1: activo, 0: dado de baja (borrado lógico)
+    rol TEXT,
+    activo INTEGER DEFAULT 1, -- 1: activo, 0: dado de baja (borrado lógico)
+    foto_perfil VARCHAR(255) DEFAULT 'default.jpg'
 );
 
 CREATE TABLE inscripciones (

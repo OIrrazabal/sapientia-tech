@@ -506,7 +506,7 @@ adminController.crearUsuario = async (req, res) => {
     const { nombre, email, password, es_admin, telefono, direccion } = req.body;
     const admin = (es_admin === '1' || es_admin === 'true') ? 1 : 0;
     
-    // Validar datos con Joi
+    // Validar datos with Joi
     const { error } = usuarioSchema.validate({
         ...req.body,
         es_admin: admin

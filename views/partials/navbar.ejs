@@ -18,7 +18,6 @@
                     <a href="/auth/buscar" class="dropdown-item">Buscar cursos</a>
                 </div>
             </div>
-
             <div class="nav-item dropdown">
                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pagina</a>
                 <div class="dropdown-menu fade-down m-0">
@@ -34,13 +33,22 @@
         <% if (typeof usuario !== 'undefined' && usuario) { %>
             <div class="d-flex align-items-center">
                 <div class="nav-item dropdown">
-                    <a href="#" class="nav-link dropdown-toggle text-primary" data-bs-toggle="dropdown">
-                        <%= usuario.nombre %>
+                    <a href="#" class="nav-link dropdown-toggle d-flex align-items-center text-primary" data-bs-toggle="dropdown">
+                        <img src="/assets/profile/<%= usuario.foto_perfil || 'default.jpg' %>?v=<%= new Date().getTime() %>"
+                             alt="<%= usuario.nombre %>"
+                             class="rounded-circle me-2"
+                             style="width: 32px; height: 32px; object-fit: cover;"
+                             onerror="this.onerror=null;this.src='/assets/profile/default.jpg?v=' + new Date().getTime();">
+                        <span><%= usuario.nombre %></span>
                     </a>
                     <div class="dropdown-menu fade-down m-0">
                         <a href="/auth/perfil" class="dropdown-item">
-                            <i class="fa fa-user me-2"></i>Mis Datos Personales
+                            <i class="fa fa-user me-2"></i>Mis Datos
                         </a>
+                        <a href="/auth/mis-cursos" class="dropdown-item">
+                            <i class="fa fa-book me-2"></i>Mis Cursos
+                        </a>
+
                         <!-- Enlace a cambio de contraseña -->
                         <a href="/auth/micontrasena" class="dropdown-item">
                             <i class="fa fa-key me-2"></i>Mi Contraseña
@@ -53,14 +61,19 @@
                                 </button>
                             </form>
                         <% } %>
-
-                        <a href="/public/logout" class="dropdown-item">
+                        <a href="/auth/logout" class="dropdown-item">
                             <i class="fa fa-sign-out me-2"></i>Cerrar Sesión
                         </a>
                     </div>
                 </div>
             </div>
         <% } else { %>
+            <% if (typeof alerta !== 'undefined' && alerta) { %>
+                <div class="alert alert-warning alert-dismissible fade show mb-2" role="alert" style="position:absolute;right:20px;top:70px;z-index:2000;min-width:250px;">
+                    <%= alerta %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+            <% } %>
             <div class="nav-item dropdown d-none d-lg-block">
                 <button class="btn btn-primary py-4 px-lg-5 dropdown-toggle" data-bs-toggle="dropdown">
                     ACCEDER<i class="fa fa-arrow-right ms-3"></i>
