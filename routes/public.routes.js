@@ -36,4 +36,8 @@ router.get('/curso/:id', publicController.verCurso);
 // Rutas de categorías
 router.get('/categoria/:id', publicController.verCategoria);
 
+//rutas de registro
+router.get('/registro', publicController.formRegistro);
+router.post('/registro', publicController.procesarRegistro);
+
 module.exports = router;

@@ -407,5 +407,52 @@ publicController.verCurso = async (req, res) => {
         res.redirect('/public/home');
     }
 };
+publicController.formRegistro = (req, res) => {
+  res.render('public/registro', {
+    errores: [],
+    datos: {},
+    usuario: null
+  });
+};
+
+publicController.procesarRegistro = async (req, res) => {
+  const { nombre, email, contraseña, repetir_contraseña, telefono, direccion } = req.body;
+  const errores = [];
+
+  if (!nombre || !email || !contraseña || !repetir_contraseña) {
+    errores.push("Todos los campos obligatorios deben estar completos.");
+  }
+
+  if (contraseña !== repetir_contraseña) {
+    errores.push("Las contraseñas no coinciden.");
+  }
+
+  const existe = await Usuario.obtenerPorEmail(email);
+  if (existe) {
+    errores.push("El correo ya está registrado.");
+  }
+
+  if (errores.length > 0) {
+    return res.render('public/registro', {
+      errores,
+      datos: req.body,
+      usuario: null
+    });
+  }
+
+  const saltRounds = 10;
+  const hash = await bcrypt.hash(contraseña, saltRounds);
+
+  await Usuario.crear({
+    nombre,
+    email,
+    contraseña: hash,
+    telefono,
+    direccion,
+    es_admin: 0
+  });
+
+  res.redirect('/public/login');
+};
 
 module.exports = publicController;
