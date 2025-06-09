@@ -6,7 +6,7 @@ const db = require("./db/conexion");
 require("dotenv").config();
 
 // Importar logger
-const { serverLogger } = require('./logger');
+//const { serverLogger } = require('./logger');
 
 //importar express
 const express = require("express");
@@ -93,7 +93,7 @@ app.all("*", (req, res) => {
 });
 
 // iniciar app escuchando puerto parametro
-const port = process.env.PORT;
+/*const port = process.env.PORT;
 const server = app.listen(port, () => {
     console.log("Servidor corriendo en el puerto:" + port);
     serverLogger.info("Servidor iniciado en puerto " + port);
@@ -112,4 +112,6 @@ process.on('SIGTERM', () => {
     server.close(() => {
         process.exit(0);
     });
-});
+});*/
+
+module.exports = app;
