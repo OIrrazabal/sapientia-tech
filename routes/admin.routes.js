@@ -2,14 +2,14 @@ const express = require('express');
 const adminController = require('../controllers/admin/admin.controller');
 const { checkAdmin } = require('../middleware/admin.middleware');
 const router = express.Router();
-//const { uploadCategoria } = require('../middleware/upload.middleware');
+const { uploadCategoria } = require('../middleware/upload.middleware');
 
 router.get('/home', checkAdmin, adminController.home);
 
 //crear cursos
 router.get('/crear-curso', checkAdmin, adminController.mostrarFormularioCurso);           // crear
 router.get('/crear-curso/:id', checkAdmin, adminController.mostrarFormularioCurso);        // editar
-//router.post('/crear-curso/:id?', checkAdmin, upload.single('imagen'), adminController.guardarCurso); // ambos
+router.post('/crear-curso/:id?', checkAdmin, upload.single('imagen'), adminController.guardarCurso); // ambos
 router.get('/editar-curso', checkAdmin, adminController.listarCursos);
 
 //asignar profesores
@@ -40,14 +40,14 @@ router.post('/inscripciones/nueva', checkAdmin, adminController.registrarInscrip
 //categorias
 router.get('/categorias', checkAdmin, adminController.listarCategorias);
 router.get('/categorias/nueva', checkAdmin, adminController.mostrarFormularioCategoria);
-//router.post(
-    //'/categorias/crear',
-    //checkAdmin,
-    //uploadCategoria.single('imagen'),
-  //  adminController.crearCategoria
-//);
+router.post(
+    '/categorias/crear',
+    checkAdmin,
+    uploadCategoria.single('imagen'),
+    adminController.crearCategoria
+);
 router.get('/categorias/:id/editar', checkAdmin, adminController.mostrarFormularioEditarCategoria);
-//router.post('/categorias/:id/editar', checkAdmin, uploadCategoria.single('imagen'), adminController.editarCategoria);
+router.post('/categorias/:id/editar', checkAdmin, uploadCategoria.single('imagen'), adminController.editarCategoria);
 
 router.get('/estadisticas', checkAdmin, adminController.verEstadisticas);
 
