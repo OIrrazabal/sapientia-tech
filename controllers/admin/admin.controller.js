@@ -770,4 +770,81 @@ const verEstadisticas = async (req, res) => {
     }
 };
 adminController.verEstadisticas = verEstadisticas;
+
+adminController.mostrarFormularioCurso = async (req, res) => {
+    const id = req.params.id;
+
+    if (id) {
+        const curso = await Curso.obtenerPorId(id);
+        if (!curso) return res.redirect('/admin/home');
+
+        return res.render('admin/crear-curso/index', {
+            editando: true,
+            curso,
+            usuario: req.session.usuario || null,
+            appName: 'eLEARNING'
+        });
+    }
+
+    res.render('admin/crear-curso/index', {
+        editando: false,
+        curso: {},
+        usuario: req.session.usuario || null,
+        appName: 'eLEARNING'
+    });
+};
+adminController.guardarCurso = async (req, res) => {
+    const id = req.params.id;
+    const { nombre, descripcion } = req.body;
+
+    try {
+        let curso;
+
+        if (id) {
+            await Curso.actualizar(id, { nombre, descripcion });
+            curso = { id, nombre, descripcion };
+        } else {
+            curso = await Curso.crear({ nombre, descripcion });
+        }
+
+        // Manejo de imagen
+        if (req.file) {
+            const path = require('path');
+            const fs = require('fs').promises;
+
+            const ext = path.extname(req.file.originalname).toLowerCase();
+            const carpeta = path.join(__dirname, '../../assets/cursos');
+            const nombreFinal = `${curso.id}${ext}`;
+            const rutaFinal = path.join(carpeta, nombreFinal);
+
+            const archivos = await fs.readdir(carpeta);
+            for (const archivo of archivos) {
+                if (archivo.startsWith(`${curso.id}.`) && archivo !== nombreFinal) {
+                    await fs.unlink(path.join(carpeta, archivo));
+                }
+            }
+
+            await fs.rename(req.file.path, rutaFinal);
+        }
+
+        res.redirect('/admin/home');
+    } catch (error) {
+        console.error('Error al guardar curso:', error);
+        res.status(500).send('Error al guardar curso.');
+    }
+};
+adminController.listarCursos = async (req, res) => {
+    try {
+        const cursos = await Curso.obtenerTodos(); // debe estar en curso.model.js
+        res.render('admin/editar-curso/index', {
+            cursos,
+            usuario: req.session.usuario || null,
+            appName: 'eLEARNING'
+        });
+    } catch (error) {
+        console.error('Error al listar cursos:', error);
+        res.status(500).send('No se pudieron cargar los cursos');
+    }
+};
+
 module.exports = adminController;

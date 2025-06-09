@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="utf-8">
     <title>eLEARNING - Crear Curso</title>
@@ -30,102 +29,42 @@
     <!-- Template Stylesheet -->
     <link href="/css/style.css" rel="stylesheet">
 </head>
-
 <body>
-    <!-- Spinner Start -->
-    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-            <span class="sr-only">Cargando...</span>
-        </div>
-    </div>
-    <!-- Spinner End -->
+    <%- include('../../partials/navbar') %>
 
-    <%- include('../../partials/navbar', { usuario: usuario, appName: appName }) %>
-
-
-    <!-- Header Start -->
-    <div class="container-fluid bg-primary py-5 mb-5 page-header">
-        <div class="container py-5">
-            <div class="row justify-content-center">
-                <div class="col-lg-10 text-center">
-                    <h1 class="display-3 text-white animated slideInDown">Crear Nuevo Curso</h1>
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb justify-content-center">
-                            <li class="breadcrumb-item"><a class="text-white" href="/admin/home">Inicio</a></li>
-                            <li class="breadcrumb-item text-white active" aria-current="page">Crear Curso</li>
-                        </ol>
-                    </nav>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Header End -->
-
-    <!-- Form Start -->
     <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="card wow fadeInUp" data-wow-delay="0.1s">
-                    <div class="card-body">
-                        <h2 class="card-title text-center mb-4">Información del Curso</h2>
-                        
-                        <% if (error) { %>
-                            <div class="alert alert-danger">
-                                <%= error %>
-                            </div>
-                        <% } %>
+        <h2 class="mb-4 text-center"><%= editando ? 'Editar Curso' : 'Crear Nuevo Curso' %></h2>
 
-                        <form action="/admin/crear-curso" method="POST">
-                            <div class="mb-3">
-                                <label for="nombre" class="form-label">Nombre del Curso *</label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="nombre" 
-                                       name="nombre" 
-                                       value="<%= locals.valores ? valores.nombre : '' %>"
-                                       required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="descripcion" class="form-label">Descripción *</label>
-                                <textarea class="form-control" 
-                                          id="descripcion" 
-                                          name="descripcion" 
-                                          rows="3" 
-                                          required><%= locals.valores ? valores.descripcion : '' %></textarea>
-                            </div>
-
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary py-3">
-                                    <i class="fa fa-plus-circle me-2"></i>Crear Curso
-                                </button>
-                                <a href="/admin/home" class="btn btn-secondary py-3">
-                                    <i class="fa fa-arrow-left me-2"></i>Cancelar
-                                </a>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+        <form action="/admin/crear-curso<%= editando ? '/' + curso.id : '' %>" method="POST" enctype="multipart/form-data" class="bg-light p-4 rounded shadow-sm">
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre del Curso</label>
+                <input type="text" class="form-control" name="nombre" value="<%= curso.nombre || '' %>" required>
             </div>
-        </div>
+
+            <div class="mb-3">
+                <label for="descripcion" class="form-label">Descripción</label>
+                <textarea name="descripcion" class="form-control" required><%= curso.descripcion || '' %></textarea>
+            </div>
+
+            <% if (editando) { %>
+                <div class="mb-3">
+                    <label class="form-label">Imagen actual</label><br>
+                    <img src="/assets/cursos/<%= curso.id %>.jpg" onerror="this.src='/assets/cursos/default.png'" width="160">
+                </div>
+            <% } %>
+
+            <div class="mb-3">
+                <label for="imagen" class="form-label">Imagen nueva (opcional)</label>
+                <input type="file" class="form-control" name="imagen" accept=".jpg,.jpeg,.png">
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="/admin/home" class="btn btn-secondary px-4">Cancelar</a>
+                <button type="submit" class="btn btn-primary px-4"><%= editando ? 'Guardar Cambios' : 'Crear Curso' %></button>
+            </div>
+        </form>
     </div>
-    <!-- Form End -->
 
     <%- include('../../partials/footer') %>
-
-    <!-- Back to Top -->
-    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
-
-    <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/lib/wow/wow.min.js"></script>
-    <script src="/lib/easing/easing.min.js"></script>
-    <script src="/lib/waypoints/waypoints.min.js"></script>
-    <script src="/lib/owlcarousel/owl.carousel.min.js"></script>
-
-    <!-- Template Javascript -->
-    <script src="/js/main.js"></script>
 </body>
-
 </html>

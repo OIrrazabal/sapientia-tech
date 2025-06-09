@@ -1,5 +1,7 @@
 const dbHandler = require('../db/db.handler');
 const db = require('../db/conexion'); // necesario para db.get
+const { promisify } = require('util');
+const dbAll = promisify(db.all).bind(db);
 
 const Curso = {
   listarDisponibles: async () => {
@@ -21,6 +23,14 @@ const Curso = {
     return dbHandler.ejecutarQueryAll(query, [profesorId]);
   },
 
+obtenerTodos: async () => {
+  const sql = 'SELECT * FROM cursos ORDER BY id DESC';
+  return await dbHandler.ejecutarQueryAll(sql);
+},
+obtenerPorId: async (id) => {
+  const query = 'SELECT * FROM cursos WHERE id = ?';
+  return await dbHandler.ejecutarQuery(query, [id]);
+},
   getCursosByAlumno: async (alumnoId) => {
     const query = `
       SELECT c.*, u.nombre AS profesor_nombre
