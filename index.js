@@ -92,26 +92,6 @@ app.all("*", (req, res) => {
     });
 });
 
-// iniciar app escuchando puerto parametro
-/*const port = process.env.PORT;
-const server = app.listen(port, () => {
-    console.log("Servidor corriendo en el puerto:" + port);
-    serverLogger.info("Servidor iniciado en puerto " + port);
-});
 
-// Manejadores para cierre graceful del servidor
-process.on('SIGINT', () => {
-    serverLogger.info('Servidor finalizado - SIGINT');
-    server.close(() => {
-        process.exit(0);
-    });
-});
-
-process.on('SIGTERM', () => {
-    serverLogger.info('Servidor finalizado - SIGTERM');
-    server.close(() => {
-        process.exit(0);
-    });
-});*/
 
 module.exports = app;
