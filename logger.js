@@ -22,7 +22,8 @@ const serverLogger = winston.createLogger({
   transports: [
     new winston.transports.File({ 
       filename: path.join(logDir, 'server.log')
-    })
+    }),
+    new winston.transports.Console() // <- añadimos esta linea para mostrar logs en consola
   ]
 });
 
