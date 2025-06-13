@@ -8,6 +8,8 @@ const { homeLogger } = require('../../logger');
 const usuarioSchema = require('../../validators/usuario.schema');
 const path = require('path');
 const fs = require('fs');
+const FileType   = require('file-type');
+const fsPromises = require('fs').promises;
 
 const authController = {};
 
@@ -496,75 +498,76 @@ authController.crearValoracion = async (req, res) => {
 
 // Mostrar perfil
 authController.mostrarPerfil = async (req, res) => {
-    try {
-        const usuario = await Usuario.obtenerPorId(req.session.usuario.id);
-        res.render('auth/perfil', {
-            usuario: req.session.usuario,
-            usuarioData: usuario,
-            error: null,
-            success: null,
-            actualizado: false // <-- Agrega esto
-        });
-    } catch (error) {
-        console.error('Error al obtener perfil:', error);
-        res.redirect('/auth/home');
-    }
+  try {
+    const usuario = await Usuario.obtenerPorId(req.session.usuario.id);
+    // Recuperar todos los tipos de mensajes
+    const error = req.session.errorPerfil;
+    const success = req.session.successPerfil;
+    const info = req.session.infoPerfilSinCambios;
+    
+    // Limpiar mensajes después de usarlos
+    delete req.session.errorPerfil;
+    delete req.session.successPerfil;
+    delete req.session.infoPerfilSinCambios;
+
+    res.render('auth/perfil', {
+      usuario: req.session.usuario,
+      usuarioData: usuario,
+      error,
+      success,
+      info
+    });
+  } catch (error) {
+    console.error('Error al obtener perfil:', error);
+    res.redirect('/auth/home');
+  }
 };
 
-// Actualizar perfil
 authController.actualizarPerfil = async (req, res) => {
-    const { nombre, telefono, direccion } = req.body;
-    const usuarioId = req.session.usuario.id;
-    let nuevaFoto = null;
-
-    try {
-        // Si se subió una nueva foto
-        if (req.file) {
-            // Eliminar cualquier foto anterior del usuario (todas las extensiones)
-            const exts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-            const profileDir = path.join(__dirname, '../assets/profile');
-            for (const ext of exts) {
-                const filePath = path.join(profileDir, `${usuarioId}.${ext}`);
-                if (fs.existsSync(filePath)) {
-                    fs.unlinkSync(filePath);
-                }
-            }
-            // La nueva foto ya debe tener el nombre `${usuarioId}.${ext}`
-            nuevaFoto = req.file.filename;
-        }
-
-        // Actualizar usuario en la base de datos
-        await Usuario.actualizar(usuarioId, {
-            nombre,
-            telefono,
-            direccion,
-            foto_perfil: nuevaFoto || req.session.usuario.foto_perfil
-        });
-
-        // Actualizar sesión
-        req.session.usuario.nombre = nombre;
-        if (nuevaFoto) req.session.usuario.foto_perfil = nuevaFoto;
-
-        // Recargar datos y renderizar
-        const usuarioActualizado = await Usuario.obtenerPorId(usuarioId);
-        res.render('auth/perfil', {
-            usuario: req.session.usuario,
-            usuarioData: usuarioActualizado,
-            error: null,
-            success: 'Perfil actualizado correctamente'
-        });
-    } catch (error) {
-        console.error('Error al actualizar perfil:', error);
-        const usuario = await Usuario.obtenerPorId(usuarioId);
-        res.render('auth/perfil', {
-            usuario: req.session.usuario,
-            usuarioData: usuario,
-            error: 'Error al actualizar los datos',
-            success: null,
-            actualizado: false
-        });
+  const { nombre, telefono, direccion } = req.body;
+  const id = req.session.usuario.id;
+  
+  try {
+    // Recuperar datos actuales del usuario
+    const usuarioActual = await Usuario.obtenerPorId(id);
+    
+    // Verificar si hay cambios reales
+    const hayFotoNueva = !!req.file;
+    const hayDatosNuevos = 
+      nombre !== usuarioActual.nombre || 
+      telefono !== usuarioActual.telefono || 
+      direccion !== usuarioActual.direccion;
+    
+    // Si no hay cambios, mostrar mensaje de información
+    if (!hayFotoNueva && !hayDatosNuevos) {
+      req.session.infoPerfilSinCambios = 'No se detectaron cambios que guardar';
+      return res.redirect('/auth/perfil');
     }
+    
+    // Si llegamos aquí, hay cambios para guardar
+    const datos = { nombre, telefono, direccion };
+    if (hayFotoNueva) {
+      datos.foto_perfil = req.file.filename;
+    }
+    
+    // Actualizar en BD
+    await Usuario.actualizar(id, datos);
+    
+    // Actualizar sesión
+    req.session.usuario.nombre = nombre;
+    if (hayFotoNueva) {
+      req.session.usuario.foto_perfil = req.file.filename;
+    }
+    
+    req.session.successPerfil = 'Perfil actualizado correctamente';
+    res.redirect('/auth/perfil');
+  } catch (error) {
+    console.error('Error al actualizar perfil:', error);
+    req.session.errorPerfil = 'Error al actualizar el perfil';
+    res.redirect('/auth/perfil');
+  }
 };
+
 authController.darDeBajaCuenta = async (req, res) => {
     const usuario = req.session.usuario;
 

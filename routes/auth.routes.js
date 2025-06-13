@@ -68,10 +68,22 @@ router.post('/curso/:id/valorar', checkLogin, authController.crearValoracion);
 // Perfil
 router.get('/perfil', checkLogin, authController.mostrarPerfil);
 router.post(
-    '/actualizar-perfil',
-    deleteOldProfilePhotos,              // Primero elimina las fotos viejas
-    uploadProfile.single('foto_perfil'), // Luego sube la nueva
-    authController.actualizarPerfil
+  '/actualizar-perfil',
+  checkLogin,
+  // 1. Subir y validar archivo
+  (req, res, next) => {
+    uploadProfile.single('foto_perfil')(req, res, err => {
+      if (err) {
+        req.session.errorPerfil = err.message;
+        return res.redirect('/auth/perfil');
+      }
+      next();
+    });
+  },
+  // 2. Si hay archivo, limpiar fotos anteriores
+  deleteOldProfilePhotos,
+  // 3. Actualizar BD
+  authController.actualizarPerfil
 );
 
 //Modificar contraseña
