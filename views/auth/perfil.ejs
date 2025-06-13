@@ -43,14 +43,21 @@
                     <div class="card-body p-5">
                         <h2 class="card-title text-center mb-4">Datos Personales</h2>
 
+                        <% if (success) { %>
+                        <div class="alert alert-success" role="alert">
+                            <%= success %>
+                        </div>
+                        <% } %>
+
                         <% if (error) { %>
-                        <div class="alert alert-danger">
+                        <div class="alert alert-danger" role="alert">
                             <%= error %>
                         </div>
                         <% } %>
-                        <% if (success) { %>
-                        <div class="alert alert-success">
-                            <%= success %>
+
+                        <% if (info) { %>
+                        <div class="alert alert-info" role="alert">
+                            <%= info %>
                         </div>
                         <% } %>
 
@@ -71,7 +78,7 @@
                                 </div>
                                 <div class="file-name" id="fileName">Ningún archivo seleccionado</div>
                                 <div>
-                                    <small class="text-muted">Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 2MB</small>
+                                    <small class="text-muted">Formatos permitidos: JPG, PNG, JPEG Y WEBP. Tamaño máximo: 2MB</small>
                                 </div>
                             </div>
 
@@ -174,14 +181,22 @@
             fileName.textContent = 'Ningún archivo seleccionado';
         });
 
-        // Ocultar mensaje de éxito después de 5 segundos
         window.addEventListener('DOMContentLoaded', function() {
-            const successAlert = document.querySelector('.alert-success');
-            if (successAlert) {
+            // Hacer desaparecer todos los tipos de alertas después de 5 segundos
+            const alertas = document.querySelectorAll('.alert');
+            alertas.forEach(alerta => {
                 setTimeout(() => {
-                    successAlert.style.display = 'none';
-                }, 5000); // 5 segundos
-            }
+                    alerta.style.opacity = '1';
+                    let fadeEffect = setInterval(() => {
+                        if (alerta.style.opacity > 0) {
+                            alerta.style.opacity -= 0.1;
+                        } else {
+                            clearInterval(fadeEffect);
+                            alerta.style.display = 'none';
+                        }
+                    }, 50);
+                }, 5000);
+            });
         });
     </script>
 </body>
