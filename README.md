@@ -1,93 +1,182 @@
-# morado primer parcial
+# Examen Final - Primera Oportunidad
 
+## Condiciones Generales
 
+-   El examen es presencial e individual.
+-   Se presenta en la fecha del examen. Deben asistir a firmar acta de asistencia como siempre.
+-   Solo pueden rendir alumnos que figuren en acta.
+-   Cada alumno tendrá su repositorio de GitLab propio (creado por el profesor).
+-   Solo se corrige lo que está en la rama "main".
+-   Para actualizar "main" se debe seguir el esquema de trabajo de Merge Request.
+-   Fecha tope para solicitar MRs y cambio de código:
+    -   **El día del examen hasta el mediodía**
+-   El proyecto debe estar en un estado adecuado (se debe poder clonar, instalar y ejecutar) sin tener que realizar ajustes de código, de base de datos o modificaciones manuales ni externas.
+-   Se debe seguir utilizando las mismas tecnologías y herramientas utilizadas a lo largo del semestre.
+-   Leer y seguir las instrucciones especificadas.
+-   En caso de dudas se deben hacer las consultas vía GitLab.
+-   Si hay tickets pendientes, o errores acarreados de entregas anteriores, se deben corregir para esta entrega. Estas correcciones no suman puntos al momento del examen, pero en caso de no haberse corregido restaran sobre el total. Especial atención a errores de tipo:
+    -   base de datos no actualizada correctamente.
+    -   enlaces a páginas rotas.
+    -   navegación incorrecta.
+    -   errores de validación que no se muestren correctamente en la interfaz.
+    -   paquetes o librerías no instaladas o definidas correctamente.
+    -   dependencias no actualizadas.
+    -   validaciones incompletas (solo front por ejemplo) o incorrectas (ejemplo no normalizar un correo electrónico que permita registrar dos veces el mismo correo pero con diferente "case").
+    -   código ubicado incorrectamente (ejemplo, consultas SQL fuera de modelos, validaciones mezcladas con lógica, código en archivos de rutas).
+-   Ser respetuosos de la materia, del profesor y de los compañeros no pidiendo excepciones especiales y respetando los tiempos y procesos definidos.
 
-## Getting started
+---
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Actividades a implementar (en el repositorio GitLab):
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+### Diseño y Programación:
 
-## Add your files
+---
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+#### Item F1 - Envío de correo - 5 puntos
 
-```
-cd existing_repo
-git remote add origin https://gitlab.com/uc-ing-soft/2025-is3/das/morado/morado-primer-parcial.git
-git branch -M main
-git push -uf origin main
-```
+-   [ ] Implementar el envío de correos a un profesor, cuando es asignado como profesor de un curso.
+-   [ ] Debe utilizarse [MailTrap](https://mailtrap.io/es/) para validar el envío de correos sin necesidad de un servidor especial.
+-   [ ] Utilizar una plantilla adecuada (no simplemente un texto genérico).
+-   [ ] Seguir los lineamientos en clase para el uso de valores confidenciales en el proyecto y el Git.
+-   El correo debe mostrar:
 
-## Integrate with your tools
+    -   [ ] el nombre y logo usado en su Web
+    -   [ ] Información del profesor
+    -   Información del curso:
 
-- [ ] [Set up project integrations](https://gitlab.com/uc-ing-soft/2025-is3/das/morado/morado-primer-parcial/-/settings/integrations)
+        -   [ ] Nombre Categoría
+        -   [ ] Nombre Curso
+        -   [ ] Imagen de Portada
 
-## Collaborate with your team
+---
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+#### Item F2 - Archivos de Video
 
-## Test and Deploy
+-   Subir videos en Secciones de un Curso - 4 puntos:
+    -   [ ] Permitir que el profesor de un curso pueda adjuntar un archivo de video a una sección
+            nueva (upload), de forma opcional, al momento de crear la sección.
+    -   [ ] Validar la extensión del archivo. Definir 2 extensiones que permitirá su app. Mencionarlas en la documentación.
+    -   [ ] Los videos deben subirse dentro de la carpeta:
+            `/assets/videos/{idCurso}/{idSeccion}/{nombreOriginalVideo.extensión}`
+    -   [ ] En el caso de subir dos veces un mismo video (mismo nombre) a una sección,
+            emitir un error "amigable" adecuado de validación en pantalla.
+    -   [ ] Se debe validar la extensión máxima del video (tamaño) a 3MB.
+    -   [ ] Ningún archivo de video, existente o futuro, deberá "trackearse" en el repo Git.
+-   Ver Stream de videos en Secciones - 4 puntos:
+    -   [ ] En las páginas de Ver Curso, si una
+            sección tiene un video asociado debe poder visualizarse desde la sección.
+    -   [ ] El video debe visualizarse como un stream (**no una descarga**) dentro de la vista del curso
+            asociado a la sección donde fue subido. No utilizar una página externa.
+    -   [ ] Asegurarse de incluir en la documentación una captura de ejemplo de como se debe visualizar dentro de su página, así como un ejemplo donde encontrar esta visualización.
+    -   [ ] El video solo debe ser visible para usuarios que son alumnos o profesores del curso donde fueron subidos.
 
-Use the built-in continuous integration in GitLab.
+---
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+#### Item F3 - Rutas de Aprendizaje
 
-***
+-   Ruta de aprendizaje - Admin - 5 puntos:
+    -   [ ] En el menú de Administrador agregar una opción para manejar (crear, editar, listar) "Rutas de Aprendizaje".
+    -   [ ] Una "Ruta de Aprendizaje" debe tener un nombre, y además debe poder agregarse uno o más cursos a esta.
+    -   [ ] Un ejemplo podría ser una "Ruta" llamada "FullStack" y que contenga varios cursos. Pueden ser
+            de la misma o distinta categoría.
+    -   [ ] Las "rutas", dentro del módulo de administrador, deben poder crearse con un nombre obligatoriamente. Aplicar validación.
+    -   [ ] Al editar una "ruta" debe mostrar los cursos que tenga agregado, así como permitir agregar uno o más adicionalmente en cualquier momento.
+    -   [ ] Claramente, si podemos agregar un curso, debemos poder removerlo de la "ruta" en caso que lo hayamos
+            agregado incorrectamente.
+    -   [ ] Un curso solo debe poder estar dentro de una ruta, no puede estar en más de una, al mismo tiempo.
+-   Ver Ruta de Aprendizaje - 2 puntos:
+    -   [ ] Actualizar las vistas de Ver Curso para mostrar el nombre de la "ruta" de un curso, en caso de que la tenga.
 
-# Editing this README
+---
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+#### Item F4 - Correlatividades
 
-## Suggestions for a good README
+-   Correlatividades - Creación - 5 puntos:
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+    Solo dentro de una ruta de aprendizaje, se deben poder definir cursos correlativos.
+    Un curso correlativo implica que el alumno debe estar inscripto como alumno en la correlativa previa para inscribirse al curso.
 
-## Name
-Choose a self-explaining name for your project.
+    Ejemplo, si IS3 se registra como requisito correlativo de IS4, solo los alumnos que están inscriptos en IS3 pueden autoinscribirse a IS4.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+    -   [ ] Un curso puede tener cero, uno o muchos cursos correlativos previos, pero solo de cursos que formen parte de la misma ruta.
+    -   [ ] Un curso que no forme parte de ninguna ruta, no puede tener correlativas.
+    -   [ ] Se debe validar que un curso no se pueda registrar más de una vez como
+            correlativo de otro (es decir, IS3 -> IS4 no debería poder registrarse dos veces).
+    -   [ ] Se debe poder eliminar una correlativa en cualquier momento.
+    -   [ ] Utilizar elementos adecuados para editar cursos y correlativas dentro de una ruta.
+    -   [ ] Especial atención al remover un curso de una "ruta" solicitado previamente. Se debe validar que no tenga una correlativa antes de hacerlo.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+-   Correlatividades - AutoInscripción - 5 puntos:
+    -   [ ] Implementar el control de cursos correlativos al momento de autoinscribirse un alumno a un curso.
+    -   [ ] El control solo debe ser aplicado en la auto-inscripción de un usuario como alumno de
+            un curso.
+    -   [ ] Si el admin inscribe a un alumno, no debe aplicarse el control.
+    -   [ ] En caso de error de validación, se debe mostrar un error adecuado en pantalla indicando cuál(es) cursos correlativos está incumpliendo.
+    -   [ ] En caso que un curso tenga muchas correlativas, se deben cumplir todas para permitir la inscripción.
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+---
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+### Testing:
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+-   Test de Interfaz - 5 puntos:
+    Crear un test de interfaz utilizando Playwright.
+    -   [ ] El test debe ser ejecutado en el navegador Mozilla únicamente.
+    -   [ ] Debe mostrarse la ejecución en el modo gráfico.
+    -   El test debe:
+        -   [ ] Autoregistrar un usuario. Utilizar un diccionario o generador de correos y datos para que cada ejecución inserte un nuevo usuario sin repetir datos. Puede definir valores aleatorios adecuados para cada campo. Imprimir en la consola los valores al iniciar la ejecución. El password siempre será el valor utilizado de pruebas en el semestre.
+        -   [ ] Hacer login con el usuario
+        -   [ ] Validar carga correctamente su página "home".
+        -   [ ] Inscribirse a un curso al cuál no sea posible por correlatividad.
+        -   [ ] Validar el error en base a un elemento visible en pantalla. El curso debe estar definido "en duro" en la prueba. Se debe generar una captura de pantalla en este punto automático en el test.
+        -   [ ] Inscribirse a un curso al cuál si sea posible por correlatividad.
+        -   [ ] Validar el exito en base a un elemento visible en pantalla. El curso debe estar definido "en duro" en la prueba. Se debe generar una captura de pantalla en este punto automático en el test.
+    -   Debe poder ejecutarse con un comando el cuál debe permitir la ejecución del proceso completo.
+    -   Documentar el comando de forma visible y entendible (como texto) en la documentación.
+    -   Mostrar la salida con capturas en la documentación.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+---
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+### Documentación:
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+-   Wiki - 5 puntos
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+    En un proceso de desarrollo de Software, la documentación es clave. Para esta entrega
+    tendrán que leer e investigar como utilizar la Wiki del GitLab para documentar su proyecto. Deberán:
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+    -   [ ] Crear una página principal en la Wiki de su proyecto.
+    -   [ ] Crear una subpágina en la Wiki por cada item solicitado dentro de este examen. Lease,
+            si hay 3 requerimientos a implementar, deberían haber 3 subpáginas dentro de la Wiki.
+    -   Dentro de cada página de ticket deberán indicar los cambios realizados a nivel de usando la siguiente plantilla:
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+        -   Una o más capturas de la implementación
+        -   Descripción u observaciones. Texto libre para indicar brevemente que
+            implicó la implementación o modificación realizada.
+        -   Base de datos. Énfasis en ajustes realizados con capturas de estas modificaciones con capturas de las modificaciones.
+        -   Rutas: Creadas
+        -   Modelos: Nuevos o modificados.
+        -   Controlador: Nuevos o modificados.
+        -   Validaciones y como se muestran. Qué validaciones ha implementado, en front o back,
+            como se muestra un error de validación en pantalla (captura).
+        -   Interfaz y estilos de presentación
+        -   Comandos (por ejemplo comandos a ejecutar en terminal)
 
-## License
-For open source projects, say how it is licensed.
+    -   Cada sección deberá tener un título y su desarrollo.
+    -   Cada sección que no aplique deberá tener el texto "N/A". Es decir, si el requerimiento item
+        #F1 (ejemplo) no tuvo modificaciones en la base de datos, no se elimina la sección, sino simplemente se define como su contenido "N/A".
+    -   En la página principal de la Wiki agregar el DER completo de su aplicación, así como una breve descripción del trabajo realizado.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+    -   Agregar en el footer de la App Web un enlace para llegar directamente a la página
+        principal de la documentación. Este enlace deberá estar visible
+        en todos los footers de la app, en caso de tener más de uno.
+
+    -   Se evaluará:
+
+        -   Correctitud: Lo que se ve en la Wiki representa la versión entregada del código, y viceversa. 2,5 puntos
+        -   Presentación: Elementos solicitados están presentes en la Wiki. Presentación adecuada
+            de elementos en la Wiki (títulos utilizando elementos de títulos, párrafos, imágenes
+            son visibiles y entendibles, ortografía, coherencia entre el texto y las secciones). 2,5 puntos
+
+        Para tener el puntaje total además se deben documentar todas las funcionalidades solicitadas correctamente.
+
+---
