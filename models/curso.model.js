@@ -173,7 +173,13 @@ obtenerPorId: async (id) => {
         }
       );
     });
-  }
+  },
+
+  actualizar: async (id, datos) => {
+    const { nombre, descripcion } = datos;
+    const query = 'UPDATE cursos SET nombre = ?, descripcion = ? WHERE id = ?';
+    return dbHandler.ejecutarQuery(query, [nombre, descripcion, id]);
+  },
 };
 
 module.exports = Curso;

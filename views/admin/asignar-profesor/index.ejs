@@ -70,6 +70,14 @@
                     <div class="card-body">
                         <h2 class="card-title text-center mb-4">Asignar Profesor a Curso</h2>
                         
+                        <!-- Mensaje de éxito -->
+                        <% if (req.query && req.query.mensaje) { %>
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="fa fa-check-circle me-2"></i><%= req.query.mensaje %>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        <% } %>
+
                         <% if (error) { %>
                             <div class="alert alert-danger">
                                 <%= error %>
@@ -138,6 +146,27 @@
 
     <!-- Template Javascript -->
     <script src="/js/main.js"></script>
+
+    <!-- Agregar este script antes del cierre de </body> -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hacer desaparecer todos los tipos de alertas después de 5 segundos
+            const alertas = document.querySelectorAll('.alert');
+            alertas.forEach(alerta => {
+                setTimeout(() => {
+                    alerta.style.opacity = '1';
+                    let fadeEffect = setInterval(() => {
+                        if (alerta.style.opacity > 0) {
+                            alerta.style.opacity -= 0.1;
+                        } else {
+                            clearInterval(fadeEffect);
+                            alerta.style.display = 'none';
+                        }
+                    }, 50);
+                }, 5000);
+            });
+        });
+    </script>
 </body>
 
 </html>
