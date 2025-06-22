@@ -100,12 +100,11 @@
                                                     </a>
                                                 </td>
                                                 <td>
-                                                    <!-- Aca elimina la asignacion-->
-                                                    <form action="/admin/asignaciones/<%= asig.asignacion_id %>/eliminar" method="POST" onsubmit="return confirm('¿Está seguro de eliminar esta asignación?');">
-                                                        <button class="btn btn-sm btn-danger" type="submit">
-                                                            <i class="fa fa-trash"></i> Eliminar
-                                                        </button>
-                                                    </form>
+                                                  <form action="/admin/asignaciones/eliminar/<%= asig.asignacion_id %>" method="POST" onsubmit="return confirm('¿Está seguro de eliminar esta asignación?');">
+                                                    <button class="btn btn-sm btn-danger" type="submit">
+                                                      <i class="fa fa-trash"></i> Eliminar
+                                                    </button>
+                                                  </form>
                                                 </td>
                                             </tr>
                                         <% }) %>

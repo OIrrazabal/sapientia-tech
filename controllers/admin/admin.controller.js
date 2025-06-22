@@ -11,9 +11,10 @@ const bcrypt = require('bcrypt');
 const Inscripcion = require('../../models/inscripcion.model');
 const { homeLogger } = require('../../logger');
 const path = require('path');
+const ejs = require('ejs'); // Agrega esta línea
 const fs = require('fs').promises;
 const { adminLogger } = require('../../logger');
-
+const { enviarCorreo } = require('../../utils/mailer'); // Ajusta la ruta si es diferente
 
 
 // Home del Admin
@@ -80,8 +81,11 @@ adminController.crearCurso = async (req, res) => {
 // Asignar profesores 
 adminController.mostrarFormularioAsignar = async (req, res) => {
   try {
+    // NUEVO: Sincronizar las tablas antes de mostrar el formulario
+    await sincronizarTablasAsignaciones();
+    
     // Usar las funciones que SÍ existen en tu modelo
-    const cursos = await Curso.listarDisponibles(); // Esta función debe existir en Curso
+    const cursos = await Curso.listarDisponibles();
     
     // Obtener todos los usuarios (para seleccionar profesores)
     const usuarios = await Usuario.listar();
@@ -91,7 +95,8 @@ adminController.mostrarFormularioAsignar = async (req, res) => {
       profesores: Array.isArray(usuarios) ? usuarios : [],
       error: null,
       usuario: req.session.usuario,
-      appName: 'eLEARNING'
+      appName: 'Sapientia Tech Courses',
+      req: req // Pasar el objeto request para acceder a query
     });
   } catch (error) {
     console.error('Error al mostrar formulario de asignación:', error);
@@ -103,25 +108,85 @@ adminController.procesarAsignacionProfesor = async (req, res) => {
   try {
     const { curso_id, profesor_id } = req.body;
     
-    if (!curso_id || !profesor_id) {
-      const cursos = await Curso.listarDisponibles();
-      const usuarios = await Usuario.listar();
-      
-      return res.render('admin/asignar-profesor/index', {
-        cursos: Array.isArray(cursos) ? cursos : [],
-        profesores: Array.isArray(usuarios) ? usuarios : [],
-        error: 'Debes seleccionar un curso y un profesor',
-        usuario: req.session.usuario,
-        appName: 'eLEARNING'
-      });
+    // Asignar profesor en la tabla cursos
+    await Curso.asignarProfesor(curso_id, profesor_id);
+    
+    // Verificar si ya existe la asignación en la tabla asignaciones
+    const dbGet = util.promisify(db.get).bind(db);
+    const existente = await dbGet(
+      'SELECT id FROM asignaciones WHERE id_curso = ? AND id_profesor = ?',
+      [curso_id, profesor_id]
+    );
+    
+    // Si no existe, insertar la asignación
+    if (!existente) {
+      const dbRun = util.promisify(db.run).bind(db);
+      await dbRun(
+        'INSERT INTO asignaciones (id_curso, id_profesor) VALUES (?, ?)',
+        [curso_id, profesor_id]
+      );
     }
     
-    const resultado = await Curso.asignarProfesor(curso_id, profesor_id);
+    // Obtener datos para el correo
+    const profesor = await Usuario.obtenerPorId(profesor_id);
+    const curso = await Curso.getCursoById(curso_id);
     
-    // Cambiar la redirección a una página que SÍ EXISTE:
-    res.redirect('/admin/home?mensaje=Profesor asignado correctamente');
-    // O a otra página que tengas configurada:
-    // res.redirect('/admin/crear-curso?mensaje=Profesor asignado correctamente');
+    // NUEVO: Manejo de imágenes con base64
+    const fs = require('fs');
+    
+    // Convertir logo a base64
+    let logoSrc;
+    try {
+      const logoPath = path.join(__dirname, '../../assets/img/aplicacion.jpg');
+      const logoBuffer = fs.readFileSync(logoPath);
+      const logoBase64 = logoBuffer.toString('base64');
+      logoSrc = `data:image/jpeg;base64,${logoBase64}`;
+    } catch (err) {
+      console.error('Error al cargar logo:', err);
+      // Si falla, simplemente no mostramos imagen
+      logoSrc = '';
+    }
+    
+    // Convertir imagen de portada a base64
+    let portadaUrl = '';
+    let categoria = null;
+    
+    if (curso.categoria_id) {
+      categoria = await Categoria.obtenerPorId(curso.categoria_id);
+      if (categoria && categoria.imagen) {
+        try {
+          const portadaPath = path.join(__dirname, '../../assets/categorias/', categoria.imagen);
+          const portadaBuffer = fs.readFileSync(portadaPath);
+          const portadaBase64 = portadaBuffer.toString('base64');
+          portadaUrl = `data:image/jpeg;base64,${portadaBase64}`;
+        } catch (err) {
+          console.error('Error al cargar portada:', err);
+        }
+      }
+    }
+    
+    // Renderizar plantilla de correo
+    const html = await ejs.renderFile(
+      path.join(__dirname, '../../views/emails/profesor-asignado.ejs'),
+      {
+        profesor,
+        curso,
+        categoria,
+        portadaUrl,
+        logoSrc,  // Pasar la imagen del logo en base64
+        appName: 'Sapientia Tech Courses',
+      }
+    );
+    
+    // Enviar correo
+    await enviarCorreo({
+      to: profesor.email,
+      subject: `Asignación como profesor del curso "${curso.nombre}"`,
+      html
+    });
+    
+    // Cambiar esta línea - redirigir a la página de asignación con mensaje
+    res.redirect('/admin/asignar-profesor?mensaje=Profesor asignado correctamente');
   } catch (error) {
     console.error('Error al asignar profesor:', error);
     res.status(500).send('Error al procesar la asignación');
@@ -150,7 +215,7 @@ adminController.verAsignaciones = async (req, res) => {
     res.render('admin/asignaciones/index', {
       asignaciones: result,
       usuario: req.session.usuario || null,
-      appName: 'eLEARNING'
+      appName: 'Sapientia Tech Courses',
     });
   } catch (error) {
     console.error(error);
@@ -180,7 +245,7 @@ adminController.nuevaAsignacion = async (req, res) => {
       profesores: usuarios, 
       error: null,
       usuario: req.session.usuario,
-      appName: 'eLEARNING'
+      appName: 'Sapientia Tech Courses'
     });
   } catch (error) {
     console.error('Error al cargar formulario de nueva asignación:', error);
@@ -227,10 +292,20 @@ adminController.crearAsignacionDesdeListado = async (req, res) => {
 };
 adminController.eliminarAsignacion = async (req, res) => {
   const id = req.params.id;
-
   try {
+    const dbGet = util.promisify(db.get).bind(db);
     const dbRun = util.promisify(db.run).bind(db);
-    await dbRun(`DELETE FROM asignaciones WHERE id = ?`, [id]);
+
+    // Obtener la asignación antes de eliminarla
+    const asignacion = await dbGet('SELECT id_curso FROM asignaciones WHERE id = ?', [id]);
+
+    // Eliminar de la tabla asignaciones
+    await dbRun('DELETE FROM asignaciones WHERE id = ?', [id]);
+
+    // Actualizar profesor_id a NULL en la tabla cursos
+    if (asignacion) {
+      await dbRun('UPDATE cursos SET profesor_id = NULL WHERE id = ?', [asignacion.id_curso]);
+    }
 
     res.redirect('/admin/asignaciones');
   } catch (error) {
@@ -245,7 +320,7 @@ adminController.listarUsuarios = async (req, res) => {
         res.render('admin/usuarios/usuarios', { 
             usuarios, 
             usuario: req.session.usuario || null, 
-            appName: 'eLEARNING' // o el nombre de tu app
+            appName: 'Sapientia Tech Courses' // o el nombre de tu app
         });
     } catch (error) {
         res.status(500).send('Error al obtener usuarios');
@@ -293,7 +368,7 @@ adminController.listarCategorias = async (req, res) => {
         res.render('admin/categorias/index', {
             categorias,
             usuario: req.session.usuario || null,
-            appName: 'eLEARNING'
+            appName: 'Sapientia Tech Courses',
         });
     } catch (error) {
         console.error('Error al obtener categorías:', error);
@@ -306,14 +381,14 @@ adminController.mostrarFormularioCategoria = async (req, res) => {
         res.render('admin/categorias/nueva', {
             usuario: req.session.usuario || null,
             error: null,
-            appName: 'eLEARNING'
+            appName: 'Sapientia Tech Courses',	
         });
     } catch (error) {
         console.error('Error:', error);
         res.status(500).render('admin/categorias/nueva', {
             error: 'Error al cargar el formulario',
             usuario: req.session.usuario || null,
-            appName: 'eLEARNING'
+            appName: 'Sapientia Tech Courses',
         });
     }
 };
@@ -328,7 +403,7 @@ adminController.crearCategoria = async (req, res) => {
             error: error.details.map(err => err.message).join('. '),
             usuario: req.session.usuario || null,
             valores: req.body,
-            appName: 'eLEARNING'
+            appName: 'Sapientia Tech Courses'
         });
     }
 
@@ -348,7 +423,7 @@ adminController.crearCategoria = async (req, res) => {
                 error: 'Ya existe una categoría con ese nombre',
                 usuario: req.session.usuario || null,
                 valores: req.body,
-                appName: 'eLEARNING'
+                appName: 'Sapientia Tech Courses'	
             });
         }
 
@@ -368,7 +443,7 @@ adminController.crearCategoria = async (req, res) => {
             error: 'Error al crear la categoría',
             usuario: req.session.usuario || null,
             valores: req.body,
-            appName: 'eLEARNING'
+            appName: 'Sapientia Tech Courses'
         });
     }
 };
@@ -387,7 +462,7 @@ adminController.mostrarFormularioEditar = async (req, res) => {
             categoria,
             usuario: req.session.usuario || null,
             error: null,
-            appName: 'eLEARNING'
+            appName: 'Sapientia Tech Courses'	
         });
     } catch (error) {
         console.error('Error:', error);
@@ -409,7 +484,7 @@ adminController.mostrarFormularioEditarCategoria = async (req, res) => {
             categoria,
             usuario: req.session.usuario || null,
             error: null,
-            appName: 'eLEARNING'
+            appName: 'Sapientia Tech Courses'
         });
     } catch (error) {
         console.error('Error:', error);
@@ -427,7 +502,7 @@ adminController.editarCategoria = async (req, res) => {
             error: error.details.map(err => err.message).join('. '),
             usuario: req.session.usuario || null,
             categoria: { id, ...req.body },
-            appName: 'eLEARNING'
+            appName: 'Sapientia Tech Courses'
         });
     }
 
@@ -451,7 +526,7 @@ adminController.editarCategoria = async (req, res) => {
                 error: 'Ya existe otra categoría con ese nombre',
                 usuario: req.session.usuario || null,
                 categoria: { id, ...req.body },
-                appName: 'eLEARNING'
+                appName: 'Sapientia Tech Courses'
             });
         }
 
@@ -476,7 +551,7 @@ adminController.editarCategoria = async (req, res) => {
             error: 'Error al actualizar la categoría',
             usuario: req.session.usuario || null,
             categoria: { id, ...req.body },
-            appName: 'eLEARNING'
+            appName: 'Sapientia Tech Courses'
         });
     }
 };
@@ -488,7 +563,7 @@ adminController.mostrarFormularioUsuario = async (req, res) => {
             usuario: req.session.usuario || null,
             error: null,
             valores: {},
-            appName: 'eLEARNING'
+            appName: 'Sapientia Tech Courses'
         });
     } catch (error) {
         console.error('Error:', error);
@@ -496,7 +571,7 @@ adminController.mostrarFormularioUsuario = async (req, res) => {
             error: 'Error al cargar el formulario',
             usuario: req.session.usuario || null,
             valores: {},
-            appName: 'eLEARNING'
+            appName: 'Sapientia Tech Courses'
         });
     }
 };
@@ -517,7 +592,7 @@ adminController.crearUsuario = async (req, res) => {
             error: error.details.map(err => err.message).join('. '),
             usuario: req.session.usuario || null,
             valores: req.body,
-            appName: 'eLEARNING'
+            appName: 'Sapientia Tech Courses'
         });
     }
     
@@ -529,7 +604,7 @@ adminController.crearUsuario = async (req, res) => {
                 error: 'Ya existe un usuario con ese correo electrónico',
                 usuario: req.session.usuario || null,
                 valores: req.body,
-                appName: 'eLEARNING'
+                appName: 'Sapientia Tech Courses'
             });
         }
         
@@ -553,7 +628,7 @@ adminController.crearUsuario = async (req, res) => {
             error: 'Error al crear el usuario',
             usuario: req.session.usuario || null,
             valores: req.body,
-            appName: 'eLEARNING'
+            appName: 'Sapientia Tech Courses'
         });
     }
 };
@@ -573,7 +648,7 @@ adminController.mostrarFormularioEditar = async (req, res) => {
             usuario: req.session.usuario || null,
             usuarioData,
             error: null,
-            appName: 'eLEARNING'
+            appName: 'Sapientia Tech Courses'
         });
     } catch (error) {
         console.error('Error:', error);
@@ -598,7 +673,7 @@ adminController.editarUsuario = async (req, res) => {
             error: error.details.map(err => err.message).join('. '),
             usuario: req.session.usuario || null,
             usuarioData: { id, ...req.body },
-            appName: 'eLEARNING'
+            appName: 'Sapientia Tech Courses'
         });
     }
     
@@ -616,7 +691,7 @@ adminController.editarUsuario = async (req, res) => {
                 error: 'Ya existe otro usuario con ese correo electrónico',
                 usuario: req.session.usuario || null,
                 usuarioData: { id, ...req.body },
-                appName: 'eLEARNING'
+                appName: 'Sapientia Tech Courses'
             });
         }
         
@@ -644,7 +719,7 @@ adminController.editarUsuario = async (req, res) => {
             error: 'Error al actualizar el usuario',
             usuario: req.session.usuario || null,
             usuarioData: { id, ...req.body },
-            appName: 'eLEARNING'
+            appName: 'Sapientia Tech Courses'
         });
     }
 };
@@ -846,5 +921,41 @@ adminController.listarCursos = async (req, res) => {
         res.status(500).send('No se pudieron cargar los cursos');
     }
 };
+
+// NUEVA FUNCIÓN: Sincronización automática (función interna, no una ruta)
+async function sincronizarTablasAsignaciones() {
+  try {
+    const dbAll = util.promisify(db.all).bind(db);
+    const dbRun = util.promisify(db.run).bind(db);
+    
+    // 1. Encontrar cursos con profesor_id pero sin registro en asignaciones
+    const cursosSinAsignacion = await dbAll(`
+      SELECT c.id, c.profesor_id 
+      FROM cursos c 
+      LEFT JOIN asignaciones a ON c.id = a.id_curso AND c.profesor_id = a.id_profesor
+      WHERE c.profesor_id IS NOT NULL 
+      AND c.profesor_id != 0
+      AND a.id IS NULL
+    `);
+    
+    // Crear asignaciones para estos cursos
+    for (const curso of cursosSinAsignacion) {
+      await dbRun(
+        'INSERT INTO asignaciones (id_curso, id_profesor) VALUES (?, ?)',
+        [curso.id, curso.profesor_id]
+      );
+    }
+    
+    // 2. Corregir cursos que deberían ser NULL en profesor_id
+    await dbRun(`
+      UPDATE cursos SET profesor_id = NULL
+      WHERE id NOT IN (SELECT id_curso FROM asignaciones)
+    `);
+    
+    console.log("Tablas sincronizadas automáticamente");
+  } catch (error) {
+    console.error('Error en sincronización automática:', error);
+  }
+}
 
 module.exports = adminController;

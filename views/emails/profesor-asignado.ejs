@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Asignación de Curso</title>
+</head>
+<body style="font-family: Arial, sans-serif; background: #f7f7f7; padding: 30px;">
+  <div style="max-width: 600px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 24px;">
+    <div style="text-align: center;">
+      <% if (logoSrc) { %>
+        <img src="<%= logoSrc %>" alt="Logo" style="height: 60px;">
+      <% } %>
+      <h2 style="color: #2d6cdf; margin-top: 10px;"><%= appName %></h2>
+    </div>
+    <hr>
+    <h3>¡Hola <%= profesor.nombre %>!</h3>
+    <p>Te informamos que has sido asignado como profesor del siguiente curso:</p>
+    <h4>Datos del Curso</h4>
+    <ul>
+      <li><strong>ID del Curso:</strong> <%= curso.id %></li>
+      <li><strong>Nombre del Curso:</strong> <%= curso.nombre %></li>
+      <li><strong>Descripción:</strong> <%= curso.descripcion %></li>
+      <li><strong>Categoría:</strong> <%= categoria ? categoria.nombre : 'Sin categoría' %></li>
+    </ul>
+    <% if (portadaUrl) { %>
+    <div style="text-align: center; margin: 20px 0;">
+      <img src="<%= portadaUrl %>" alt="Imagen de portada" style="max-width: 100%; border-radius: 8px;">
+    </div>
+    <% } %>
+    <h4>Datos del Profesor</h4>
+    <ul>
+      <li><strong>ID Profesor:</strong> <%= profesor.id %></li>
+      <li><strong>Nombre:</strong> <%= profesor.nombre %></li>
+      <li><strong>Email:</strong> <%= profesor.email %></li>
+      <% if (profesor.telefono) { %>
+      <li><strong>Teléfono:</strong> <%= profesor.telefono %></li>
+      <% } %>
+    </ul>
+    <p style="margin-top: 30px;">¡Gracias por ser parte de <%= appName %>!</p>
+  </div>
+</body>
+</html>
