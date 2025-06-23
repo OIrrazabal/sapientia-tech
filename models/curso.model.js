@@ -70,9 +70,15 @@ obtenerPorId: async (id) => {
     return dbHandler.ejecutarQuery(query, [cursoId, alumnoId]);
   },
 
-  agregarSeccion: async (nombre, descripcion, cursoId) => {
-    const query = 'INSERT INTO secciones (nombre, descripcion, curso_id) VALUES (?, ?, ?)';
-    return dbHandler.ejecutarQuery(query, [nombre, descripcion, cursoId]);
+  agregarSeccion: async (nombre, descripcion, cursoId, videoPath = null) => {
+    const query = 'INSERT INTO secciones (nombre, descripcion, curso_id, video_path) VALUES (?, ?, ?, ?)';
+    return dbHandler.ejecutarQuery(query, [nombre, descripcion, cursoId, videoPath]);
+  },
+  
+  getNextSeccionId: async () => {
+    const query = 'SELECT MAX(id) as maxId FROM secciones';
+    const result = await dbHandler.ejecutarQuery(query);
+    return (result && result.maxId) ? parseInt(result.maxId) + 1 : 1;
   },
 
   crear: async (curso) => {

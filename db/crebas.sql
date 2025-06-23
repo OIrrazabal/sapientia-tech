@@ -76,3 +76,7 @@ SELECT
 FROM usuarios u
 JOIN asignaciones a ON u.id = a.id_profesor
 JOIN cursos c ON a.id_curso = c.id;
+
+
+ALTER TABLE secciones ADD COLUMN video_path VARCHAR(255) DEFAULT NULL;
+
