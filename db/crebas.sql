@@ -80,3 +80,22 @@ JOIN cursos c ON a.id_curso = c.id;
 
 ALTER TABLE secciones ADD COLUMN video_path VARCHAR(255) DEFAULT NULL;
 
+-- Tabla principal de rutas de aprendizaje
+CREATE TABLE rutas_aprendizaje (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL UNIQUE,
+    descripcion TEXT,
+    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla de relación entre rutas y cursos
+CREATE TABLE ruta_curso (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ruta_id INTEGER NOT NULL,
+    curso_id INTEGER NOT NULL,
+    orden INTEGER DEFAULT 0,
+    fecha_agregado DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ruta_id) REFERENCES rutas_aprendizaje(id),
+    FOREIGN KEY (curso_id) REFERENCES cursos(id),
+    UNIQUE (curso_id) -- Cada curso solo puede estar en una ruta
+);
