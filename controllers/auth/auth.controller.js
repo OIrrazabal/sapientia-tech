@@ -7,9 +7,12 @@ const valoracionSchema = require('../../validators/valoracion.schema');
 const { homeLogger } = require('../../logger');
 const usuarioSchema = require('../../validators/usuario.schema');
 const path = require('path');
-const fs = require('fs');
-const FileType   = require('file-type');
-const fsPromises = require('fs').promises;
+const fs = require('fs').promises;
+const FileType = require('file-type');
+const multer = require('multer');
+const mkdirp = require('mkdirp');
+const dbHandler = require('../../db/db.handler');
+const checkDiskSpace = require('check-disk-space').default;
 
 const authController = {};
 
@@ -291,153 +294,272 @@ authController.verCurso = async (req, res) => {
 };
 
 // Mostrar formulario para agregar sección
-authController.mostrarFormularioSeccion = (req, res) => {
-  const db = require('../../db/conexion');
+authController.mostrarFormularioSeccion = async (req, res) => {
   const cursoId = req.params.id;
   const usuario = req.session.usuario;
-
-  db.get(
-    'SELECT * FROM cursos WHERE id = ?',
-    [cursoId],
-    (err, curso) => {
-      if (err) {
-        console.error("Error al obtener curso:", err);
-        return res.redirect('/auth/mis-cursos');
-      }
-
-      if (!curso) {
-        return res.redirect('/auth/mis-cursos');
-      }
-
-      if (curso.profesor_id !== usuario.id) {
-        return res.redirect('/auth/mis-cursos');
-      }
-
-      res.render('auth/secciones', {
-        curso,
-        usuario,
-        error: null
-      });
-    }
-  );
-};
-
-// Procesar el formulario de nueva sección
-authController.agregarSeccion = async (req, res) => {
-    const cursoId = req.params.id;
-    const { nombre, descripcion } = req.body;
-    const usuario = req.session.usuario;
-
-    try {
-        const curso = await Curso.getCursoById(cursoId);
-        
-        if (!curso || curso.profesor_id !== usuario.id) {
-            return res.render('auth/secciones', {
-                curso: { id: cursoId },
-                usuario,
-                error: 'No tienes permiso para agregar secciones a este curso'
-            });
-        }
-
-        if (curso.publicado === 1) {
-            return res.render('auth/secciones', {
-                curso,
-                usuario,
-                error: 'No se pueden agregar secciones a un curso publicado'
-            });
-        }
-
-        await Curso.agregarSeccion(nombre, descripcion, cursoId);
-        res.redirect('/auth/mis-cursos');
-    } catch (error) {
-        console.error("Error al insertar sección:", error);
-        res.render('auth/secciones', {
-            curso: { id: cursoId },
-            usuario,
-            error: 'Error al crear la sección'
-        });
-    }
-};
-
-// Publicar curso
-authController.publicarCurso = async (req, res) => {
-  const cursoId = req.params.id;
-  const usuario = req.session.usuario;
-
+  
   try {
-      const curso = await Curso.getCursoById(cursoId);
-      
-      // Validar que existe el curso y soy el profesor
-      if (!curso || curso.profesor_id !== usuario.id) {
-          return res.redirect('/auth/curso/' + cursoId);
-      }
-
-      // Validar que el curso no esté publicado
-      if (curso.publicado) {
-          return res.redirect('/auth/curso/' + cursoId);
-      }
-
-      // Validar que tenga al menos una sección
-      const secciones = await Curso.getSeccionesByCurso(cursoId);
-      if (!secciones || secciones.length === 0) {
-          return res.redirect('/auth/curso/' + cursoId);
-      }
-
-      // Publicar el curso
-      await Curso.publicarCurso(cursoId);
-      res.redirect('/auth/curso/' + cursoId);
+    const curso = await Curso.getCursoById(cursoId);
+    
+    if (!curso || curso.profesor_id !== usuario.id) {
+      return res.redirect('/auth/mis-cursos');
+    }
+    
+    res.render('auth/secciones', {
+      curso,
+      usuario
+    });
   } catch (error) {
-      console.error('Error al publicar curso:', error);
-      res.redirect('/auth/curso/' + cursoId);
+    console.error("Error al cargar formulario:", error);
+    res.status(500).render('error', {
+      mensaje: 'Error al cargar el formulario de secciones',
+      usuario
+    });
   }
 };
 
-// Inscribir alumno 
-authController.inscribirAlumno = async (req, res) => {
+// Configuración de almacenamiento para videos
+const storage = multer.diskStorage({
+  destination: async (req, file, cb) => {
     const cursoId = req.params.id;
-    const usuario = req.session.usuario;
-
-    try {
-        const curso = await Curso.getCursoById(cursoId);
-        
-        // Validar que existe el curso y está publicado
-        const { error } = inscripcionSchema.validate({
-            curso_id: cursoId,
-            alumno_id: usuario.id,
-            estado_curso: curso?.publicado || 0
-        });
-
-        if (error) {
-            return res.status(400).json({
-                error: error.details[0].message  
-            });
-        }
-
-        // Validar que no soy el profesor
-        if (curso.profesor_id === usuario.id) {
-            return res.status(400).json({
-                error: 'No puedes inscribirte a un curso donde eres profesor'
-            });
-        }
-
-        // Validar que no esté ya inscrito
-        const inscripcion = await Curso.verificarInscripcion(cursoId, usuario.id);
-        if (inscripcion) {
-            return res.status(400).json({
-                error: 'Ya estás inscrito en este curso'  
-            });
-        }
-
-        // Realizar inscripción
-        await Curso.inscribirAlumno(cursoId, usuario.id);
-        res.redirect('/auth/curso/' + cursoId);
-
-    } catch (error) {
-        console.error('Error al inscribir alumno:', error);
-        res.status(500).json({
-            error: 'Error al procesar la inscripción'
-        });
+    // Almacenamos temporalmente hasta conocer el ID de la sección
+    const uploadDir = path.join(__dirname, '../../temp');
+    
+    // Crear directorio si no existe
+    if (!fs.existsSync(uploadDir)) {
+      await mkdirp(uploadDir);
     }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    // Guardar con nombre original
+    cb(null, file.originalname);
+  }
+});
+
+// Filtro de archivos para videos con validación mejorada
+const fileFilter = (req, file, cb) => {
+  // Verificar tipo MIME
+  if (file.mimetype === 'video/mp4' || file.mimetype === 'video/webm') {
+    // Verificar extensión
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (ext === '.mp4' || ext === '.webm') {
+      cb(null, true);
+    } else {
+      cb(new Error('La extensión del archivo no coincide con el tipo de contenido.'), false);
+    }
+  } else {
+    cb(new Error('Formato no permitido. Solo se aceptan MP4 o WebM.'), false);
+  }
+};
+
+// Configurar multer con límite de tamaño (3MB)
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 3 * 1024 * 1024 }, // 3MB
+  fileFilter: fileFilter
+});
+
+// Agregar sección con video opcional
+authController.agregarSeccion = async (req, res) => {
+  const cursoId = req.params.id;
+  const usuario = req.session.usuario;
+  let videoPath = null;
+
+  try {
+    // Validar que el usuario sea el profesor del curso
+    const curso = await Curso.getCursoById(cursoId);
+    
+    if (!curso) {
+      return res.status(404).render('error', { 
+        mensaje: 'Curso no encontrado',
+        usuario
+      });
+    }
+    
+    if (curso.profesor_id !== usuario.id) {
+      return res.status(403).render('error', {
+        mensaje: 'No tienes permiso para agregar secciones a este curso',
+        usuario
+      });
+    }
+
+    // Primero agregamos la sección a la base de datos
+    const resultSeccion = await Curso.agregarSeccion(
+      req.body.nombre,
+      req.body.descripcion,
+      cursoId,
+      null // Inicialmente sin video
+    );
+    
+    // Obtenemos el ID de la sección recién creada
+    const secciones = await Curso.getSeccionesByCurso(cursoId);
+    const seccionId = secciones[secciones.length - 1].id; // Última sección insertada
+    
+    // Si hay un archivo de video, procesarlo
+    if (req.file) {
+      try {
+        // Crear la estructura de directorios para el video
+        const videoDir = path.join(__dirname, '../../assets/videos', cursoId.toString(), seccionId.toString());
+        
+        // Crear el directorio si no existe (usando fs.promises correctamente)
+        try {
+          await fs.mkdir(videoDir, { recursive: true });
+        } catch (err) {
+          if (err.code !== 'EEXIST') {
+            throw err;
+          }
+        }
+        
+        // Ruta final del archivo
+        const targetPath = path.join(videoDir, req.file.originalname);
+        
+        // Verificar si ya existe un archivo con ese nombre
+        try {
+          await fs.access(targetPath);
+          // Si llegamos aquí, el archivo ya existe
+          return res.render('auth/secciones', {
+            curso,
+            usuario,
+            error: 'Ya existe un video con ese nombre en esta sección. Por favor, renombre el archivo.'
+          });
+        } catch (err) {
+          // El archivo no existe, podemos continuar
+          if (err.code !== 'ENOENT') {
+            throw err;
+          }
+        }
+        
+        // Mover el archivo desde la ubicación temporal a la final
+        const srcPath = path.join(__dirname, '../../temp', req.file.originalname);
+        await fs.copyFile(srcPath, targetPath);
+        await fs.unlink(srcPath); // Eliminar el archivo temporal
+        
+        // Establecer la ruta relativa del video
+        videoPath = `/assets/videos/${cursoId}/${seccionId}/${req.file.originalname}`;
+        
+        // Actualizar la sección con la ruta del video
+        const updateQuery = 'UPDATE secciones SET video_path = ? WHERE id = ?';
+        await dbHandler.ejecutarQuery(updateQuery, [videoPath, seccionId]);
+      } catch (err) {
+        console.error("Error al procesar el video:", err);
+        return res.render('auth/secciones', {
+          curso,
+          usuario,
+          error: 'Error al procesar el archivo de video: ' + err.message
+        });
+      }
+    }
+    
+    res.redirect(`/auth/curso/${cursoId}`);
+  } catch (error) {
+    // Mejorar el manejo de errores para Multer
+    if (error instanceof multer.MulterError) {
+      if (error.code === 'LIMIT_FILE_SIZE') {
+        return res.render('auth/secciones', {
+          curso,
+          usuario,
+          error: 'El video excede el tamaño máximo permitido de 3MB.'
+        });
+      }
+    }
+    
+    // Manejo genérico de errores existente
+    console.error("Error al insertar sección:", error);
+    res.status(500).render('auth/secciones', {
+      curso: { id: cursoId },
+      usuario,
+      error: 'Error al crear la sección: ' + error.message
+    });
+  }
+};
+
+// Método para streaming de videos
+authController.streamVideo = async (req, res) => {
+  const cursoId = req.params.cursoId;
+  const seccionId = req.params.seccionId;
+  const fileName = req.params.fileName;
+  const usuario = req.session.usuario;
+  // Importar el fs normal para streaming
+  const fsStream = require('fs');
+
+  try {
+    // Verificar si el usuario está autorizado
+    const curso = await Curso.getCursoById(cursoId);
+    if (!curso) {
+      return res.status(404).send('Curso no encontrado');
+    }
+
+    // Verificar si el usuario es profesor del curso
+    const esProfesor = curso.profesor_id === usuario.id;
+    
+    // Si no es profesor, verificar inscripción al curso
+    let estaInscrito = false;
+    if (!esProfesor) {
+      const inscripcion = await Curso.verificarInscripcion(cursoId, usuario.id);
+      estaInscrito = !!inscripcion;
+    }
+
+    // Si no es profesor ni alumno inscrito, denegar acceso
+    if (!esProfesor && !estaInscrito) {
+      return res.status(403).send('No tienes permiso para acceder a este recurso');
+    }
+
+    // Construir ruta de archivo
+    const videoPath = path.join(__dirname, '../../assets/videos', cursoId, seccionId, fileName);
+    
+    // Verificar si el archivo existe
+    try {
+      await fs.access(videoPath);
+    } catch (error) {
+      return res.status(404).send('Video no encontrado');
+    }
+
+    // Obtener estadísticas del archivo
+    const stat = await fs.stat(videoPath);
+    const fileSize = stat.size;
+    const range = req.headers.range;
+
+    // Determinar el tipo MIME basado en la extensión
+    const ext = path.extname(fileName).toLowerCase();
+    const contentType = ext === '.mp4' ? 'video/mp4' : 
+                        ext === '.webm' ? 'video/webm' : 
+                        'application/octet-stream';
+
+    // Manejar solicitudes de rango (para buscar en video)
+    if (range) {
+      const parts = range.replace(/bytes=/, '').split('-');
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+      const chunkSize = (end - start) + 1;
+      
+      // Usar fsStream para createReadStream
+      const fileStream = fsStream.createReadStream(videoPath, { start, end });
+      
+      // Establecer encabezados para streaming parcial
+      res.writeHead(206, {
+        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunkSize,
+        'Content-Type': contentType
+      });
+      
+      // Stream del archivo
+      fileStream.pipe(res);
+    } else {
+      // Stream del archivo completo
+      res.writeHead(200, {
+        'Content-Length': fileSize,
+        'Content-Type': contentType
+      });
+      
+      // Usar fsStream para createReadStream
+      fsStream.createReadStream(videoPath).pipe(res);
+    }
+  } catch (error) {
+    console.error('Error streaming video:', error);
+    res.status(500).send('Error al reproducir el video');
+  }
 };
 
 // Añadir método para crear una valoración
@@ -668,5 +790,183 @@ authController.cambiarContrasena = async (req, res) => {
     }
 };
 
+// Publicar un curso
+authController.publicarCurso = async (req, res) => {
+  const cursoId = req.params.id;
+  const usuario = req.session.usuario;
+
+  try {
+    // Verificar que el curso existe y que el usuario es el profesor
+    const curso = await Curso.getCursoById(cursoId);
+    
+    if (!curso) {
+      return res.status(404).json({ error: 'Curso no encontrado' });
+    }
+    
+    if (curso.profesor_id !== usuario.id) {
+      return res.status(403).json({ error: 'No tienes permiso para publicar este curso' });
+    }
+    
+    // Publicar el curso
+    await Curso.publicarCurso(cursoId);
+    
+    // Redirigir a la página del curso
+    res.redirect(`/auth/curso/${cursoId}`);
+  } catch (error) {
+    console.error('Error al publicar curso:', error);
+    res.status(500).json({ error: 'Error al publicar el curso' });
+  }
+};
+
+// Inscribir alumno a un curso
+authController.inscribirAlumno = async (req, res) => {
+  const cursoId = req.params.id;
+  const alumnoId = req.session.usuario.id;
+
+  try {
+    // Validar datos
+    const { error } = inscripcionSchema.validate({
+      curso_id: parseInt(cursoId),
+      alumno_id: alumnoId
+    });
+
+    if (error) {
+      return res.status(400).json({
+        error: error.details[0].message
+      });
+    }
+
+    // Verificar que el curso existe
+    const curso = await Curso.getCursoById(cursoId);
+    if (!curso) {
+      return res.status(404).json({ error: 'Curso no encontrado' });
+    }
+
+    // Verificar que el curso está publicado
+    if (curso.publicado !== 1) {
+      return res.status(403).json({ error: 'Este curso no está disponible para inscripción' });
+    }
+
+    // Verificar que el usuario no es el profesor del curso
+    if (curso.profesor_id === alumnoId) {
+      return res.status(400).json({ error: 'No puedes inscribirte a tu propio curso' });
+    }
+
+    // Verificar que no esté ya inscrito
+    const inscripcion = await Curso.verificarInscripcion(cursoId, alumnoId);
+    if (inscripcion) {
+      return res.status(400).json({ error: 'Ya estás inscrito en este curso' });
+    }
+
+    // Inscribir al alumno
+    await Curso.inscribirAlumno(cursoId, alumnoId);
+    
+    // Redirigir a la página del curso
+    res.redirect(`/auth/curso/${cursoId}`);
+  } catch (error) {
+    console.error('Error al inscribir alumno:', error);
+    res.status(500).json({ error: 'Error al procesar la inscripción' });
+  }
+};
+
+// Mejorar validaciones para videos
+const videoFileFilter = (req, file, cb) => {
+  // Verificar tipo MIME
+  if (file.mimetype === 'video/mp4' || file.mimetype === 'video/webm') {
+    // Verificar extensión
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (ext === '.mp4' || ext === '.webm') {
+      cb(null, true);
+    } else {
+      cb(new Error('La extensión del archivo no coincide con el tipo de contenido.'), false);
+    }
+  } else {
+    cb(new Error('Formato no permitido. Solo se aceptan MP4 o WebM.'), false);
+  }
+};
+
+// Agregar función para eliminar videos
+authController.eliminarVideo = async (req, res) => {
+  const seccionId = req.params.seccionId;
+  const cursoId = req.params.cursoId;
+  const usuario = req.session.usuario;
+  
+  try {
+    // Verificar que el usuario sea el profesor
+    const curso = await Curso.getCursoById(cursoId);
+    if (!curso || curso.profesor_id !== usuario.id) {
+      return res.status(403).json({error: 'No tienes permiso para realizar esta acción'});
+    }
+    
+    // Obtener información de la sección
+    const secciones = await Curso.getSeccionesByCurso(cursoId);
+    const seccion = secciones.find(s => s.id == seccionId);
+    
+    if (!seccion || !seccion.video_path) {
+      return res.status(404).json({error: 'No se encontró el video'});
+    }
+    
+    // Eliminar el archivo físico
+    const videoFilePath = path.join(__dirname, '../../', seccion.video_path);
+    await fs.unlink(videoFilePath);
+    
+    // Actualizar la base de datos
+    await dbHandler.ejecutarQuery('UPDATE secciones SET video_path = NULL WHERE id = ?', [seccionId]);
+    
+    res.json({success: true, message: 'Video eliminado correctamente'});
+  } catch (error) {
+    console.error('Error al eliminar video:', error);
+    res.status(500).json({error: 'Error al eliminar el video'});
+  }
+};
+
+// Eliminar una sección
+authController.eliminarSeccion = async (req, res) => {
+  const seccionId = req.params.seccionId;
+  const cursoId = req.params.cursoId;
+  const usuario = req.session.usuario;
+  
+  try {
+    // Verificar que el usuario sea el profesor
+    const curso = await Curso.getCursoById(cursoId);
+    if (!curso || curso.profesor_id !== usuario.id) {
+      return res.status(403).json({error: 'No tienes permiso para realizar esta acción'});
+    }
+    
+    // Obtener información de la sección
+    const secciones = await Curso.getSeccionesByCurso(cursoId);
+    const seccion = secciones.find(s => s.id == seccionId);
+    
+    if (!seccion) {
+      return res.status(404).json({error: 'No se encontró la sección'});
+    }
+    
+    // Si hay un video asociado, eliminarlo del sistema de archivos
+    if (seccion.video_path) {
+      try {
+        const videoFilePath = path.join(__dirname, '../../', seccion.video_path);
+        await fs.unlink(videoFilePath);
+        
+        // También eliminar el directorio si está vacío
+        const videoDir = path.dirname(videoFilePath);
+        const files = await fs.readdir(videoDir);
+        if (files.length === 0) {
+          await fs.rmdir(videoDir);
+        }
+      } catch (err) {
+        console.error('Error al eliminar archivo de video:', err);
+        // Continuamos aunque haya error al eliminar el archivo
+      }
+    }
+    
+    // Eliminar la sección de la base de datos
+    await dbHandler.ejecutarQuery('DELETE FROM secciones WHERE id = ?', [seccionId]);
+    
+    res.redirect(`/auth/curso/${cursoId}`);
+  } catch (error) {
+    console.error('Error al eliminar sección:', error);
+    res.status(500).json({error: 'Error al eliminar la sección'});
+  }
+};
 
 module.exports = authController;

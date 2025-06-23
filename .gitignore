@@ -8,3 +8,11 @@ node_modules
 logs/
 
 .vscode/
+
+# Videos files
+/assets/videos/
+*.mp4
+*.webm
+
+# Temporary uploads
+/temp/
