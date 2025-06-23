@@ -2,6 +2,7 @@ const dbHandler = require('../db/db.handler');
 const db = require('../db/conexion'); // necesario para db.get
 const { promisify } = require('util');
 const dbAll = promisify(db.all).bind(db);
+const dbGet = promisify(db.get).bind(db);
 
 const Curso = {
   listarDisponibles: async () => {
@@ -185,6 +186,40 @@ obtenerPorId: async (id) => {
     const { nombre, descripcion } = datos;
     const query = 'UPDATE cursos SET nombre = ?, descripcion = ? WHERE id = ?';
     return dbHandler.ejecutarQuery(query, [nombre, descripcion, id]);
+  },
+
+  // Obtener la ruta de aprendizaje del curso
+  obtenerRutaAprendizaje: async (cursoId) => {
+    try {
+      const query = `
+        SELECT r.id, r.nombre, r.descripcion
+        FROM rutas_aprendizaje r
+        JOIN ruta_curso rc ON r.id = rc.ruta_id
+        WHERE rc.curso_id = ?
+      `;
+      return await dbGet(query, [cursoId]);
+    } catch (error) {
+      console.error('Error al obtener ruta de aprendizaje:', error);
+      return null;
+    }
+  },
+
+  // Listar cursos que no están en ninguna ruta
+  listarCursosSinRuta: async () => {
+    try {
+      const query = `
+        SELECT c.id, c.nombre, c.descripcion, cat.nombre AS categoria
+        FROM cursos c
+        LEFT JOIN ruta_curso rc ON c.id = rc.curso_id
+        LEFT JOIN categorias cat ON c.categoria_id = cat.id
+        WHERE rc.curso_id IS NULL
+        ORDER BY c.nombre
+      `;
+      return await dbAll(query);
+    } catch (error) {
+      console.error('Error al listar cursos sin ruta:', error);
+      return [];
+    }
   },
 };
 

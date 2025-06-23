@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>eLEARNING - Editar Ruta de Aprendizaje</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+    <!-- Favicon -->
+    <link href="/assets/img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="/lib/animate/animate.min.css" rel="stylesheet">
+    <link href="/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+
+    <!-- Bootstrap & Template Stylesheet -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+
+<body>
+    <%- include('../../partials/navbar', { usuario: usuario, appName: appName }) %>
+
+    <div class="container-fluid bg-primary py-5 mb-5 page-header">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 text-center">
+                    <h1 class="display-3 text-white animated slideInDown">Editar Ruta de Aprendizaje</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-center">
+                            <li class="breadcrumb-item"><a class="text-white" href="/admin/home">Inicio</a></li>
+                            <li class="breadcrumb-item"><a class="text-white" href="/admin/rutas">Rutas</a></li>
+                            <li class="breadcrumb-item text-white active" aria-current="page">Editar Ruta</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div class="container">    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <a href="/admin/rutas" class="btn btn-outline-secondary px-3 py-2 rounded-pill">
+                    <i class="fa fa-arrow-left me-2"></i> Volver al listado
+                </a>
+            </div>
+            <h2 class="text-center">Editar Ruta de Aprendizaje: <%= ruta.nombre %></h2>
+        </div>
+    </div>
+
+    <% if (typeof mensaje !== 'undefined' && mensaje) { %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <%= mensaje %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <% } %>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <%= error %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <% } %>
+
+    <div class="row">
+        <!-- Formulario para actualizar la información de la ruta -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="m-0">Información de la Ruta</h4>
+                </div>
+                <div class="card-body">
+                    <form action="/admin/rutas/<%= ruta.id %>/actualizar" method="POST">
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Nombre <span class="text-danger">*</span></label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="nombre" 
+                                   name="nombre" 
+                                   value="<%= ruta.nombre %>"
+                                   required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" 
+                                      id="descripcion" 
+                                      name="descripcion" 
+                                      rows="4"><%= ruta.descripcion || '' %></textarea>
+                        </div>                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg py-2 shadow">
+                                <i class="fa fa-save me-2"></i> Actualizar Ruta
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario para agregar cursos a la ruta -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h4 class="m-0">Agregar Cursos a la Ruta</h4>
+                </div>
+                <div class="card-body">
+                    <% if (Array.isArray(cursosDisponibles) && cursosDisponibles.length > 0) { %>
+                        <form action="/admin/rutas/<%= ruta.id %>/agregar-curso" method="POST">
+                            <div class="mb-3">
+                                <label for="curso_id" class="form-label">Seleccionar Curso <span class="text-danger">*</span></label>
+                                <select class="form-select" id="curso_id" name="curso_id" required>
+                                    <option value="">-- Seleccionar un curso --</option>
+                                    <% cursosDisponibles.forEach(curso => { %>
+                                        <option value="<%= curso.id %>">
+                                            <%= curso.nombre %> 
+                                            <% if (curso.categoria) { %>
+                                                (Categoría: <%= curso.categoria %>)
+                                            <% } %>
+                                        </option>
+                                    <% }) %>
+                                </select>
+                            </div>                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success btn-lg py-2 shadow">
+                                    <i class="fa fa-plus me-2"></i> Agregar Curso
+                                </button>
+                            </div>
+                        </form>
+                    <% } else { %>
+                        <div class="alert alert-info">
+                            No hay cursos disponibles para agregar. Todos los cursos ya están asignados a una ruta o no existen cursos en el sistema.
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Listado de cursos en la ruta -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="m-0">Cursos en esta ruta</h4>
+                </div>
+                <div class="card-body">                    <% if (Array.isArray(cursosDeLaRuta) && cursosDeLaRuta.length > 0) { %>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nombre</th>
+                                        <th>Categoría</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% cursosDeLaRuta.forEach(curso => { %>
+                                        <tr>
+                                            <td><%= curso.id %></td>
+                                            <td><%= curso.nombre %></td>
+                                            <td><%= curso.categoria || '-' %></td>
+                                            <td>                                                <a href="/admin/rutas/<%= ruta.id %>/eliminar-curso/<%= curso.id %>" 
+                                                   class="btn btn-outline-danger rounded-pill px-3"
+                                                   onclick="return confirm('¿Estás seguro de eliminar este curso de la ruta?')">
+                                                    <i class="fa fa-times me-1"></i> Quitar
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } else { %>
+                        <div class="alert alert-warning">
+                            Esta ruta no tiene cursos asignados todavía. Agrega cursos utilizando el formulario de arriba.
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <%- include('../../partials/footer') %>
+
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/lib/wow/wow.min.js"></script>
+    <script src="/lib/easing/easing.min.js"></script>
+    <script src="/lib/waypoints/waypoints.min.js"></script>
+    <script src="/lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

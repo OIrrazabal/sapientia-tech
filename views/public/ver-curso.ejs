@@ -168,6 +168,12 @@
                             <i class="fa fa-book text-primary me-3"></i>
                             <span><%= secciones.length %> secciones</span>
                         </div>
+                        <% if (rutaAprendizaje) { %>
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fa fa-route text-primary me-3"></i>
+                            <span>Ruta de Aprendizaje: <%= rutaAprendizaje.nombre %></span>
+                        </div>
+                        <% } %>
                     </div>
                     
                     <!-- Botón para iniciar sesión (solo versión pública) -->

@@ -263,7 +263,7 @@ publicController.team = (req, res) => {
 /*
 publicController.showHome = async (req, res) => {
     try {
-        let profesores = (await Usuario.listar()).filter(u => u.rol === 'profesor');
+        let profesores = (await Usuario.listar()).filter u => u.rol === 'profesor';
 
         // Eliminar duplicados por ID
         const profesoresUnicos = Array.from(new Map(profesores.map(p => [p.id, p])).values());
@@ -395,8 +395,12 @@ publicController.verCurso = async (req, res) => {
         const valoraciones = await Valoracion.getValoracionesByCurso(cursoId);
         const estadisticas = await Valoracion.getPromedioByCurso(cursoId);
         
+        // Nuevo: Obtener información de la ruta de aprendizaje
+        const rutaAprendizaje = await Curso.obtenerRutaAprendizaje(cursoId);
+        
         res.render('public/ver-curso', {
             curso,
+            rutaAprendizaje, // Nueva variable en la vista
             secciones: secciones || [],
             valoraciones: valoraciones || [],
             estadisticas: estadisticas || { promedio: 0, total: 0 },

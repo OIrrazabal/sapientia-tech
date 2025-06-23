@@ -277,10 +277,14 @@ authController.verCurso = async (req, res) => {
         // Verificar si el usuario ya ha valorado el curso
         const valoracionUsuario = await Valoracion.existeValoracion(cursoId, usuario.id);
         
+        // Nuevo: Obtener información de la ruta de aprendizaje
+        const rutaAprendizaje = await Curso.obtenerRutaAprendizaje(cursoId);
+        
         res.render('auth/ver-curso', {
-            curso,
-            secciones,
             usuario,
+            curso,
+            rutaAprendizaje, // Nueva variable en la vista
+            secciones,
             esProfesor: curso.profesor_id === usuario.id,
             estaInscrito: !!inscripcion,
             valoraciones: valoraciones || [],

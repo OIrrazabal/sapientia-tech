@@ -1,5 +1,6 @@
 const express = require('express');
 const adminController = require('../controllers/admin/admin.controller');
+const rutasController = require('../controllers/admin/rutas.controller');
 const { checkAdmin } = require('../middleware/admin.middleware');
 const router = express.Router();
 const { uploadCategoria, uploadProfile } = require('../middleware/upload.middleware');
@@ -50,5 +51,15 @@ router.get('/categorias/:id/editar', checkAdmin, adminController.mostrarFormular
 router.post('/categorias/:id/editar', checkAdmin, uploadCategoria.single('imagen'), adminController.editarCategoria);
 
 router.get('/estadisticas', checkAdmin, adminController.verEstadisticas);
+
+//rutas de aprendizaje
+router.get('/rutas', checkAdmin, rutasController.index);
+router.get('/rutas/nueva', checkAdmin, rutasController.mostrarCrearRuta);
+router.post('/rutas/crear', checkAdmin, rutasController.crear);
+router.get('/rutas/:id/editar', checkAdmin, rutasController.mostrarEditarRuta);
+router.post('/rutas/:id/actualizar', checkAdmin, rutasController.actualizar);
+router.post('/rutas/:id/agregar-curso', checkAdmin, rutasController.agregarCurso);
+router.get('/rutas/:id/eliminar-curso/:cursoId', checkAdmin, rutasController.quitarCurso);
+router.post('/rutas/:id/eliminar', checkAdmin, rutasController.eliminar);
 
 module.exports = router;
