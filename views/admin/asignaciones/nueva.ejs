@@ -64,21 +64,31 @@
 
                         <form action="/admin/asignaciones/crear" method="POST">
                             <div class="mb-3">
-                                <label for="profesor" class="form-label">Profesor</label>
-                                <select name="profesor_id" id="profesor" class="form-select" required>
-                                    <option value="">Seleccionar profesor</option>
-                                    <% profesores.forEach(profesor => { %>
-                                        <option value="<%= profesor.id %>"><%= profesor.nombre %></option>
+                                <label for="curso_id" class="form-label">Curso *</label>
+                                <select class="form-select" 
+                                        id="curso_id" 
+                                        name="curso_id" 
+                                        required>
+                                    <option value="">Seleccione un curso</option>
+                                    <% cursos.forEach(curso => { %>
+                                        <option value="<%= curso.id %>">
+                                            <%= curso.nombre %>
+                                        </option>
                                     <% }) %>
                                 </select>
                             </div>
 
                             <div class="mb-3">
-                                <label for="curso" class="form-label">Curso</label>
-                                <select name="curso_id" id="curso" class="form-select" required>
-                                    <option value="">Seleccionar curso</option>
-                                    <% cursos.forEach(curso => { %>
-                                        <option value="<%= curso.id %>"><%= curso.nombre %></option>
+                                <label for="profesor_id" class="form-label">Profesor *</label>
+                                <select class="form-select" 
+                                        id="profesor_id" 
+                                        name="profesor_id" 
+                                        required>
+                                    <option value="">Seleccione un profesor</option>
+                                    <% profesores.forEach(profesor => { %>
+                                        <option value="<%= profesor.id %>">
+                                            <%= profesor.nombre %>
+                                        </option>
                                     <% }) %>
                                 </select>
                             </div>
@@ -88,11 +98,11 @@
                             <% } %>
 
                             <div class="d-flex justify-content-between mt-4">
-                                <a href="/admin/asignaciones" class="btn btn-secondary">
-                                    <i class="fa fa-arrow-left me-1"></i> Cancelar
+                                <a href="/admin/asignaciones" class="btn btn-secondary py-3">
+                                    <i class="fa fa-arrow-left me-2"></i> Cancelar
                                 </a>
-                                <button type="submit" class="btn btn-success">
-                                    <i class="fa fa-check me-1"></i> Guardar Asignación
+                                <button type="submit" class="btn btn-primary py-3">
+                                    <i class="fa fa-user-plus me-2"></i> Asignar Profesor
                                 </button>
                             </div>
                         </form>

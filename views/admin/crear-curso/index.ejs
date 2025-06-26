@@ -46,6 +46,18 @@
                 <textarea name="descripcion" class="form-control" required><%= curso.descripcion || '' %></textarea>
             </div>
 
+            <div class="mb-3">
+                <label for="categoria_id" class="form-label">Categoría</label>
+                <select name="categoria_id" class="form-control" required>
+                    <option value="">-- Seleccionar Categoría --</option>
+                    <% if (categorias && categorias.length > 0) { %>
+                        <% categorias.forEach(categoria => { %>
+                            <option value="<%= categoria.id %>" <%= (curso.categoria_id == categoria.id) ? 'selected' : '' %>><%= categoria.nombre %></option>
+                        <% }) %>
+                    <% } %>
+                </select>
+            </div>
+
             <% if (editando) { %>
                 <div class="mb-3">
                     <label class="form-label">Imagen actual</label><br>

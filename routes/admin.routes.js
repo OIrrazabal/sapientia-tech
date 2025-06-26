@@ -23,6 +23,7 @@ router.get('/asignaciones', checkAdmin, adminController.verAsignaciones);
 // También agregar rutas para nuevas asignaciones si las necesitas:
 router.get('/asignaciones/nueva', checkAdmin, adminController.nuevaAsignacion);
 router.post('/asignaciones/crear', checkAdmin, adminController.crearAsignacionDesdeListado);
+router.get('/asignaciones/crear', checkAdmin, adminController.crearAsignacionDesdeListado); // Added for redirects
 router.post('/asignaciones/eliminar/:id', checkAdmin, adminController.eliminarAsignacion);
 
 // Gestión de usuarios
@@ -61,5 +62,10 @@ router.post('/rutas/:id/actualizar', checkAdmin, rutasController.actualizar);
 router.post('/rutas/:id/agregar-curso', checkAdmin, rutasController.agregarCurso);
 router.get('/rutas/:id/eliminar-curso/:cursoId', checkAdmin, rutasController.quitarCurso);
 router.post('/rutas/:id/eliminar', checkAdmin, rutasController.eliminar);
+
+// Rutas para correlatividades
+router.get('/rutas/:id/curso/:cursoId/correlatividades', checkAdmin, rutasController.mostrarAgregarCorrelatividad);
+router.post('/rutas/:id/curso/:cursoId/correlatividades/agregar', checkAdmin, rutasController.agregarCorrelatividad);
+router.get('/rutas/:id/curso/:cursoId/correlatividades/eliminar/:correlativoId', checkAdmin, rutasController.eliminarCorrelatividad);
 
 module.exports = router;

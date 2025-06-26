@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>eLEARNING - Administrar Correlatividades</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+    <!-- Favicon -->
+    <link href="/assets/img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="/lib/animate/animate.min.css" rel="stylesheet">
+    <link href="/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">    <!-- Bootstrap & Template Stylesheet -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    
+    <!-- Custom styles for permanent alerts -->
+    <style>
+        .permanent-info {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid;
+            border-color: inherit;
+        }
+        .alert-info.permanent-info {
+            border-left-color: #0dcaf0;
+        }
+        .alert-warning.permanent-info {
+            border-left-color: #ffc107;
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('../../partials/navbar', { usuario: usuario, appName: appName }) %>
+
+    <div class="container-fluid bg-primary py-5 mb-5 page-header">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 text-center">
+                    <h1 class="display-3 text-white animated slideInDown">Administrar Correlatividades</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-center">
+                            <li class="breadcrumb-item"><a class="text-white" href="/admin/home">Inicio</a></li>
+                            <li class="breadcrumb-item"><a class="text-white" href="/admin/rutas">Rutas</a></li>
+                            <li class="breadcrumb-item"><a class="text-white" href="/admin/rutas/<%= ruta.id %>/editar">Editar Ruta</a></li>
+                            <li class="breadcrumb-item text-white active" aria-current="page">Correlatividades</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <a href="/admin/rutas/<%= ruta.id %>/editar" class="btn btn-outline-secondary px-3 py-2 rounded-pill">
+                        <i class="fa fa-arrow-left me-2"></i> Volver a la ruta
+                    </a>
+                </div>
+                <h2 class="text-center">Administrar correlatividades del curso: <%= curso.nombre %></h2>
+                <p class="text-center text-muted">
+                    Ruta de aprendizaje: <b><%= ruta.nombre %></b>
+                </p>
+            </div>
+        </div>
+
+        <% if (typeof mensaje !== 'undefined' && mensaje) { %>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <%= mensaje %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <% } %>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <%= error %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <% } %>
+
+        <div class="row mb-4">
+            <!-- Sección de información -->
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="m-0">Información</h4>
+                    </div>
+                    <div class="card-body">                        <div class="alert alert-info permanent-info auto-dismiss">
+                            <strong>¿Qué son las correlatividades?</strong>
+                            <p class="mt-2">Las correlatividades definen los cursos que un alumno debe haber completado antes de poder inscribirse a este curso.</p>
+                            <p>Para que un alumno pueda inscribirse a <b><%= curso.nombre %></b>, deberá haber completado todos los cursos correlativos listados.</p>
+                        </div>
+                        
+                        <div class="alert alert-warning permanent-info auto-dismiss">
+                            <strong>Importante</strong>
+                            <p class="mt-2">Solo puedes agregar como correlatividades cursos que pertenezcan a la misma ruta de aprendizaje.</p>
+                            <p>Este control solo se aplica a la autoinscripción de alumnos. Los administradores pueden inscribir alumnos sin cumplir los requisitos.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario para agregar correlatividad -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="m-0">Agregar correlatividad</h4>
+                    </div>
+                    <div class="card-body">
+                        <% if (Array.isArray(cursosParaAgregar) && cursosParaAgregar.length > 0) { %>
+                            <form action="/admin/rutas/<%= ruta.id %>/curso/<%= curso.id %>/correlatividades/agregar" method="POST">
+                                <div class="mb-3">
+                                    <label for="correlativo_id" class="form-label">
+                                        Selecciona un curso que será requisito para <b><%= curso.nombre %></b>:
+                                    </label>
+                                    <select class="form-select" id="correlativo_id" name="correlativo_id" required>
+                                        <option value="">-- Seleccionar un curso --</option>
+                                        <% cursosParaAgregar.forEach(correlativo => { %>
+                                            <option value="<%= correlativo.id %>">
+                                                <%= correlativo.nombre %>
+                                                <% if (correlativo.categoria) { %>
+                                                    (Categoría: <%= correlativo.categoria %>)
+                                                <% } %>
+                                            </option>
+                                        <% }) %>
+                                    </select>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-success btn-lg py-2 shadow">
+                                        <i class="fa fa-plus me-2"></i> Agregar como requisito
+                                    </button>
+                                </div>
+                            </form>
+                        <% } else { %>
+                            <div class="alert alert-info auto-dismiss">
+                                No hay más cursos disponibles para agregar como correlatividad. Ya se han agregado todos los cursos posibles de la ruta o no hay otros cursos en la ruta.
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Listado de correlatividades actuales -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="m-0">Correlatividades actuales</h4>
+                    </div>
+                    <div class="card-body">
+                        <% if (Array.isArray(correlatividades) && correlatividades.length > 0) { %>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nombre del curso correlativo</th>
+                                            <th>Fecha de creación</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% correlatividades.forEach(correlatividad => { %>
+                                            <tr>
+                                                <td><%= correlatividad.correlativo_id %></td>
+                                                <td><%= correlatividad.correlativo_nombre %></td>
+                                                <td><%= new Date(correlatividad.fecha_creacion).toLocaleString() %></td>
+                                                <td>
+                                                    <a href="/admin/rutas/<%= ruta.id %>/curso/<%= curso.id %>/correlatividades/eliminar/<%= correlatividad.correlativo_id %>" 
+                                                       class="btn btn-outline-danger rounded-pill px-3"
+                                                       onclick="return confirm('¿Estás seguro de eliminar esta correlatividad?')">
+                                                        <i class="fa fa-trash me-1"></i> Eliminar
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>                        <% } else { %>
+                            <div class="alert alert-warning permanent-info">
+                                Este curso no tiene correlatividades. Los alumnos pueden inscribirse sin requisitos previos.
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../../partials/footer') %>
+
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/lib/wow/wow.min.js"></script>
+    <script src="/lib/easing/easing.min.js"></script>
+    <script src="/lib/waypoints/waypoints.min.js"></script>
+    <script src="/lib/owlcarousel/owl.carousel.min.js"></script>    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            setTimeout(function() {
+                // Auto-dismiss alerts after 10 seconds
+                const alerts = document.querySelectorAll('.alert:not(.permanent-info)');
+                alerts.forEach(function(alert) {
+                    if (alert) {
+                        var bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
+                    }
+                });
+            }, 10000);
+            
+            // Auto-dismiss notifications marked with auto-dismiss class after 10 seconds
+            document.querySelectorAll('.auto-dismiss').forEach(function(element) {
+                setTimeout(function() {
+                    // Create a fade out effect
+                    element.style.transition = 'opacity 1s ease-out';
+                    element.style.opacity = '0';
+                    
+                    // After the fade out, remove the element completely
+                    setTimeout(function() {
+                        element.style.display = 'none';
+                    }, 1000);
+                }, 10000); // 10 seconds before starting fade out
+            });
+        });
+    </script>
+</body>
+</html>

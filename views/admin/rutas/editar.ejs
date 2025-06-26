@@ -163,16 +163,25 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <% cursosDeLaRuta.forEach(curso => { %>
-                                        <tr>
+                                    <% cursosDeLaRuta.forEach(curso => { %>                                        <tr>
                                             <td><%= curso.id %></td>
                                             <td><%= curso.nombre %></td>
                                             <td><%= curso.categoria || '-' %></td>
-                                            <td>                                                <a href="/admin/rutas/<%= ruta.id %>/eliminar-curso/<%= curso.id %>" 
-                                                   class="btn btn-outline-danger rounded-pill px-3"
-                                                   onclick="return confirm('¿Estás seguro de eliminar este curso de la ruta?')">
-                                                    <i class="fa fa-times me-1"></i> Quitar
-                                                </a>
+                                            <td>                                               
+                                                <div class="btn-group" role="group">
+                                                    <a href="/admin/rutas/<%= ruta.id %>/curso/<%= curso.id %>/correlatividades" 
+                                                       class="btn btn-outline-primary rounded-pill px-3 me-2">
+                                                        <i class="fa fa-link me-1"></i> Correlatividades
+                                                        <% if (correlatividades && correlatividades[curso.id] && correlatividades[curso.id].length > 0) { %>
+                                                            <span class="badge bg-primary"><%= correlatividades[curso.id].length %></span>
+                                                        <% } %>
+                                                    </a>
+                                                    <a href="/admin/rutas/<%= ruta.id %>/eliminar-curso/<%= curso.id %>" 
+                                                       class="btn btn-outline-danger rounded-pill px-3"
+                                                       onclick="return confirm('¿Estás seguro de eliminar este curso de la ruta? Si es un requisito correlativo de otros cursos, no se podrá eliminar.')">
+                                                        <i class="fa fa-times me-1"></i> Quitar
+                                                    </a>
+                                                </div>
                                             </td>
                                         </tr>
                                     <% }) %>

@@ -4,6 +4,7 @@ const Valoracion = require('../../models/valoracion.model');
 const Categoria = require('../../models/categorias.model');
 const bcrypt = require('bcrypt');
 const loginSchema = require('../../validators/login.schema');
+const usuarioSchema = require('../../validators/usuario.schema');
 const db = require('../../db/conexion');
 const { homeLogger, loginLogger } = require('../../logger');
 
@@ -51,13 +52,11 @@ publicController.showHome = async (req, res) => {
       } else {
         mapa.get(p.id).cursos.push(p.curso);
       }
-    }
-
-    for (const entry of mapa.values()) {
+    }    for (const entry of mapa.values()) {
       profesoresAgrupados.push(entry);
     }
 
-    const categoriasPopulares = await Curso.getCategoriasPopulares(4);
+    const categoriasPopulares = await Curso.getCategoriasPopulares(6);
     const cursosPopulares = await Curso.getCursosPopulares(8);
     
     // Obtener las últimas valoraciones para testimoniales
@@ -95,9 +94,17 @@ publicController.showAdminLogin = (req, res) => {
 };
 
 publicController.showLogin = (req, res) => {
+    // Verificar si hay un mensaje de éxito de registro
+    const mensajeExito = req.session.mensajeExito;
+    if (req.session.mensajeExito) {
+        delete req.session.mensajeExito;  // Limpiar mensaje después de usarlo
+    }
+    
     res.render('public/login/index', { 
         error: req.query.error || null,
-        usuario: req.session.usuario || null
+        mensajeExito: mensajeExito || null,
+        usuario: req.session.usuario || null,
+        appName: process.env.APP_NAME || 'Sapientia Tech'
     });
 };
 
@@ -225,11 +232,16 @@ publicController.showTestimonial = async (req, res) => {
 
         // Eliminar duplicados por ID
         const estudiantesUnicos = Array.from(new Map(estudiantes.map(e => [e.id, e])).values());
-
+        
+        // Obtener las últimas valoraciones/testimonios
+        const valoraciones = await Valoracion.getUltimasValoraciones(10);
+        
         res.render('testimonial', {
-            title: 'Testimonial',
+            title: 'Testimoniales',
             usuario: req.session.usuario || null,
-            alumnos: estudiantesUnicos
+            alumnos: estudiantesUnicos,
+            valoraciones: valoraciones,
+            appName: process.env.APP_NAME || 'Sapientia Tech'
         });
     } catch (error) {
         console.error("Error al cargar estudiantes en testimonial:", error);
@@ -263,12 +275,10 @@ publicController.team = (req, res) => {
 /*
 publicController.showHome = async (req, res) => {
     try {
-        let profesores = (await Usuario.listar()).filter u => u.rol === 'profesor';
-
-        // Eliminar duplicados por ID
+        let profesores = (await Usuario.listar()).filter u => u.rol === 'profesor';        // Eliminar duplicados por ID
         const profesoresUnicos = Array.from(new Map(profesores.map(p => [p.id, p])).values());
 
-        const categoriasPopulares = await Curso.getCategoriasPopulares(4);
+        const categoriasPopulares = await Curso.getCategoriasPopulares(6);
         const cursosPopulares = await Curso.getCursosPopulares?.(8) || [];
 
         res.render('public/home/index', {
@@ -348,31 +358,47 @@ publicController.showFaqs = (req, res) => {
     });
 };
 
-publicController.verCategoria = async (req, res) => {
-    const categoriaId = req.params.id;
+publicController.showCategorias = async (req, res) => {
+  try {
+    const categorias = await Categoria.listarTodasDetalladas();
     
-    try {
-        // Obtener información de la categoría
-        const categoria = await Categoria.obtenerPorId(categoriaId);
-        console.log('Categoria obtenida:', categoria);
-        if (!categoria) {
-            return res.redirect('/public/home');
-        }
-
-        // Obtener cursos de la categoría
-        const cursos = await Curso.getCursosByCategoria(categoriaId);
-
-        res.render('public/categoria/index', {
-            categoria,
-            cursos: cursos || [],
-            usuario: req.session.usuario || null
-        });
-    } catch (error) {
-        console.error('Error al obtener cursos de categoría:', error);
-        res.redirect('/public/home');
-    }
+    res.render('public/categorias', {
+      categorias: categorias || [],
+      appName: process.env.APP_NAME || "eLEARNING",
+      usuario: req.session.usuario || null
+    });
+  } catch (error) {
+    console.error('Error al mostrar categorías:', error);
+    res.status(500).send('Error del servidor');
+  }
 };
 
+publicController.showCategoria = async (req, res) => {
+  try {
+    const categoriaId = req.params.id;
+    const categoria = await Categoria.obtenerPorId(categoriaId);
+    
+    if (!categoria) {
+      return res.status(404).render('404', { 
+        mensaje: 'Categoría no encontrada',
+        usuario: req.session.usuario || null,
+        appName: process.env.APP_NAME || "eLEARNING"
+      });
+    }
+    
+    const cursos = await Curso.getCursosByCategoria(categoriaId);
+    
+    res.render('public/categoria', {
+      categoria,
+      cursos: cursos || [],
+      usuario: req.session.usuario || null,
+      appName: process.env.APP_NAME || "eLEARNING"
+    });
+  } catch (error) {
+    console.error('Error al mostrar categoría:', error);
+    res.status(500).send('Error del servidor');
+  }
+};
 
 publicController.verCurso = async (req, res) => {
     const cursoId = req.params.id;
@@ -415,48 +441,162 @@ publicController.formRegistro = (req, res) => {
   res.render('public/registro', {
     errores: [],
     datos: {},
-    usuario: null
+    usuario: null,
+    appName: process.env.APP_NAME || 'Sapientia Tech'
   });
 };
 
 publicController.procesarRegistro = async (req, res) => {
   const { nombre, email, contraseña, repetir_contraseña, telefono, direccion } = req.body;
   const errores = [];
+  const bcrypt = require('bcrypt');
 
-  if (!nombre || !email || !contraseña || !repetir_contraseña) {
-    errores.push("Todos los campos obligatorios deben estar completos.");
-  }
+  try {
+    // Validación de campos
+    if (!nombre || !email || !contraseña || !repetir_contraseña) {
+      errores.push("Todos los campos obligatorios deben estar completos.");
+    }
 
-  if (contraseña !== repetir_contraseña) {
-    errores.push("Las contraseñas no coinciden.");
-  }
+    if (contraseña !== repetir_contraseña) {
+      errores.push("Las contraseñas no coinciden.");
+    }
+    
+    if (contraseña && contraseña.length < 6) {
+      errores.push("La contraseña debe tener al menos 6 caracteres.");
+    }
+    
+    // Validar formato de email con regex simple
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (email && !emailRegex.test(email)) {
+      errores.push("Por favor, ingresa un correo electrónico válido.");
+    }
 
-  const existe = await Usuario.obtenerPorEmail(email);
-  if (existe) {
-    errores.push("El correo ya está registrado.");
-  }
+    // Verificar si el email ya está registrado
+    const existe = await Usuario.obtenerPorEmail(email);
+    if (existe) {
+      errores.push("El correo electrónico ya está registrado.");
+    }
 
-  if (errores.length > 0) {
+    if (errores.length > 0) {
+      return res.render('public/registro', {
+        errores,
+        datos: req.body,
+        usuario: null,
+        appName: process.env.APP_NAME || 'Sapientia Tech'
+      });
+    }
+
+    // Encriptar contraseña
+    const saltRounds = 10;
+    const hash = await bcrypt.hash(contraseña, saltRounds);
+
+    // Crear usuario
+    await Usuario.crear({
+      nombre,
+      email,
+      contraseña: hash,
+      telefono,
+      direccion,
+      es_admin: 0
+    });
+
+    // Redireccionar a login con mensaje de éxito
+    req.session.mensajeExito = "¡Registro exitoso! Ya puedes iniciar sesión con tus credenciales.";
+    res.redirect('/login');
+  } catch (error) {
+    console.error('Error en registro:', error);
+    errores.push("Ha ocurrido un error en el registro. Intente nuevamente.");
+    
     return res.render('public/registro', {
       errores,
       datos: req.body,
-      usuario: null
+      usuario: null,
+      appName: process.env.APP_NAME || 'Sapientia Tech'
     });
   }
+};
 
-  const saltRounds = 10;
-  const hash = await bcrypt.hash(contraseña, saltRounds);
-
-  await Usuario.crear({
-    nombre,
-    email,
-    contraseña: hash,
-    telefono,
-    direccion,
-    es_admin: 0
+// Mostrar formulario de registro
+publicController.showRegistro = (req, res) => {
+  res.render('public/registro/index', { 
+    error: null,
+    formData: {},
+    appName: process.env.APP_NAME || "eLEARNING",
+    usuario: req.session.usuario || null
   });
+};
 
-  res.redirect('/public/login');
+// Procesar registro de usuario
+publicController.registroTry = async (req, res) => {
+  try {
+    const { nombre, email, password, confirmPassword, telefono, direccion } = req.body;
+    
+    // Validaciones personalizadas
+    if (password !== confirmPassword) {
+      return res.render('public/registro/index', {
+        error: 'Las contraseñas no coinciden',
+        formData: { nombre, email, telefono, direccion },
+        appName: process.env.APP_NAME || "eLEARNING",
+        usuario: req.session.usuario || null
+      });
+    }
+    
+    // Validar con Joi
+    const { error } = usuarioSchema.validate({
+      nombre,
+      email,
+      password,
+      telefono,
+      direccion,
+      es_admin: 0
+    });
+    
+    if (error) {
+      return res.render('public/registro/index', {
+        error: error.details[0].message,
+        formData: { nombre, email, telefono, direccion },
+        appName: process.env.APP_NAME || "eLEARNING",
+        usuario: req.session.usuario || null
+      });
+    }
+    
+    // Verificar si el email ya existe
+    const existeUsuario = await Usuario.buscarPorEmail(email);
+    if (existeUsuario) {
+      return res.render('public/registro/index', {
+        error: 'Este correo electrónico ya está registrado',
+        formData: { nombre, telefono, direccion },
+        appName: process.env.APP_NAME || "eLEARNING",
+        usuario: req.session.usuario || null
+      });
+    }
+    
+    // Hash de la contraseña
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    
+    // Crear usuario
+    await Usuario.crear({
+      nombre,
+      email,
+      contraseña: hashedPassword,
+      es_admin: 0, // Por defecto, no es admin
+      telefono,
+      direccion
+    });
+    
+    // Redireccionar al login con mensaje de éxito
+    return res.redirect('/public/login?mensaje=Registro exitoso. Ahora puedes iniciar sesión.');
+    
+  } catch (error) {
+    console.error('Error en registro:', error);
+    return res.render('public/registro/index', {
+      error: 'Error al registrar el usuario. Intente nuevamente.',
+      formData: req.body,
+      appName: process.env.APP_NAME || "eLEARNING",
+      usuario: req.session.usuario || null
+    });
+  }
 };
 
 module.exports = publicController;

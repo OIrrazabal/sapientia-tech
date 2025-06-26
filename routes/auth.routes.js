@@ -107,6 +107,9 @@ router.get('/mis-cursos-redirect', checkLogin, authController.redirectMisCursos)
 // Publicar curso
 router.post('/curso/:id/publicar', checkLogin, authController.publicarCurso);
 
+// Confirmar inscripción (página de confirmación)
+router.get('/curso/:id/confirmar-inscripcion', checkLogin, authController.confirmarInscripcion);
+
 // Inscripción a curso
 router.post('/curso/:id/inscribir', checkLogin, authController.inscribirAlumno);
 

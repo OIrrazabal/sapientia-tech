@@ -3,10 +3,10 @@
 
 <head>
     <meta charset="utf-8">
-    <title>eLEARNING - eLearning HTML Template</title>
+    <title><%= appName %> - Testimoniales</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta content="" name="keywords">
-    <meta content="" name="description">
+    <meta content="testimoniales, valoraciones, opiniones, estudiantes" name="keywords">
+    <meta content="Opiniones y testimonios de nuestros estudiantes sobre los cursos" name="description">
     
 <!-- Favicon -->
 <link href="/assets/img/favicon.ico" rel="icon">
@@ -50,12 +50,11 @@
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-lg-10 text-center">
-                <h1 class="display-3 text-white animated slideInDown">Testimonial</h1>
+                <h1 class="display-3 text-white animated slideInDown">Testimoniales</h1>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb justify-content-center">
-                        <li class="breadcrumb-item"><a class="text-white" href="#">Home</a></li>
-                        <li class="breadcrumb-item"><a class="text-white" href="#">Pages</a></li>
-                        <li class="breadcrumb-item text-white active" aria-current="page">Testimonial</li>
+                        <li class="breadcrumb-item"><a class="text-white" href="<%= usuario ? '/auth/home' : '/' %>">Inicio</a></li>
+                        <li class="breadcrumb-item text-white active" aria-current="page">Testimoniales</li>
                     </ol>
                 </nav>
             </div>
@@ -84,6 +83,39 @@
 
 <!-- Template Javascript -->
 <script src="/js/main.js"></script>
+<script>
+    $(document).ready(function() {
+        // Initialize testimonial carousel
+        $(".testimonial-carousel").owlCarousel({
+            autoplay: true,
+            smartSpeed: 1000,
+            margin: 25,
+            dots: true,
+            loop: true,
+            center: true,
+            responsive: {
+                0: {
+                    items: 1
+                },
+                768: {
+                    items: 2
+                },
+                992: {
+                    items: 3
+                }
+            }
+        });
+        
+        // Custom navigation for the testimonial carousel
+        $('.owl-prev-custom').click(function() {
+            $('.testimonial-carousel').trigger('prev.owl.carousel');
+        });
+        
+        $('.owl-next-custom').click(function() {
+            $('.testimonial-carousel').trigger('next.owl.carousel');
+        });
+    });
+</script>
 </body>
 
 </html>

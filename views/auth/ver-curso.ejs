@@ -46,11 +46,17 @@
             </div>
         </div>
     </div>
-    <!-- Header End -->
-
-    <!-- Course Details Start -->
+    <!-- Header End -->    <!-- Course Details Start -->
     <div class="container-xxl py-5">
         <div class="container">
+            <% if (typeof req !== 'undefined' && req.session && req.session.mensajeExito) { %>
+                <div class="alert alert-success alert-dismissible fade show mb-4">
+                    <i class="fa fa-check-circle me-2"></i><%= req.session.mensajeExito %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <% req.session.mensajeExito = null; %>
+            <% } %>
+            
             <div class="row g-4">
                 <div class="col-lg-8 wow fadeInUp" data-wow-delay="0.1s">
                     <div class="mb-4">
@@ -65,17 +71,31 @@
                                 <span class="badge bg-primary">
                                     <i class="fa fa-user-tie me-2"></i>Eres profesor de este curso
                                 </span>
-                            <% } else if (estaInscrito) { %>
-                                <span class="badge bg-success">
+                            <% } else if (estaInscrito) { %>                                <span class="badge bg-success">
                                     <i class="fa fa-check-circle me-2"></i>Estás inscrito
-                                </span>
-                            <% } else if (!esProfesor && !estaInscrito && curso.publicado) { %>
-                                <!-- Botón de inscripción -->
-                                <form action="/auth/curso/<%= curso.id %>/inscribir" method="POST" class="d-inline">
-                                    <button type="submit" class="btn btn-success btn-sm">
+                                </span>                            <% } else if (!esProfesor && !estaInscrito && curso.publicado) { %>                                <!-- Botón de inscripción -->                                <form action="/auth/curso/<%= curso.id %>/inscribir" method="POST" class="d-inline">
+                                    <input type="hidden" name="confirmado" value="true">
+                                    <button type="submit" class="btn btn-success <% if (typeof correlatividades !== 'undefined' && correlatividades.length > 0 && !cumpleCorrelatividades) { %>btn-sm disabled<% } else { %>btn-md pulse-button<% } %>" <% if (typeof correlatividades !== 'undefined' && correlatividades.length > 0 && !cumpleCorrelatividades) { %>disabled<% } %>>
                                         <i class="fa fa-user-plus me-2"></i>Inscribirme al curso
                                     </button>
                                 </form>
+                                
+                                <% if (req.session.error) { %>
+                                    <div class="alert alert-danger mt-2" style="width: 100%;">
+                                        <i class="fa fa-exclamation-circle me-2"></i>
+                                        <%= req.session.error %>
+                                        <% if (typeof correlatividades !== 'undefined' && correlatividades.length > 0) { %>
+                                            <a href="#correlatividades" class="alert-link">Ver requisitos</a>
+                                        <% } %>
+                                        <% delete req.session.error; %>
+                                    </div>
+                                <% } else if (typeof correlatividades !== 'undefined' && correlatividades.length > 0 && !cumpleCorrelatividades) { %>
+                                    <div class="alert alert-warning mt-2" style="width: 100%;">
+                                        <i class="fa fa-exclamation-triangle me-2"></i>
+                                        No cumples con los requisitos para inscribirte en este curso. 
+                                        <a href="#correlatividades" class="alert-link">Ver requisitos</a>
+                                    </div>
+                                <% } %>
                             <% } %>
 
                             <% if (curso.publicado) { %>
@@ -167,6 +187,46 @@
                             <% } %>
                         <% } %>
                     </div>
+
+                    <!-- Correlatividades -->
+                    <% if (rutaAprendizaje && typeof correlatividades !== 'undefined' && correlatividades.length > 0) { %>
+                        <div id="correlatividades" class="mb-4 mt-5">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h4 class="mb-0"><i class="fa fa-link me-2"></i>Requisitos previos</h4>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">
+                                        Para inscribirte a este curso de la ruta <strong><%= rutaAprendizaje.nombre %></strong>,
+                                        primero debes estar inscrito en los siguientes cursos:
+                                    </p>
+                                    
+                                    <div class="list-group">
+                                        <% correlatividades.forEach(correlatividad => { %>
+                                            <a href="/auth/curso/<%= correlatividad.correlativo_id %>" class="list-group-item list-group-item-action">
+                                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                                    <h6 class="mb-1"><%= correlatividad.correlativo_nombre %></h6>
+                                                    <% 
+                                                    let inscripto = true;
+                                                    if (typeof correlativasPendientes !== 'undefined') {
+                                                        inscripto = !correlativasPendientes.some(c => c.id === correlatividad.correlativo_id);
+                                                    }
+                                                    %>
+                                                    <span class="badge <%= inscripto ? 'bg-success' : 'bg-warning text-dark' %>">
+                                                        <% if (inscripto) { %>
+                                                            <i class="fa fa-check-circle me-1"></i> Cumplido
+                                                        <% } else { %>
+                                                            <i class="fa fa-exclamation-circle me-1"></i> Pendiente
+                                                        <% } %>
+                                                    </span>
+                                                </div>
+                                            </a>
+                                        <% }); %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %>
 
                     <!-- Sección de valoraciones -->
                     <div class="mt-5 valoraciones-container">
@@ -314,13 +374,43 @@
     <script src="/lib/wow/wow.min.js"></script>
     <script src="/lib/easing/easing.min.js"></script>
     <script src="/lib/waypoints/waypoints.min.js"></script>
-    <script src="/lib/owlcarousel/owl.carousel.min.js"></script>
-
-    <!-- Template Javascript -->
+    <script src="/lib/owlcarousel/owl.carousel.min.js"></script>    <!-- Template Javascript -->
     <script src="/js/main.js"></script>
-
-    <script>
+    
+    <style>
+        /* Pulse animation for the enrollment button */
+        .pulse-button {
+            position: relative;
+            box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7);
+            }
+            
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 10px rgba(25, 135, 84, 0);
+            }
+            
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(25, 135, 84, 0);
+            }
+        }
+    </style>    <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Auto-dismiss alert after 5 seconds
+            const alertElement = document.querySelector('.alert-success');
+            if (alertElement) {
+                setTimeout(function() {
+                    const bsAlert = new bootstrap.Alert(alertElement);
+                    bsAlert.close();
+                }, 5000);
+            }
             // Manejo de selección de estrellas
             const ratingInputs = document.querySelectorAll('input[name="estrellas"]');
             const ratingValue = document.getElementById('rating-value');

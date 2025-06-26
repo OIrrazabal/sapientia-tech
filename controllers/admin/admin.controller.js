@@ -2,6 +2,7 @@ const adminController = {};
 const Usuario = require('../../models/usuario.model');
 const Curso = require('../../models/curso.model');
 const Categoria = require('../../models/categorias.model');
+const Correlatividad = require('../../models/correlatividad.model');
 const cursoSchema = require('../../validators/curso.schema');
 const categoriaSchema = require('../../validators/categoria.schema');
 const db = require('../../db/conexion');
@@ -80,113 +81,16 @@ adminController.crearCurso = async (req, res) => {
 
 // Asignar profesores 
 adminController.mostrarFormularioAsignar = async (req, res) => {
-  try {
-    // NUEVO: Sincronizar las tablas antes de mostrar el formulario
-    await sincronizarTablasAsignaciones();
-    
-    // Usar las funciones que SÍ existen en tu modelo
-    const cursos = await Curso.listarDisponibles();
-    
-    // Obtener todos los usuarios (para seleccionar profesores)
-    const usuarios = await Usuario.listar();
-    
-    res.render('admin/asignar-profesor/index', {
-      cursos: Array.isArray(cursos) ? cursos : [],
-      profesores: Array.isArray(usuarios) ? usuarios : [],
-      error: null,
-      usuario: req.session.usuario,
-      appName: 'Sapientia Tech Courses',
-      req: req // Pasar el objeto request para acceder a query
-    });
-  } catch (error) {
-    console.error('Error al mostrar formulario de asignación:', error);
-    res.status(500).send('Error al cargar el formulario');
-  }
+  // Redirigir a la ruta unificada para asignar profesores
+  res.redirect('/admin/asignaciones/nueva');
 };
 
 adminController.procesarAsignacionProfesor = async (req, res) => {
   try {
     const { curso_id, profesor_id } = req.body;
     
-    // Asignar profesor en la tabla cursos
-    await Curso.asignarProfesor(curso_id, profesor_id);
-    
-    // Verificar si ya existe la asignación en la tabla asignaciones
-    const dbGet = util.promisify(db.get).bind(db);
-    const existente = await dbGet(
-      'SELECT id FROM asignaciones WHERE id_curso = ? AND id_profesor = ?',
-      [curso_id, profesor_id]
-    );
-    
-    // Si no existe, insertar la asignación
-    if (!existente) {
-      const dbRun = util.promisify(db.run).bind(db);
-      await dbRun(
-        'INSERT INTO asignaciones (id_curso, id_profesor) VALUES (?, ?)',
-        [curso_id, profesor_id]
-      );
-    }
-    
-    // Obtener datos para el correo
-    const profesor = await Usuario.obtenerPorId(profesor_id);
-    const curso = await Curso.getCursoById(curso_id);
-    
-    // NUEVO: Manejo de imágenes con base64
-    const fs = require('fs');
-    
-    // Convertir logo a base64
-    let logoSrc;
-    try {
-      const logoPath = path.join(__dirname, '../../assets/img/aplicacion.jpg');
-      const logoBuffer = fs.readFileSync(logoPath);
-      const logoBase64 = logoBuffer.toString('base64');
-      logoSrc = `data:image/jpeg;base64,${logoBase64}`;
-    } catch (err) {
-      console.error('Error al cargar logo:', err);
-      // Si falla, simplemente no mostramos imagen
-      logoSrc = '';
-    }
-    
-    // Convertir imagen de portada a base64
-    let portadaUrl = '';
-    let categoria = null;
-    
-    if (curso.categoria_id) {
-      categoria = await Categoria.obtenerPorId(curso.categoria_id);
-      if (categoria && categoria.imagen) {
-        try {
-          const portadaPath = path.join(__dirname, '../../assets/categorias/', categoria.imagen);
-          const portadaBuffer = fs.readFileSync(portadaPath);
-          const portadaBase64 = portadaBuffer.toString('base64');
-          portadaUrl = `data:image/jpeg;base64,${portadaBase64}`;
-        } catch (err) {
-          console.error('Error al cargar portada:', err);
-        }
-      }
-    }
-    
-    // Renderizar plantilla de correo
-    const html = await ejs.renderFile(
-      path.join(__dirname, '../../views/emails/profesor-asignado.ejs'),
-      {
-        profesor,
-        curso,
-        categoria,
-        portadaUrl,
-        logoSrc,  // Pasar la imagen del logo en base64
-        appName: 'Sapientia Tech Courses',
-      }
-    );
-    
-    // Enviar correo
-    await enviarCorreo({
-      to: profesor.email,
-      subject: `Asignación como profesor del curso "${curso.nombre}"`,
-      html
-    });
-    
-    // Cambiar esta línea - redirigir a la página de asignación con mensaje
-    res.redirect('/admin/asignar-profesor?mensaje=Profesor asignado correctamente');
+    // Redirect to the standardized route
+    res.redirect(`/admin/asignaciones/crear?curso_id=${curso_id}&profesor_id=${profesor_id}`);
   } catch (error) {
     console.error('Error al asignar profesor:', error);
     res.status(500).send('Error al procesar la asignación');
@@ -255,13 +159,26 @@ adminController.nuevaAsignacion = async (req, res) => {
 
 // Procesar creación de nueva asignación con validación
 adminController.crearAsignacionDesdeListado = async (req, res) => {
-  const { curso_id, profesor_id } = req.body;
+  // Get params either from form body or from query params (when redirected)
+  let curso_id = req.body.curso_id || req.query.curso_id;
+  let profesor_id = req.body.profesor_id || req.query.profesor_id;
+
+  // If we have query params but no body params, it's a GET request redirected from /admin/asignar-profesor
+  const isRedirected = !req.body.curso_id && req.query.curso_id;
 
   if (!curso_id || !profesor_id) {
+    // If it's just accessing the page without params, show the form
+    if (isRedirected) {
+      return res.redirect('/admin/asignaciones/nueva');
+    }
     return res.status(400).send('Campos obligatorios');
   }
 
   try {
+    // Primero asignar el profesor al curso (esto actualiza la tabla cursos)
+    await Curso.asignarProfesor(curso_id, profesor_id);
+    
+    // Verificar si ya existe la asignación en la tabla asignaciones
     const dbGet = util.promisify(db.get).bind(db);
     const query = `SELECT * FROM asignaciones WHERE id_curso = ? AND id_profesor = ?`;
     const existente = await dbGet(query, [curso_id, profesor_id]);
@@ -273,18 +190,23 @@ adminController.crearAsignacionDesdeListado = async (req, res) => {
         profesores,
         cursos,
         usuario: req.session.usuario || null,
+        appName: 'Sapientia Tech Courses',
         error: 'Este profesor ya está asignado a ese curso.'
       });
     }
 
+    // Si no existe, insertar la asignación
     const dbRun = util.promisify(db.run).bind(db);
     await dbRun(`INSERT INTO asignaciones (id_curso, id_profesor) VALUES (?, ?)`, [curso_id, profesor_id]);
     const lastInsert = await dbGet(`SELECT last_insert_rowid() AS id`);
+    
+    // Skip email sending to avoid the ECONNREFUSED error
     if (req.session.usuario?.es_admin) {
-    adminLogger.debug(`Recurso: Asignación, ID: ${lastInsert.id} creada por admin (${req.session.usuario.email})`);
+      adminLogger.debug(`Recurso: Asignación, ID: ${lastInsert.id} creada por admin (${req.session.usuario.email})`);
     }
 
-    res.redirect('/admin/asignaciones');
+    // Redirect with success message
+    res.redirect('/admin/asignaciones?mensaje=Profesor asignado correctamente');
   } catch (error) {
     console.error('Error:', error);
     res.status(500).send('No se pudo crear la asignación');
@@ -849,37 +771,47 @@ adminController.verEstadisticas = verEstadisticas;
 adminController.mostrarFormularioCurso = async (req, res) => {
     const id = req.params.id;
 
-    if (id) {
-        const curso = await Curso.obtenerPorId(id);
-        if (!curso) return res.redirect('/admin/home');
+    try {
+        // Obtener todas las categorías para mostrarlas en el formulario
+        const categorias = await Categoria.listarConTotalCursos();
 
-        return res.render('admin/crear-curso/index', {
-            editando: true,
-            curso,
+        if (id) {
+            const curso = await Curso.obtenerPorId(id);
+            if (!curso) return res.redirect('/admin/home');
+
+            return res.render('admin/crear-curso/index', {
+                editando: true,
+                curso,
+                categorias,
+                usuario: req.session.usuario || null,
+                appName: 'eLEARNING'
+            });
+        }
+
+        res.render('admin/crear-curso/index', {
+            editando: false,
+            curso: {},
+            categorias,
             usuario: req.session.usuario || null,
             appName: 'eLEARNING'
         });
+    } catch (error) {
+        console.error('Error al cargar formulario de curso:', error);
+        res.status(500).send('Error al cargar el formulario');
     }
-
-    res.render('admin/crear-curso/index', {
-        editando: false,
-        curso: {},
-        usuario: req.session.usuario || null,
-        appName: 'eLEARNING'
-    });
 };
 adminController.guardarCurso = async (req, res) => {
     const id = req.params.id;
-    const { nombre, descripcion } = req.body;
+    const { nombre, descripcion, categoria_id } = req.body;
 
     try {
         let curso;
 
         if (id) {
-            await Curso.actualizar(id, { nombre, descripcion });
-            curso = { id, nombre, descripcion };
+            await Curso.actualizar(id, { nombre, descripcion, categoria_id });
+            curso = { id, nombre, descripcion, categoria_id };
         } else {
-            curso = await Curso.crear({ nombre, descripcion });
+            curso = await Curso.crear({ nombre, descripcion, categoria_id });
         }
 
         // Manejo de imagen

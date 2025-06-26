@@ -10,11 +10,10 @@ const publicController = require('../controllers/public/public.controller');
 router.get('/', publicController.redirectToHome);
 router.get('/home', publicController.showHome);
 
-// Rutas de login
+// Rutas de login y registro
 router.get('/admin-login', publicController.showAdminLogin);
 router.get('/login', publicController.showLogin);
-
-// Procesar logins
+// Procesar logins y registro
 router.post('/login/try', publicController.loginTry);
 router.post('/admin-login/try', publicController.adminLoginTry);
 
@@ -30,11 +29,10 @@ router.get('/team', publicController.team);
 router.get('/privacy', publicController.showPrivacy);
 router.get('/terms', publicController.showTerms);
 router.get('/faqs', publicController.showFaqs);
-router.get('/profesores', publicController.verProfesores);
-router.get('/curso/:id', publicController.verCurso);
 
 // Rutas de categorías
-router.get('/categoria/:id', publicController.verCategoria);
+router.get('/categorias', publicController.showCategorias);
+router.get('/categoria/:id', publicController.showCategoria);
 
 //rutas de registro
 router.get('/registro', publicController.formRegistro);
