@@ -1,6 +1,7 @@
 const Usuario = require('../../models/usuario.model');
 const Curso = require('../../models/curso.model');
 const Valoracion = require('../../models/valoracion.model');
+const Correlatividad = require('../../models/correlatividad.model');
 const bcrypt = require('bcrypt');
 const inscripcionSchema = require('../../validators/inscripcion.schema');
 const valoracionSchema = require('../../validators/valoracion.schema');
@@ -27,11 +28,9 @@ authController.home = async (req, res) => {
       `Auth home access - User ID: ${usuario.id}, Email: ${usuario.email}` :
       'Auth home access - No user session';
 
-    homeLogger.debug(logMessage);
-
-    const usuarios = await Usuario.listar();
+    homeLogger.debug(logMessage);    const usuarios = await Usuario.listar();
     const profesores = await Usuario.getProfesores();
-    const categoriasPopulares = await Curso.getCategoriasPopulares(4);
+    const categoriasPopulares = await Curso.getCategoriasPopulares(6);
     const cursosPopulares = await Curso.getCursosPopulares();
 
     let valoraciones = [];
@@ -280,16 +279,33 @@ authController.verCurso = async (req, res) => {
         // Nuevo: Obtener información de la ruta de aprendizaje
         const rutaAprendizaje = await Curso.obtenerRutaAprendizaje(cursoId);
         
-        res.render('auth/ver-curso', {
+        // Obtener correlatividades del curso
+        const correlatividades = await Correlatividad.obtenerCorrelatividades(cursoId);
+        
+        // Si el curso tiene correlatividades, verificar si el usuario cumple con ellas
+        let cumpleCorrelatividades = true;
+        let correlativasPendientes = [];
+        
+        if (correlatividades && correlatividades.length > 0 && !inscripcion && curso.profesor_id !== usuario.id) {
+            const verificacion = await Correlatividad.verificarCorrelatividades(cursoId, usuario.id);
+            cumpleCorrelatividades = verificacion.cumple;
+            correlativasPendientes = verificacion.correlativasPendientes;
+        }
+          res.render('auth/ver-curso', {
             usuario,
             curso,
-            rutaAprendizaje, // Nueva variable en la vista
+            rutaAprendizaje,
             secciones,
             esProfesor: curso.profesor_id === usuario.id,
             estaInscrito: !!inscripcion,
             valoraciones: valoraciones || [],
             estadisticas: estadisticas || { promedio: 0, total: 0 },
-            yaValorado: !!valoracionUsuario
+            yaValorado: !!valoracionUsuario,
+            correlatividades,
+            cumpleCorrelatividades,
+            correlativasPendientes,
+            req: req, // Pass the request object to access session data
+            appName: process.env.APP_NAME || 'Sapientia Tech'
         });
     } catch (error) {
         console.error('Error al obtener curso:', error);
@@ -826,52 +842,88 @@ authController.publicarCurso = async (req, res) => {
 authController.inscribirAlumno = async (req, res) => {
   const cursoId = req.params.id;
   const alumnoId = req.session.usuario.id;
+  const confirmado = req.body.confirmado === "true";
 
   try {
-    // Validar datos
-    const { error } = inscripcionSchema.validate({
-      curso_id: parseInt(cursoId),
-      alumno_id: alumnoId
-    });
-
-    if (error) {
-      return res.status(400).json({
-        error: error.details[0].message
-      });
-    }
-
-    // Verificar que el curso existe
+    // Verificar que el curso existe primero
     const curso = await Curso.getCursoById(cursoId);
     if (!curso) {
       return res.status(404).json({ error: 'Curso no encontrado' });
     }
+    
+    // Validar datos
+    const { error } = inscripcionSchema.validate({
+      curso_id: parseInt(cursoId),
+      alumno_id: alumnoId,
+      estado_curso: curso.publicado
+    });    if (error) {
+      console.error('Error de validación:', error.details[0].message);
+      req.session.error = `Error de validación: ${error.details[0].message}`;
+      return res.redirect(`/auth/curso/${cursoId}`);
+    }    if (!curso) {
+      req.session.error = 'Curso no encontrado';
+      return res.redirect('/auth/home');
+    }
 
     // Verificar que el curso está publicado
     if (curso.publicado !== 1) {
-      return res.status(403).json({ error: 'Este curso no está disponible para inscripción' });
+      req.session.error = 'Este curso no está disponible para inscripción';
+      return res.redirect(`/auth/curso/${cursoId}`);
     }
 
     // Verificar que el usuario no es el profesor del curso
     if (curso.profesor_id === alumnoId) {
-      return res.status(400).json({ error: 'No puedes inscribirte a tu propio curso' });
-    }
-
-    // Verificar que no esté ya inscrito
+      req.session.error = 'No puedes inscribirte a tu propio curso';
+      return res.redirect(`/auth/curso/${cursoId}`);
+    }    // Verificar que no esté ya inscrito
     const inscripcion = await Curso.verificarInscripcion(cursoId, alumnoId);
     if (inscripcion) {
-      return res.status(400).json({ error: 'Ya estás inscrito en este curso' });
-    }
+      req.session.error = 'Ya estás inscrito en este curso';
+      return res.redirect(`/auth/curso/${cursoId}`);
+    }// Siempre consideramos la inscripción como confirmada (la confirmación se hace en la página del curso)
+    // if (!confirmado) {
+    //   return res.redirect(`/auth/curso/${cursoId}/confirmar-inscripcion`);
+    // }
 
-    // Inscribir al alumno
-    await Curso.inscribirAlumno(cursoId, alumnoId);
+    // Verificar si el curso pertenece a una ruta de aprendizaje
+    const rutaAprendizaje = await Curso.obtenerRutaAprendizaje(cursoId);
     
-    // Redirigir a la página del curso
-    res.redirect(`/auth/curso/${cursoId}`);
+    if (rutaAprendizaje) {
+      // Verificar correlatividades si el curso pertenece a una ruta
+      const verificacion = await Correlatividad.verificarCorrelatividades(cursoId, alumnoId);
+      
+      if (!verificacion.cumple) {
+        // Si no cumple con todas las correlatividades, redirigir de vuelta al curso con mensaje de error
+        const cursosPendientes = verificacion.correlativasPendientes.map(c => c.nombre).join(', ');
+        req.session.error = `Para inscribirte a este curso, primero debes completar los siguientes cursos: ${cursosPendientes}`;
+        return res.redirect(`/auth/curso/${cursoId}`);
+      }
+    }    // Inscribir al alumno
+    try {
+      await Curso.inscribirAlumno(cursoId, alumnoId);
+      
+      // Registrar en log la inscripción exitosa
+      homeLogger.info(`Usuario ${alumnoId} se inscribió en el curso ${cursoId} - ${curso.nombre}`);
+      
+      // Añadir mensaje de éxito a la sesión
+      req.session.mensajeExito = "¡Te has inscrito exitosamente al curso!";
+      
+      // Redirigir a la página del curso
+      res.redirect(`/auth/curso/${cursoId}`);
+    } catch (inscripcionError) {
+      console.error('Error al procesar la inscripción:', inscripcionError);
+      req.session.error = 'Ocurrió un error al procesar tu inscripción. Por favor, inténtalo nuevamente.';
+      return res.redirect(`/auth/curso/${cursoId}`);
+    }
   } catch (error) {
     console.error('Error al inscribir alumno:', error);
-    res.status(500).json({ error: 'Error al procesar la inscripción' });
+    req.session.error = 'Ha ocurrido un error al procesar la inscripción. Por favor, intenta nuevamente.';
+    return res.redirect(`/auth/curso/${cursoId}`);
   }
 };
+
+// Los métodos de autoinscripción han sido eliminados porque no son necesarios
+// ya que existe la opción de registrarse directamente
 
 // Mejorar validaciones para videos
 const videoFileFilter = (req, file, cb) => {
@@ -970,6 +1022,84 @@ authController.eliminarSeccion = async (req, res) => {
   } catch (error) {
     console.error('Error al eliminar sección:', error);
     res.status(500).json({error: 'Error al eliminar la sección'});
+  }
+};
+
+// Mostrar página de confirmación de inscripción
+authController.confirmarInscripcion = async (req, res) => {
+  const cursoId = req.params.id;
+  const alumnoId = req.session.usuario.id;
+
+  try {
+    // Obtener detalles del curso
+    const curso = await Curso.getCursoById(cursoId);
+    if (!curso) {
+      return res.status(404).render('404', { 
+        mensaje: 'Curso no encontrado',
+        usuario: req.session.usuario
+      });
+    }
+
+    // Verificar que el curso está publicado
+    if (curso.publicado !== 1) {
+      return res.redirect('/auth/home');
+    }
+
+    // Verificar que el usuario no es el profesor del curso
+    if (curso.profesor_id === alumnoId) {
+      return res.redirect('/auth/curso/' + cursoId);
+    }
+
+    // Verificar que no esté ya inscrito
+    const inscripcion = await Curso.verificarInscripcion(cursoId, alumnoId);
+    if (inscripcion) {
+      return res.redirect('/auth/curso/' + cursoId);
+    }    // Obtener información del profesor
+    const profesor = await Usuario.obtenerPorId(curso.profesor_id);
+    
+    // Obtener información de la categoría
+    const categoria = await Curso.getCategoriaById(curso.categoria_id);
+    
+    // Verificar correlatividades
+    let correlatividades = [];
+    let correlativasPendientes = [];
+    let cumpleCorrelatividades = true;
+    let rutaAprendizaje = null;
+
+    // Verificar si el curso pertenece a una ruta de aprendizaje
+    rutaAprendizaje = await Curso.obtenerRutaAprendizaje(cursoId);
+    
+    if (rutaAprendizaje) {
+      // Obtener las correlatividades
+      correlatividades = await Correlatividad.obtenerCorrelatividades(cursoId);
+      
+      if (correlatividades.length > 0) {
+        // Verificar si cumple con las correlatividades
+        const verificacion = await Correlatividad.verificarCorrelatividades(cursoId, alumnoId);
+        cumpleCorrelatividades = verificacion.cumple;
+        correlativasPendientes = verificacion.correlativasPendientes;
+      }
+    }
+
+    // Renderizar la página de confirmación
+    res.render('auth/confirmar-inscripcion', {
+      usuario: req.session.usuario,
+      appName: process.env.APP_NAME || 'Sapientia Tech',
+      curso,
+      profesor,
+      categoria,
+      rutaAprendizaje,
+      correlatividades,
+      correlativasPendientes,
+      cumpleCorrelatividades
+    });
+    
+  } catch (error) {
+    console.error('Error al mostrar confirmación de inscripción:', error);
+    res.status(500).render('500', { 
+      mensaje: 'Error al procesar la solicitud',
+      usuario: req.session.usuario 
+    });
   }
 };
 

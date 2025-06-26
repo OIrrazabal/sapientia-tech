@@ -1,6 +1,7 @@
 const rutasController = {};
 const RutaAprendizaje = require('../../models/ruta_aprendizaje.model');
 const Curso = require('../../models/curso.model');
+const Correlatividad = require('../../models/correlatividad.model');
 const { adminLogger } = require('../../logger');
 const { validarNuevaRuta } = require('../../validators/ruta_aprendizaje.schema');
 
@@ -128,12 +129,19 @@ rutasController.mostrarEditarRuta = async (req, res) => {
         // Obtener cursos que no están en ninguna ruta
         const cursosDisponibles = await Curso.listarCursosSinRuta();
         
+        // Obtener correlatividades para cada curso de la ruta
+        const correlatividades = {};
+        for (const curso of cursosDeLaRuta) {
+            correlatividades[curso.id] = await Correlatividad.obtenerCorrelatividades(curso.id);
+        }
+        
         res.render('admin/rutas/editar', {
             titulo: 'Editar Ruta de Aprendizaje',
             usuario: req.session.usuario,
             ruta,
             cursosDeLaRuta,
             cursosDisponibles,
+            correlatividades,
             error: req.query.error || null,
             mensaje: req.query.mensaje || null
         });
@@ -199,7 +207,15 @@ rutasController.quitarCurso = async (req, res) => {
     try {
         const rutaId = req.params.id;
         const cursoId = req.params.cursoId;
-          // Quitar curso de la ruta
+        
+        // Verificar si el curso es correlativo de otros cursos
+        const esCorrelativo = await Correlatividad.esCursoCorrelatividad(cursoId);
+        
+        if (esCorrelativo) {
+            return res.redirect(`/admin/rutas/${rutaId}/editar?error=No se puede quitar este curso porque es requisito correlativo de otros cursos en esta ruta. Debe eliminar primero las correlatividades asociadas.`);
+        }
+        
+        // Quitar curso de la ruta
         await RutaAprendizaje.quitarCurso(rutaId, cursoId);
         
         adminLogger.info(`Curso ID ${cursoId} removido de la ruta de aprendizaje ID ${rutaId} por admin (${req.session.usuario.email})`);
@@ -231,6 +247,101 @@ rutasController.eliminar = async (req, res) => {
         // Guardar mensaje de error en la sesión
         req.session.error = "Error al eliminar la ruta";
         res.redirect('/admin/rutas');
+    }
+};
+
+// Mostrar formulario para agregar correlatividad
+rutasController.mostrarAgregarCorrelatividad = async (req, res) => {
+    try {
+        const rutaId = req.params.id;
+        const cursoId = req.params.cursoId;
+        
+        // Obtener información del curso
+        const curso = await Curso.obtenerPorId(cursoId);
+        if (!curso) {
+            return res.redirect(`/admin/rutas/${rutaId}/editar?error=Curso no encontrado`);
+        }
+        
+        // Obtener información de la ruta
+        const ruta = await RutaAprendizaje.obtenerPorId(rutaId);
+        if (!ruta) {
+            return res.redirect('/admin/rutas?error=Ruta no encontrada');
+        }
+        
+        // Obtener todos los cursos de la ruta (excepto el curso actual)
+        const cursosDeLaRuta = await RutaAprendizaje.obtenerCursos(rutaId);
+        const cursosDisponibles = cursosDeLaRuta.filter(c => c.id !== parseInt(cursoId));
+        
+        // Obtener correlatividades actuales del curso
+        const correlatividades = await Correlatividad.obtenerCorrelatividades(cursoId);
+        
+        // Filtrar los cursos disponibles quitando los que ya son correlatividades
+        const cursosParaAgregar = cursosDisponibles.filter(c => {
+            return !correlatividades.some(corr => corr.correlativo_id === c.id);
+        });
+        
+        res.render('admin/rutas/correlatividades', {
+            titulo: 'Administrar Correlatividades',
+            usuario: req.session.usuario,
+            ruta,
+            curso,
+            correlatividades,
+            cursosParaAgregar,
+            error: req.query.error || null,
+            mensaje: req.query.mensaje || null
+        });
+        
+    } catch (error) {
+        adminLogger.error(`Error al mostrar formulario de correlatividades: ${error.message}`);
+        res.redirect(`/admin/rutas/${req.params.id}/editar?error=Error al cargar el formulario de correlatividades`);
+    }
+};
+
+// Agregar correlatividad
+rutasController.agregarCorrelatividad = async (req, res) => {
+    try {
+        const rutaId = req.params.id;
+        const cursoId = req.params.cursoId;
+        const { correlativo_id } = req.body;
+        
+        if (!correlativo_id) {
+            return res.redirect(`/admin/rutas/${rutaId}/curso/${cursoId}/correlatividades?error=Debe seleccionar un curso correlativo`);
+        }
+        
+        // Verificar que el correlativo esté en la misma ruta
+        const cursoRuta = await Curso.obtenerRutaAprendizaje(correlativo_id);
+        if (!cursoRuta || cursoRuta.id !== parseInt(rutaId)) {
+            return res.redirect(`/admin/rutas/${rutaId}/curso/${cursoId}/correlatividades?error=El curso correlativo debe pertenecer a la misma ruta`);
+        }
+        
+        // Agregar correlatividad
+        await Correlatividad.agregarCorrelatividad(cursoId, correlativo_id);
+        
+        adminLogger.info(`Correlatividad agregada: Curso ID ${cursoId} ahora requiere Curso ID ${correlativo_id} como requisito previo`);
+        res.redirect(`/admin/rutas/${rutaId}/curso/${cursoId}/correlatividades?mensaje=Correlatividad agregada correctamente`);
+        
+    } catch (error) {
+        adminLogger.error(`Error al agregar correlatividad: ${error.message}`);
+        res.redirect(`/admin/rutas/${req.params.id}/curso/${req.params.cursoId}/correlatividades?error=${error.message}`);
+    }
+};
+
+// Eliminar correlatividad
+rutasController.eliminarCorrelatividad = async (req, res) => {
+    try {
+        const rutaId = req.params.id;
+        const cursoId = req.params.cursoId;
+        const correlativoId = req.params.correlativoId;
+        
+        // Eliminar la correlatividad
+        await Correlatividad.eliminarCorrelatividad(cursoId, correlativoId);
+        
+        adminLogger.info(`Correlatividad eliminada: Curso ID ${cursoId} ya no requiere Curso ID ${correlativoId}`);
+        res.redirect(`/admin/rutas/${rutaId}/curso/${cursoId}/correlatividades?mensaje=Correlatividad eliminada correctamente`);
+        
+    } catch (error) {
+        adminLogger.error(`Error al eliminar correlatividad: ${error.message}`);
+        res.redirect(`/admin/rutas/${req.params.id}/curso/${req.params.cursoId}/correlatividades?error=Error al eliminar la correlatividad`);
     }
 };
 

@@ -83,9 +83,9 @@ obtenerPorId: async (id) => {
   },
 
   crear: async (curso) => {
-    const { nombre, descripcion } = curso;
-    const query = 'INSERT INTO cursos (nombre, descripcion, publicado) VALUES (?, ?, ?)';
-    const resultado = await dbHandler.ejecutarQueryConResultado(query, [nombre, descripcion, 0]);
+    const { nombre, descripcion, categoria_id } = curso;
+    const query = 'INSERT INTO cursos (nombre, descripcion, categoria_id, publicado) VALUES (?, ?, ?, ?)';
+    const resultado = await dbHandler.ejecutarQueryConResultado(query, [nombre, descripcion, categoria_id || null, 0]);
     return { id: resultado.lastID };
   },
 
@@ -98,10 +98,9 @@ obtenerPorId: async (id) => {
     const query = 'UPDATE cursos SET publicado = 1 WHERE id = ? AND publicado = 0';
     return dbHandler.ejecutarQuery(query, [cursoId]);
   },
-
   inscribirAlumno: async (cursoId, alumnoId) => {
     const query = 'INSERT INTO inscripciones (alumno_id, curso_id) VALUES (?, ?)';
-    return dbHandler.ejecutarQuery(query, [alumnoId, cursoId]);
+    return dbHandler.ejecutarQueryConResultado(query, [alumnoId, cursoId]);
   },
 
   getCursosPopulares: async (limite = 8) => {
@@ -116,15 +115,17 @@ obtenerPorId: async (id) => {
       LIMIT ?`;
     return dbHandler.ejecutarQueryAll(query, [limite]);
   },
-
-  getCategoriasPopulares: async (limite = 4) => {
+  getCategoriasPopulares: async (limite = 6) => {
     const query = `
-      SELECT cat.id, cat.nombre, cat.imagen, COUNT(c.id) as total_cursos
+      SELECT cat.id, cat.nombre, cat.imagen, 
+             COUNT(c.id) as total_cursos,
+             COUNT(DISTINCT i.alumno_id) as total_inscripciones
       FROM categorias cat
       JOIN cursos c ON c.categoria_id = cat.id
+      LEFT JOIN inscripciones i ON i.curso_id = c.id
       WHERE c.publicado = 1
       GROUP BY cat.id
-      ORDER BY total_cursos DESC
+      ORDER BY total_inscripciones DESC, total_cursos DESC, cat.nombre ASC
       LIMIT ?
     `;
     return dbHandler.ejecutarQueryAll(query, [limite]);
@@ -183,9 +184,9 @@ obtenerPorId: async (id) => {
   },
 
   actualizar: async (id, datos) => {
-    const { nombre, descripcion } = datos;
-    const query = 'UPDATE cursos SET nombre = ?, descripcion = ? WHERE id = ?';
-    return dbHandler.ejecutarQuery(query, [nombre, descripcion, id]);
+    const { nombre, descripcion, categoria_id } = datos;
+    const query = 'UPDATE cursos SET nombre = ?, descripcion = ?, categoria_id = ? WHERE id = ?';
+    return dbHandler.ejecutarQuery(query, [nombre, descripcion, categoria_id || null, id]);
   },
 
   // Obtener la ruta de aprendizaje del curso

@@ -3,7 +3,8 @@ const db = require('../db/conexion');
 const Inscripcion = {};
 
 Inscripcion.obtenerAlumnos = (callback) => {
-    const sql = `SELECT id, nombre FROM usuarios WHERE rol = 'estudiante'`;
+    // Modificado para obtener todos los usuarios independientemente de su rol
+    const sql = `SELECT id, nombre, rol FROM usuarios ORDER BY nombre`;
     db.all(sql, [], callback);
 };
 

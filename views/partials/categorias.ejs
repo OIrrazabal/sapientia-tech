@@ -2,52 +2,72 @@
 <div class="container-xxl py-5 category">
     <div class="container">
         <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
-            <h6 class="section-title bg-white text-center text-primary px-3">Categorias</h6>
+            <h6 class="section-title bg-white text-center text-primary px-3">CATEGORÍAS</h6>
             <h1 class="mb-5">Categorias de Cursos</h1>
         </div>
-        <div class="row g-3">
-            <div class="col-lg-7 col-md-6">
-                <div class="row g-3">
-                    <% if (categoriasPopulares && categoriasPopulares.length > 0) { %>
-                        <% categoriasPopulares.slice(0, 1).forEach((cat, idx) => { %>
-                            <div class="col-lg-12 col-md-12 wow zoomIn" data-wow-delay="0.1s">
-                                <a class="position-relative d-block overflow-hidden" href="/public/categoria/<%= cat.id %>">
-                                    <img class="img-fluid" src="/assets/categorias/<%= cat.imagen || 'default.jpg' %>" alt="<%= cat.nombre %>">
-                                    <div class="bg-white text-center position-absolute bottom-0 end-0 py-2 px-3" style="margin: 1px;">
+        
+        <div class="row g-4">
+            <% if (categoriasPopulares && categoriasPopulares.length > 0) { %>
+                <!-- Primera fila - categorías destacadas -->
+                <div class="col-lg-6 col-md-12 wow fadeInUp" data-wow-delay="0.1s">
+                    <% const firstCat = categoriasPopulares[0]; %>
+                    <a class="position-relative d-block overflow-hidden rounded" href="/public/categoria/<%= firstCat.id %>">
+                        <img class="img-fluid w-100" 
+                             src="/assets/categorias/<%= firstCat.imagen || 'default.jpg' %>" 
+                             alt="<%= firstCat.nombre %>"
+                             style="height: 300px; object-fit: cover;">
+                        <div class="bg-white text-primary fw-bold text-center position-absolute bottom-0 start-0 py-2 px-4 m-3 rounded shadow">
+                            <h4 class="m-0"><%= firstCat.nombre %></h4>
+                            <span class="d-block text-secondary mt-1"><%= firstCat.total_cursos %> Cursos</span>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="row g-4">
+                        <% categoriasPopulares.slice(1, 3).forEach((cat, idx) => { %>
+                            <div class="col-lg-6 col-md-6 wow fadeInUp" data-wow-delay="<%= 0.3 + idx * 0.2 %>s">
+                                <a class="position-relative d-block overflow-hidden rounded" href="/public/categoria/<%= cat.id %>">
+                                    <img class="img-fluid w-100" 
+                                         src="/assets/categorias/<%= cat.imagen || 'default.jpg' %>" 
+                                         alt="<%= cat.nombre %>"
+                                         style="height: 140px; object-fit: cover;">
+                                    <div class="bg-white text-primary fw-bold text-center position-absolute bottom-0 start-0 py-2 px-3 m-2 rounded shadow">
                                         <h5 class="m-0"><%= cat.nombre %></h5>
-                                        <small class="text-primary"><%= cat.total_cursos %> Cursos</small>
+                                        <small class="d-block text-secondary"><%= cat.total_cursos %> Cursos</small>
                                     </div>
                                 </a>
                             </div>
                         <% }) %>
 
-                        <% categoriasPopulares.slice(1, 3).forEach((cat, i) => { %>
-                            <div class="col-lg-6 col-md-12 wow zoomIn" data-wow-delay="<%= 0.3 + i * 0.2 %>s">
-                                <a class="position-relative d-block overflow-hidden" href="/public/categoria/<%= cat.id %>">
-                                    <img class="img-fluid" src="/assets/categorias/<%= cat.imagen || 'default.jpg' %>" alt="<%= cat.nombre %>">
-                                    <div class="bg-white text-center position-absolute bottom-0 end-0 py-2 px-3" style="margin: 1px;">
+                        <% categoriasPopulares.slice(3).forEach((cat, idx) => { %>
+                            <div class="col-lg-6 col-md-6 wow fadeInUp" data-wow-delay="<%= 0.7 + idx * 0.2 %>s">
+                                <a class="position-relative d-block overflow-hidden rounded" href="/public/categoria/<%= cat.id %>">
+                                    <img class="img-fluid w-100" 
+                                         src="/assets/categorias/<%= cat.imagen || 'default.jpg' %>" 
+                                         alt="<%= cat.nombre %>"
+                                         style="height: 140px; object-fit: cover;">
+                                    <div class="bg-white text-primary fw-bold text-center position-absolute bottom-0 start-0 py-2 px-3 m-2 rounded shadow">
                                         <h5 class="m-0"><%= cat.nombre %></h5>
-                                        <small class="text-primary"><%= cat.total_cursos %> Cursos</small>
+                                        <small class="d-block text-secondary"><%= cat.total_cursos %> Cursos</small>
                                     </div>
                                 </a>
                             </div>
                         <% }) %>
-                    <% } %>
+                    </div>
                 </div>
-            </div>
-            <% if (categoriasPopulares && categoriasPopulares.length > 3) { %>
-                <% const cat = categoriasPopulares[3]; %>
-                <div class="col-lg-5 col-md-6 wow zoomIn" data-wow-delay="0.7s" style="min-height: 350px;">
-                    <a class="position-relative d-block h-100 overflow-hidden" href="/public/categoria/<%= cat.id %>">
-                        <img class="img-fluid position-absolute w-100 h-100" 
-                             src="/assets/categorias/<%= cat.imagen || 'default.jpg' %>" 
-                             alt="<%= cat.nombre %>" 
-                             style="object-fit: cover;">
-                        <div class="bg-white text-center position-absolute bottom-0 end-0 py-2 px-3" style="margin: 1px;">
-                            <h5 class="m-0"><%= cat.nombre %></h5>
-                            <small class="text-primary"><%= cat.total_cursos %> Cursos</small>
-                        </div>
+                
+                <!-- Ver todas las categorías -->
+                <div class="col-12 text-center mt-4">
+                    <a href="/public/categorias" class="btn btn-primary py-3 px-5 rounded-pill">
+                        Ver todas las categorías <i class="fa fa-arrow-right ms-2"></i>
                     </a>
+                </div>
+            <% } else { %>
+                <div class="col-12 text-center">
+                    <div class="alert alert-info">
+                        No hay categorías disponibles en este momento.
+                    </div>
                 </div>
             <% } %>
         </div>

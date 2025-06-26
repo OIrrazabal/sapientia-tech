@@ -99,3 +99,13 @@ CREATE TABLE ruta_curso (
     FOREIGN KEY (curso_id) REFERENCES cursos(id),
     UNIQUE (curso_id) -- Cada curso solo puede estar en una ruta
 );
+-- Tabla para correlatividades (prerrequisitos) entre cursos
+CREATE TABLE correlatividades (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    curso_id INTEGER NOT NULL,             -- Curso que tiene el prerrequisito
+    correlativo_id INTEGER NOT NULL,       -- Curso que es prerrequisito
+    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (curso_id) REFERENCES cursos(id),
+    FOREIGN KEY (correlativo_id) REFERENCES cursos(id),
+    UNIQUE(curso_id, correlativo_id)       -- Evita duplicados
+);

@@ -23,6 +23,15 @@ const cursoSchema = Joi.object({
             'string.min': 'La descripción debe tener al menos {#limit} caracteres',
             'string.max': 'La descripción no puede exceder los {#limit} caracteres',
             'any.required': 'La descripción del curso es obligatoria'
+        }),
+        
+    categoria_id: Joi.number()
+        .integer()
+        .required()
+        .messages({
+            'number.base': 'Debe seleccionar una categoría',
+            'number.integer': 'La categoría seleccionada no es válida',
+            'any.required': 'Debe seleccionar una categoría'
         })
 });
 

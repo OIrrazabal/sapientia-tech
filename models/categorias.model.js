@@ -3,6 +3,21 @@ const fs = require('fs').promises;
 const path = require('path');
 
 const Categoria = {
+    listarTodasDetalladas: async () => {
+        const query = `
+            SELECT c.id, c.nombre, c.descripcion, c.imagen,
+                   COUNT(DISTINCT cu.id) as total_cursos,
+                   COUNT(DISTINCT i.alumno_id) as total_inscripciones
+            FROM categorias c
+            LEFT JOIN cursos cu ON c.id = cu.categoria_id AND cu.publicado = 1
+            LEFT JOIN inscripciones i ON i.curso_id = cu.id
+            GROUP BY c.id
+            ORDER BY total_inscripciones DESC, total_cursos DESC, c.nombre ASC
+        `;
+        
+        return await dbHandler.ejecutarQueryAll(query);
+    },
+
     listarConTotalCursos: async () => {
         const query = `
             SELECT c.id, c.nombre, c.descripcion, 
