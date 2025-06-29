@@ -1,0 +1,76 @@
+# Page snapshot
+
+```yaml
+- navigation:
+  - link "Sapientia Tech Courses Logo SAPIENTIA TECH COURSE":
+    - /url: /auth/home
+    - img "Sapientia Tech Courses Logo"
+    - heading "SAPIENTIA TECH COURSE" [level=2]
+  - link "Inicio":
+    - /url: /auth/home
+  - link "Acerca De":
+    - /url: /public/about
+  - link "Cursos ":
+    - /url: "#"
+  - link "Pagina ":
+    - /url: "#"
+  - link "Contactos":
+    - /url: /public/contact
+  - link "Usuario Test 1627 Usuario Test 1627 ":
+    - /url: "#"
+    - img "Usuario Test 1627"
+    - text: Usuario Test 1627 
+- img "Categorías"
+- heading "Conoce a nuestro equipo" [level=5]
+- heading "Expertos en su área" [level=1]
+- paragraph: Encargados de lograr la mejor experiencia con la plataforma.
+- link "Ver Equipo":
+  - /url: /public/team
+- img "Testimonios"
+- heading "Nuestros estudiantes opinan" [level=5]
+- heading "Testimonios reales" [level=1]
+- paragraph: Conoce la experiencia de quienes ya aprendieron con nosotros.
+- link "Ver Testimonios":
+  - /url: /public/testimonial
+- img "Cursos"
+- heading "Explora Sapientia Tech Course" [level=5]
+- heading "Aprende algo nuevo hoy" [level=1]
+- paragraph: Descubre lo que tenemos para ti.
+- link "Ver más":
+  - /url: /public/about
+- img "Instructores"
+- heading "Conoce a nuestros Profesores" [level=5]
+- heading "Expertos en su área" [level=1]
+- paragraph: Aprende de los mejores profesionales.
+- link "Ver Profesores":
+  - /url: /public/profesores
+- img "Categorías"
+- heading "Conoce a nuestro equipo" [level=5]
+- heading "Expertos en su área" [level=1]
+- paragraph: Encargados de lograr la mejor experiencia con la plataforma.
+- link "Ver Equipo":
+  - /url: /public/team
+- img "Testimonios"
+- heading "Nuestros estudiantes opinan" [level=5]
+- heading "Testimonios reales" [level=1]
+- paragraph: Conoce la experiencia de quienes ya aprendieron con nosotros.
+- link "Ver Testimonios":
+  - /url: /public/testimonial
+- img "Cursos"
+- heading "Explora Sapientia Tech Course" [level=5]
+- heading "Aprende algo nuevo hoy" [level=1]
+- paragraph: Descubre lo que tenemos para ti.
+- link "Ver más":
+  - /url: /public/about
+- img "Instructores"
+- heading "Conoce a nuestros Profesores" [level=5]
+- heading "Expertos en su área" [level=1]
+- paragraph: Aprende de los mejores profesionales.
+- link "Ver Profesores":
+  - /url: /public/profesores
+- text:  
+- link "Ver todas las categorías ":
+  - /url: /public/categorias
+- link "":
+  - /url: "#"
+```
