@@ -135,6 +135,151 @@
     -   Documentar el comando de forma visible y entendible (como texto) en la documentación.
     -   Mostrar la salida con capturas en la documentación.
 
+## ⚡ Resumen Ejecutivo - Test de Interfaz
+
+### Comando único para ejecutar el test completo:
+
+```bash
+# 1. Configuración (solo primera vez)
+npm run test:e2e:setup
+
+# 2. Iniciar servidor (mantener abierto)
+npm run dev
+
+# 3. Ejecutar test (en nueva terminal)
+npm run test:e2e
+```
+
+### ✅ Validaciones automatizadas:
+- 🎲 Generación de usuario único con datos aleatorios
+- 🔐 Login automático con usuario creado  
+- 🏠 Validación del home autenticado
+- ❌ Error de correlatividades (curso con dependencias)
+- ✅ Inscripción exitosa (curso sin dependencias)  
+- 📸 Capturas automáticas en puntos críticos
+
+### 📸 Capturas generadas:
+- `test/screenshots/error-correlatividades.png`
+- `test/screenshots/inscripcion-exitosa.png`
+- `test/screenshots/test-final-state.png`
+
+### 🔍 Ver resultados:
+```bash
+npx playwright show-report
+```
+
+---
+
+## Test de Interfaz E2E con Playwright
+
+### Descripción
+
+El proyecto incluye un test automatizado de interfaz usando **Playwright** que valida el flujo completo de correlatividades en el sistema. El test ejecuta los siguientes pasos:
+
+1. **Autoregistro de usuario** con datos aleatorios únicos
+2. **Login** con el usuario creado
+3. **Validación del home** de usuario autenticado
+4. **Intento de inscripción** a curso con correlatividades (debe fallar)
+5. **Inscripción exitosa** a curso sin correlatividades
+6. **Capturas automáticas** en puntos críticos
+
+### Configuración
+
+El test está configurado para ejecutarse en **Firefox en modo headed** (ventana visible) como se requiere en el examen.
+
+#### Archivos del test:
+- `test/e2e/correlatividades.spec.js` - Test principal
+- `test/e2e/test-simple.spec.js` - Test simplificado alternativo  
+- `test/e2e/helpers/testDataGenerator.js` - Generador de datos de prueba
+- `playwright.config.js` - Configuración de Playwright
+- `test/screenshots/` - Directorio de capturas automáticas
+
+### Comandos para ejecutar el test
+
+#### 1. Configuración inicial (solo la primera vez):
+```bash
+npm run test:e2e:setup
+```
+
+Este comando:
+- Instala las dependencias necesarias
+- Descarga Firefox para Playwright
+
+#### 2. Ejecutar el test:
+```bash
+npm run test:e2e
+```
+
+**¡IMPORTANTE!** Antes de ejecutar el test, asegurarse de que el servidor esté ejecutándose:
+```bash
+npm run dev
+```
+
+### Generación de datos aleatorios
+
+El test genera automáticamente datos únicos para cada ejecución:
+
+```javascript
+// Ejemplo de datos generados:
+👤 Nombre: Usuario Test 8473
+📧 Email: test.usuario.1672531234567@mailtest.com  
+📱 Teléfono: 098765432
+🏠 Dirección: Calle Test 8473, Ciudad Test
+🔑 Password: test123 (fijo como se requiere)
+```
+
+### Cursos utilizados en el test
+
+El test utiliza cursos específicos definidos "en duro":
+
+- **Curso con correlatividades**: JavaScript Avanzado (ID: 4)
+  - URL: `/auth/curso/4`
+  - Debe fallar la inscripción y mostrar error
+
+- **Curso sin correlatividades**: HTML Básico (ID: 1)  
+  - URL: `/auth/curso/1`
+  - Debe permitir inscripción exitosa
+
+### Capturas automáticas
+
+El test genera automáticamente las siguientes capturas en `test/screenshots/`:
+
+1. **error-correlatividades.png** - Error al intentar inscripción con correlatividades
+2. **inscripcion-exitosa.png** - Éxito en inscripción sin correlatividades  
+3. **test-final-state.png** - Estado final del test
+
+### Salida ejemplo del test
+
+```
+🚀 Iniciando test de correlatividades...
+============================== 
+📋 DATOS DE USUARIO GENERADOS PARA EL TEST:
+==============================
+👤 Nombre: Usuario Test 8473
+📧 Email: test.usuario.1672531234567@mailtest.com
+📱 Teléfono: 098765432
+🏠 Dirección: Calle Test 8473, Ciudad Test  
+🔑 Password: test123
+🕐 Timestamp: 1672531234567
+🎲 Random ID: 8473
+==============================
+✅ Home de usuario autenticado cargado correctamente
+✅ Error de correlatividades mostrado correctamente
+📸 Captura del error guardada en: test/screenshots/error-correlatividades.png
+✅ Inscripción exitosa
+📸 Captura del éxito guardada en: test/screenshots/inscripcion-exitosa.png
+🏁 Test completado exitosamente
+📊 Usuario de prueba: test.usuario.1672531234567@mailtest.com
+📁 Capturas guardadas en: test/screenshots/
+```
+
+### Reporte HTML
+
+Después de ejecutar el test, se puede ver un reporte detallado con:
+```bash
+npx playwright show-report
+```
+
 ---
 
 ### Documentación:
