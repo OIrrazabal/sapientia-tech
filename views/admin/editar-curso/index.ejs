@@ -18,14 +18,14 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
 
     <!-- Libraries Stylesheet -->
-    <link href="/lib/animate/animate.min.css" rel="stylesheet">
-    <link href="/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+    <link href="/assets/lib/animate/animate.min.css" rel="stylesheet">
+    <link href="/assets/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
 
     <!-- Customized Bootstrap Stylesheet -->
-    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Template Stylesheet -->
-    <link href="/css/style.css" rel="stylesheet">
+    <link href="/assets/css/style.css" rel="stylesheet">
 </head>
 
 <%- include('../../partials/navbar') %>
@@ -50,9 +50,11 @@
                     <td><%= curso.nombre %></td>
                     <td><%= curso.descripcion %></td>
                     <td>
-                        <img src="/assets/cursos/<%= curso.id %>.jpg"
-                            onerror="this.src='/assets/cursos/default.png'"
-                            width="100" class="img-thumbnail">
+                        <img src="/assets/cursos/<%= curso.id %>.jpg" 
+                            data-id="<%= curso.id %>"
+                            class="img-thumbnail curso-imagen" 
+                            width="100"
+                            onerror="handleCursoImageError(this)">
                     </td>
                     <td>
                         <a href="/admin/crear-curso/<%= curso.id %>" class="btn btn-sm btn-outline-primary">
@@ -65,4 +67,62 @@
     </table>
 </div>
 
-<%- include('../../partials/footer') %>
+<!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/lib/wow/wow.min.js"></script>
+    <script src="/assets/lib/easing/easing.min.js"></script>
+    <script src="/assets/lib/waypoints/waypoints.min.js"></script>
+    <script src="/assets/lib/owlcarousel/owl.carousel.min.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="/assets/js/main.js"></script>
+
+    <!-- Script para manejar errores de imagen -->
+    <script>
+        function handleCursoImageError(img) {
+            const cursoId = img.getAttribute('data-id');
+            console.log(`Manejando error de imagen para curso ID: ${cursoId}`);
+            
+            // Intenta con diferentes extensiones
+            const extensions = ['.png', '.jpeg', '.webp'];
+            let currentExtensionIndex = 0;
+            
+            function tryNextExtension() {
+                if (currentExtensionIndex < extensions.length) {
+                    const newSrc = `/assets/cursos/${cursoId}${extensions[currentExtensionIndex]}`;
+                    console.log(`Intentando cargar: ${newSrc}`);
+                    img.src = newSrc;
+                    currentExtensionIndex++;
+                } else {
+                    // Si todas las extensiones fallan, muestra la imagen por defecto
+                    console.log(`Usando imagen por defecto para curso ID: ${cursoId}`);
+                    img.src = '/assets/cursos/default.png';
+                    img.onerror = null; // Evita bucles infinitos
+                }
+            }
+            
+            // Inicia el proceso con la primera extensión alternativa
+            tryNextExtension();
+            
+            // Sigue intentando con las demás extensiones si sigue fallando
+            img.onerror = function() {
+                tryNextExtension();
+            };
+        }
+        
+        // Inicialización - Verificar todas las imágenes al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Verificando imágenes de cursos en la página');
+            const images = document.querySelectorAll('.curso-imagen');
+            images.forEach(img => {
+                // Forzar recarga de imagen para asegurarnos que el navegador no use caché
+                const timestamp = new Date().getTime();
+                const originalSrc = img.src;
+                img.src = originalSrc + '?t=' + timestamp;
+                console.log(`Verificando imagen: ${img.src}`);
+            });
+        });
+    </script>
+</body>
+</html>

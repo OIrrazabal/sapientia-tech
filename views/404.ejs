@@ -1,29 +1,134 @@
 <!DOCTYPE html>
 <html lang="es">
-    <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Página no encontrada</title>
-    <link href="/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="/css/style.css" rel="stylesheet" />
-    </head>
-    <body>
+
+<head>
+    <meta charset="utf-8">
+    <title>Página no encontrada - 404</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    
+    <!-- Favicon -->
+    <link href="/assets/img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="/assets/lib/animate/animate.min.css" rel="stylesheet">
+    <link href="/assets/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="/assets/css/style.css" rel="stylesheet">
+</head>
+
+<body>
     <!-- Navbar -->
     <%- include('partials/navbar', { usuario: usuario, appName: appName }) %>
 
-
-    <!-- Contenido principal -->
-    <div class="container text-center py-5">
-        <img src="/img/logo-morado.png" alt="Logo Morado" style="width: 100px;" class="mb-4">
-        <h1 class="display-3 text-primary">404</h1>
-        <h2 class="mb-3">Página no encontrada</h2>
-        <p>La URL a la que intentaste acceder no existe.</p>
-        <a href="/auth/home" class="btn btn-primary">Volver al inicio</a>
+    <!-- Header Start -->
+    <div class="container-fluid bg-primary-lighter py-5 mb-5 page-header">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 text-center">
+                    <h1 class="display-3 text-white animated slideInDown">404</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-center">
+                            <li class="breadcrumb-item"><a class="text-white" href="<%= usuario ? '/auth/home' : '/' %>">Inicio</a></li>
+                            <li class="breadcrumb-item text-white active" aria-current="page">Página no encontrada</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
     </div>
+    <!-- Header End -->
+
+    <!-- 404 Start -->
+    <div class="container-xxl py-5 wow fadeInUp" data-wow-delay="0.1s">
+        <div class="container text-center">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card card-dashboard mb-5">
+                        <div class="card-header">
+                            <h4 class="mb-0"><i class="fas fa-exclamation-triangle text-warning me-2"></i> Página no encontrada</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <i class="fas fa-search fa-7x text-primary-light mb-4"></i>
+                                <h2 class="mb-4 text-primary-dark">Lo sentimos, no pudimos encontrar esta página</h2>
+                                <p class="lead mb-4">La URL a la que intentaste acceder no existe o ha sido movida. Por favor, verifica la dirección o usa los enlaces de navegación.</p>
+                            </div>
+                            <div class="d-flex justify-content-center gap-3">
+                                <a href="<%= usuario ? '/auth/home' : '/' %>" class="btn btn-gradient-primary btn-lg">
+                                    <i class="fas fa-home me-2"></i> Volver al inicio
+                                </a>
+                                <a href="/public/contact" class="btn btn-outline-primary btn-lg">
+                                    <i class="fas fa-envelope me-2"></i> Contacto
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sugerencias -->
+                    <div class="row g-4 mt-3">
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card glow-primary h-100">
+                                <div class="card-body text-center p-4">
+                                    <i class="fas fa-book fa-3x text-primary mb-3"></i>
+                                    <h5>Cursos disponibles</h5>
+                                    <p>Explora nuestro catálogo de cursos</p>
+                                    <a href="/auth/buscar" class="btn btn-primary">Ver cursos</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card glow-primary h-100">
+                                <div class="card-body text-center p-4">
+                                    <i class="fas fa-user-graduate fa-3x text-primary mb-3"></i>
+                                    <h5>Mi aprendizaje</h5>
+                                    <p>Revisa tus cursos actuales</p>
+                                    <a href="/auth/mis-cursos-redirect" class="btn btn-primary">Mis cursos</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card glow-primary h-100">
+                                <div class="card-body text-center p-4">
+                                    <i class="fas fa-chalkboard-teacher fa-3x text-primary mb-3"></i>
+                                    <h5>Conoce al equipo</h5>
+                                    <p>Profesores e instructores</p>
+                                    <a href="/public/profesores" class="btn btn-primary">Profesores</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 404 End -->
 
     <!-- Footer -->
     <%- include('partials/footer') %>
 
-    <script src="/js/main.js"></script>
-    </body>
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/lib/wow/wow.min.js"></script>
+    <script src="/assets/lib/easing/easing.min.js"></script>
+    <script src="/assets/lib/waypoints/waypoints.min.js"></script>
+    <script src="/assets/lib/owlcarousel/owl.carousel.min.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="/assets/js/main.js"></script>
+</body>
+
 </html>

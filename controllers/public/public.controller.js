@@ -599,4 +599,53 @@ publicController.registroTry = async (req, res) => {
   }
 };
 
+// Mostrar página de profesores
+publicController.profesores = async (req, res) => {
+  try {
+    const dbAll = require('util').promisify(db.all).bind(db);
+
+    // Obtener profesores asignados con el nombre del curso
+    const resultados = await dbAll(`
+      SELECT u.id, u.nombre, u.email, c.nombre AS curso
+      FROM usuarios u
+      JOIN asignaciones a ON u.id = a.id_profesor
+      JOIN cursos c ON a.id_curso = c.id
+    `);
+
+    // Agrupar por profesor
+    const profesoresAgrupados = [];
+    const mapa = new Map();
+
+    for (const p of resultados) {
+      if (!mapa.has(p.id)) {
+        mapa.set(p.id, {
+          id: p.id,
+          nombre: p.nombre,
+          email: p.email,
+          cursos: [p.curso]
+        });
+      } else {
+        mapa.get(p.id).cursos.push(p.curso);
+      }
+    }
+    
+    for (const entry of mapa.values()) {
+      profesoresAgrupados.push(entry);
+    }
+
+    res.render("public/profesores", {
+      profesores: profesoresAgrupados,
+      appName: process.env.APP_NAME || "eLEARNING",
+      usuario: req.session.usuario || null
+    });
+  } catch (error) {
+    console.error("Error cargando profesores:", error);
+    res.render("public/profesores", {
+      profesores: [],
+      appName: process.env.APP_NAME || "eLEARNING",
+      usuario: req.session.usuario || null
+    });
+  }
+};
+
 module.exports = publicController;

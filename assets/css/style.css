@@ -1,8 +1,15 @@
 /********** Template CSS **********/
 :root {
-    --primary: #06BBCC;
-    --light: #F0FBFC;
-    --dark: #181d38;
+    /* Paleta profesional de azules */
+    --primary: #1A73E8; /* Azul principal (como el azul de Google) */
+    --primary-dark: #0D47A1; /* Azul oscuro */
+    --primary-light: #64B5F6; /* Azul medio-claro */
+    --primary-lighter: #E3F2FD; /* Celeste muy claro */
+    --primary-accent: #00ACC1; /* Azul turquesa (acento) */
+    
+    /* Variables estándar mantenidas por compatibilidad */
+    --light: #F5FBFF; /* Versión clara con tono azulado */
+    --dark: #0A1929; /* Versión oscura con tono azulado */
 }
 
 .fw-medium {
@@ -197,14 +204,14 @@
 }
 
 .page-header {
-    background: linear-gradient(rgba(24, 29, 56, .7), rgba(24, 29, 56, .7)), url(../img/carousel-1.jpg);
+    background: linear-gradient(rgba(10, 25, 41, .7), rgba(26, 115, 232, .4)), url(../img/carousel-1.jpg);
     background-position: center center;
     background-repeat: no-repeat;
     background-size: cover;
 }
 
 .page-header-inner {
-    background: rgba(15, 23, 43, .7);
+    background: rgba(10, 25, 41, .7);
 }
 
 .breadcrumb-item + .breadcrumb-item::before {
@@ -433,6 +440,20 @@
     border-right: none;
 }
 
+/* Estilos específicos para enlaces en el footer */
+.footer .footer-menu a:hover {
+    color: var(--primary-lighter) !important;
+}
+
+.footer a.text-primary-lighter {
+    color: var(--primary-lighter) !important;
+}
+
+.footer a.text-primary-lighter:hover {
+    color: var(--light) !important;
+    text-decoration: underline;
+}
+
 /* Normaliza las imágenes del carrusel */
 .carousel-img {
     width: 100%;
@@ -462,7 +483,7 @@
 .avatar-circle {
     width: 40px;
     height: 40px;
-    background-color: #4a69bd;
+    background-color: var(--primary);
     color: white;
     border-radius: 50%;
     display: flex;
@@ -479,7 +500,7 @@
 }
 
 .rating-stars .fa-star.active, .rating-big .fa-star.active {
-    color: #ffc107; /* Color dorado */
+    color: #FFC107; /* Volvemos al dorado para las estrellas, contrasta mejor con azul */
 }
 
 .rating-big .fa-star {
@@ -508,18 +529,18 @@
 .star-rating-input label:hover,
 .star-rating-input label:hover ~ label,
 .star-rating-input input:checked ~ label {
-    color: #ffc107; /* Color dorado */
+    color: #FFC107; /* Dorado para estrellas, mejor contraste con azul */
 }
 
 .valoracion-item {
-    border-left: 4px solid #4a69bd;
+    border-left: 4px solid var(--primary);
 }
 
 .valoracion-summary {
-    background-color: #f8f9fa;
+    background-color: var(--light);
     padding: 15px;
     border-radius: 8px;
-    border-left: 4px solid #4a69bd;
+    border-left: 4px solid var(--primary);
 }
 
 
@@ -561,7 +582,7 @@
     background: rgba(255,255,255,0.9);
     border: none;
     border-radius: 50%;
-    color: #dc3545;
+    color: var(--primary-dark); /* Morado oscuro en vez de rojo */
     font-size: 1.2rem;
     width: 32px;
     height: 32px;
@@ -576,7 +597,7 @@
 }
 .file-name {
     font-size: 0.95em;
-    color: #666;
+    color: var(--primary-dark);
     margin-top: 0.25rem;
     text-align: center;
 }
@@ -585,8 +606,10 @@
 .video-container {
   margin: 20px 0;
   padding: 15px;
-  border-radius: 5px;
-  background-color: #f8f9fa;
+  border-radius: 8px;
+  background-color: var(--primary-lighter);
+  border-left: 4px solid var(--primary);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
 .video-player {
@@ -597,10 +620,581 @@
 
 .video-title {
   margin-bottom: 10px;
-  color: #333;
+  color: var(--primary-dark);
 }
 
 .video-description {
   margin-top: 10px;
-  color: #555;
+  color: var(--dark);
+}
+
+/* Morado Theme - Color Classes basadas en la paleta de colores */
+.bg-primary-dark {
+    background-color: var(--primary-dark) !important;
+}
+
+.bg-primary-light {
+    background-color: var(--primary-light) !important;
+}
+
+.bg-primary-lighter {
+    background-color: var(--primary-lighter) !important;
+}
+
+.bg-primary-accent {
+    background-color: var(--primary-accent) !important;
+}
+
+.text-primary-dark {
+    color: var(--primary-dark) !important;
+}
+
+.text-primary-light {
+    color: var(--primary-light) !important;
+}
+
+.text-primary-lighter {
+    color: var(--primary-lighter) !important;
+}
+
+.text-primary-accent {
+    color: var(--primary-accent) !important;
+}
+
+.border-primary-dark {
+    border-color: var(--primary-dark) !important;
+}
+
+.border-primary-light {
+    border-color: var(--primary-light) !important;
+}
+
+.border-primary-accent {
+    border-color: var(--primary-accent) !important;
+}
+
+/* Sobreescribir clases estándar de Bootstrap para usar la paleta morada */
+.text-primary {
+    color: var(--primary) !important;
+}
+
+.text-info {
+    color: var(--primary-light) !important;
+}
+
+.text-success {
+    color: var(--primary-accent) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary) !important;
+}
+
+.bg-info {
+    background-color: var(--primary-light) !important;
+}
+
+.border-primary {
+    border-color: var(--primary) !important;
+}
+
+.border-info {
+    border-color: var(--primary-light) !important;
+}
+
+/* Botones con los nuevos colores */
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-primary:hover,
+.btn-primary:active,
+.btn-primary:focus {
+    background-color: var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+}
+
+.btn-outline-primary {
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: var(--light);
+}
+
+.btn-accent {
+    background-color: var(--primary-accent);
+    border-color: var(--primary-accent);
+    color: var(--light);
+}
+
+.btn-accent:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+    color: var(--light);
+}
+
+/* Spinners y loaders */
+.spinner-border.text-primary {
+    color: var(--primary) !important;
+}
+
+/* Enlaces coloreados */
+.link-primary {
+    color: var(--primary) !important;
+}
+
+.link-primary:hover, 
+.link-primary:focus {
+    color: var(--primary-dark) !important;
+}
+
+.link-info {
+    color: var(--primary-light) !important;
+}
+
+.link-info:hover, 
+.link-info:focus {
+    color: var(--primary) !important;
+}
+
+/* Mejoras profesionales para la paleta azul */
+.card {
+    border: none;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.btn {
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+}
+
+.badge-primary {
+    background-color: var(--primary-light);
+    color: var(--dark);
+}
+
+/* Estilos para tablas más profesionales */
+.table-professional {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table-professional thead th {
+    background-color: var(--primary-dark);
+    color: white;
+    border: none;
+    padding: 12px 15px;
+}
+
+.table-professional tbody tr:nth-child(even) {
+    background-color: var(--primary-lighter);
+}
+
+.table-professional tbody tr {
+    transition: background-color 0.2s;
+}
+
+.table-professional tbody tr:hover {
+    background-color: rgba(100, 181, 246, 0.2);
+}
+
+/* Mejoras adicionales para una interfaz profesional moderna */
+
+/* Inputs y formularios con mejor estilo */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(26, 115, 232, 0.25);
+}
+
+.form-control, 
+.form-select {
+    border-radius: 4px;
+    border: 1px solid #dce5ef;
+    padding: 0.6rem 1rem;
+    transition: all 0.3s;
+}
+
+/* Mejor estilo para inputs con iconos */
+.input-group-text {
+    background-color: var(--primary-lighter);
+    border: 1px solid #dce5ef;
+    color: var(--primary-dark);
+}
+
+/* Estilos para tarjetas especializadas */
+.card-dashboard {
+    border-radius: 8px;
+    border: none;
+    overflow: hidden;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+}
+
+.card-dashboard .card-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-accent) 100%);
+    color: white;
+    border: none;
+    padding: 15px 20px;
+}
+
+.card-dashboard .card-body {
+    padding: 20px;
+    background-color: white;
+}
+
+/* Estadísticas con estilo */
+.stat-card {
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    background-color: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.stat-card .stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+    color: white;
+    font-size: 1.5rem;
+}
+
+.stat-card .stat-info h3 {
+    font-size: 1.8rem;
+    margin-bottom: 5px;
+    color: var(--dark);
+}
+
+.stat-card .stat-info p {
+    margin: 0;
+    color: #6c757d;
+}
+
+/* Tooltips y popovers personalizados */
+.tooltip-inner {
+    background-color: var(--primary-dark);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.bs-tooltip-auto[x-placement^=top] .arrow::before, 
+.bs-tooltip-top .arrow::before {
+    border-top-color: var(--primary-dark);
+}
+
+/* Acordeones mejorados */
+.accordion .card {
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 15px;
+    border: none !important;
+}
+
+.accordion .card-header {
+    background: var(--primary-lighter);
+    border: none;
+    padding: 0;
+}
+
+.accordion .card-header button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    color: var(--primary-dark);
+    padding: 15px 20px;
+    font-weight: 600;
+    position: relative;
+}
+
+.accordion .card-header button:after {
+    content: "\f078";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    right: 15px;
+    transition: transform 0.3s;
+}
+
+.accordion .card-header button[aria-expanded="true"]:after {
+    transform: rotate(180deg);
+}
+
+.accordion .card-header button:hover {
+    background-color: rgba(100, 181, 246, 0.1);
+    text-decoration: none;
+}
+
+.accordion .card-body {
+    padding: 20px;
+}
+
+/* Breadcrumbs mejorados */
+.breadcrumb {
+    background: transparent;
+    border-radius: 0;
+    padding: 10px 0;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "\f054";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    font-size: 0.7rem;
+    color: var(--primary);
+}
+
+.breadcrumb-item a {
+    color: var(--primary);
+    transition: color 0.2s;
+}
+
+.breadcrumb-item a:hover {
+    color: var(--primary-dark);
+    text-decoration: none;
+}
+
+.breadcrumb-item.active {
+    color: #6c757d;
+}
+
+/* Efectos de pulso para elementos destacados */
+@keyframes pulse-blue {
+    0% {
+        box-shadow: 0 0 0 0 rgba(26, 115, 232, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 15px rgba(26, 115, 232, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(26, 115, 232, 0);
+    }
+}
+
+.pulse-element {
+    animation: pulse-blue 2s infinite;
+}
+
+/* Botones con gradiente */
+.btn-gradient-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s;
+}
+
+.btn-gradient-primary:hover {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(13, 71, 161, 0.3);
+    color: white;
+}
+
+.btn-gradient-accent {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-accent) 100%);
+    border: none;
+    color: white;
+}
+
+.btn-gradient-accent:hover {
+    background: linear-gradient(135deg, var(--primary-accent) 0%, var(--primary) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 172, 193, 0.3);
+    color: white;
+}
+
+/* Tarjetas flotantes para contenido destacado */
+.floating-card {
+    border-radius: 10px;
+    background: white;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    padding: 30px;
+    margin-top: -50px;
+    position: relative;
+    z-index: 2;
+}
+
+/* Efecto de borde iluminado (glow) */
+.glow-border {
+    border: 2px solid var(--primary);
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(26, 115, 232, 0.5);
+}
+
+.glow-primary {
+    transition: box-shadow 0.3s ease;
+}
+
+.glow-primary:hover {
+    box-shadow: 0 0 15px rgba(26, 115, 232, 0.6);
+}
+
+/* Skeleton loading para placeholders */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+    height: 16px;
+    margin-bottom: 8px;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.skeleton-card {
+    padding: 20px;
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+}
+
+.skeleton.title {
+    height: 24px;
+    width: 70%;
+    margin-bottom: 15px;
+}
+
+.skeleton.text {
+    height: 14px;
+    width: 100%;
+}
+
+.skeleton.image {
+    height: 200px;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+/* Efecto de scroll suave */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Switch personalizado (toggle) */
+.custom-switch .custom-control-label::before {
+    width: 50px;
+    height: 25px;
+    border-radius: 25px;
+    background-color: #dee2e6;
+    border: none;
+}
+
+.custom-switch .custom-control-label::after {
+    top: calc(0.25rem + 2px);
+    left: calc(-2.25rem + 2px);
+    width: 21px;
+    height: 21px;
+    background-color: white;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: transform .25s ease-in-out, background-color .25s ease-in-out;
+}
+
+.custom-switch .custom-control-input:checked ~ .custom-control-label::before {
+    background-color: var(--primary);
+}
+
+.custom-switch .custom-control-input:checked ~ .custom-control-label::after {
+    transform: translateX(25px);
+}
+
+.custom-switch .custom-control-input:focus ~ .custom-control-label::before {
+    box-shadow: 0 0 0 0.2rem rgba(26, 115, 232, 0.25);
+}
+
+/* Separadores con estilo */
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.divider::before {
+    margin-right: .75em;
+}
+
+.divider::after {
+    margin-left: .75em;
+}
+
+.divider-text {
+    color: #6c757d;
+    padding: 0 10px;
+}
+
+.divider-primary::before, .divider-primary::after {
+    border-color: var(--primary-light);
+}
+
+.divider-primary .divider-text {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* Listas con iconos personalizados */
+.icon-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.icon-list li {
+    position: relative;
+    padding-left: 30px;
+    margin-bottom: 10px;
+}
+
+.icon-list li:before {
+    content: "\f00c";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    left: 0;
+    color: var(--primary);
+}
+
+.icon-list-arrow li:before {
+    content: "\f105";
+}
+
+.icon-list-circle li:before {
+    content: "\f111";
+    font-size: 0.5rem;
+    top: 7px;
 }

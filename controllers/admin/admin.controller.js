@@ -810,11 +810,11 @@ adminController.guardarCurso = async (req, res) => {
         if (id) {
             await Curso.actualizar(id, { nombre, descripcion, categoria_id });
             curso = { id, nombre, descripcion, categoria_id };
+            adminLogger.debug(`Curso ID: ${id} actualizado por admin (${req.session.usuario?.email || 'unknown'})`);
         } else {
             curso = await Curso.crear({ nombre, descripcion, categoria_id });
-        }
-
-        // Manejo de imagen
+            adminLogger.debug(`Nuevo curso ID: ${curso.id} creado por admin (${req.session.usuario?.email || 'unknown'})`);
+        }            // Manejo de imagen
         if (req.file) {
             const path = require('path');
             const fs = require('fs').promises;
@@ -824,17 +824,106 @@ adminController.guardarCurso = async (req, res) => {
             const nombreFinal = `${curso.id}${ext}`;
             const rutaFinal = path.join(carpeta, nombreFinal);
 
-            const archivos = await fs.readdir(carpeta);
-            for (const archivo of archivos) {
-                if (archivo.startsWith(`${curso.id}.`) && archivo !== nombreFinal) {
-                    await fs.unlink(path.join(carpeta, archivo));
+            try {
+                adminLogger.debug(`Procesando imagen para curso ID: ${curso.id}, archivo: ${req.file.originalname}, extensión: ${ext}`);
+                
+                // Si estamos editando o creando, primero buscamos y eliminamos cualquier imagen anterior con el mismo ID
+                try {
+                    const archivos = await fs.readdir(carpeta);
+                    const patronBase = new RegExp(`^${curso.id}\\.(jpg|jpeg|png|webp)$`, 'i');
+                    
+                    let imagenesAntiguas = 0;
+                    for (const archivo of archivos) {
+                        if (patronBase.test(archivo)) {
+                            const rutaArchivo = path.join(carpeta, archivo);
+                            adminLogger.debug(`Eliminando imagen anterior: ${archivo}`);
+                            try {
+                                await fs.unlink(rutaArchivo);
+                                imagenesAntiguas++;
+                                adminLogger.debug(`Imagen ${archivo} eliminada correctamente`);
+                            } catch (unlinkErr) {
+                                adminLogger.error(`Error al eliminar imagen ${archivo}: ${unlinkErr.message}`);
+                            }
+                        }
+                    }
+                    
+                    adminLogger.debug(`Se eliminaron ${imagenesAntiguas} imágenes antiguas para el curso ID: ${curso.id}`);
+                } catch (err) {
+                    console.error('Error al buscar/eliminar imágenes anteriores:', err);
+                    adminLogger.error(`Error al eliminar imágenes anteriores para curso ID: ${curso.id}: ${err.message}`);
+                    // Continuamos a pesar del error
                 }
-            }
 
-            await fs.rename(req.file.path, rutaFinal);
+                // Verificamos que el directorio de destino exista
+                try {
+                    await fs.access(carpeta);
+                } catch (err) {
+                    // Si el directorio no existe, lo creamos
+                    adminLogger.debug(`El directorio de cursos no existe, creándolo: ${carpeta}`);
+                    await fs.mkdir(carpeta, { recursive: true });
+                }
+
+                // Verificamos que el archivo temporal existe antes de copiarlo
+                try {
+                    await fs.access(req.file.path);
+                    adminLogger.debug(`Archivo temporal verificado: ${req.file.path}`);
+                    
+                    // Verificar el tamaño del archivo temporal
+                    const stats = await fs.stat(req.file.path);
+                    adminLogger.debug(`Archivo temporal tamaño: ${stats.size} bytes`);
+                    
+                    if (stats.size === 0) {
+                        throw new Error('El archivo temporal está vacío');
+                    }
+                } catch (err) {
+                    console.error('Error con el archivo temporal:', err);
+                    adminLogger.error(`Error con el archivo temporal: ${req.file.path}: ${err.message}`);
+                    throw new Error(`Error con el archivo temporal: ${err.message}`);
+                }
+
+                // Copiar el archivo en lugar de renombrarlo para evitar problemas con particiones diferentes
+                try {
+                    await fs.copyFile(req.file.path, rutaFinal);
+                    adminLogger.debug(`Imagen copiada correctamente a: ${rutaFinal}`);
+                    
+                    // Verificar que la copia fue exitosa y tiene tamaño
+                    try {
+                        const stats = await fs.stat(rutaFinal);
+                        if (stats.size === 0) {
+                            adminLogger.error(`La imagen copiada está vacía: ${rutaFinal}`);
+                            throw new Error('La imagen copiada está vacía');
+                        }
+                        adminLogger.debug(`Verificación exitosa: la imagen se guardó en ${rutaFinal} con ${stats.size} bytes`);
+                    } catch (err) {
+                        adminLogger.error(`Error al verificar la imagen guardada en ${rutaFinal}: ${err.message}`);
+                        throw new Error(`Error al verificar la imagen guardada: ${err.message}`);
+                    }
+                } catch (err) {
+                    console.error('Error al copiar la imagen:', err);
+                    adminLogger.error(`Error al copiar imagen para curso ID: ${curso.id}: ${err.message}`);
+                    throw err; // Relanzo el error para manejarlo en el catch exterior
+                }
+                
+                // Eliminamos el archivo temporal después de copiarlo exitosamente
+                try {
+                    await fs.unlink(req.file.path);
+                    adminLogger.debug(`Archivo temporal eliminado: ${req.file.path}`);
+                } catch (err) {
+                    console.error('Error al eliminar archivo temporal:', err);
+                    adminLogger.warn(`Error al eliminar archivo temporal: ${req.file.path}: ${err.message}`);
+                    // No bloqueamos el proceso si falla la eliminación del temporal
+                }
+                
+                adminLogger.debug(`Imagen procesada correctamente para curso ID: ${curso.id}`);
+            } catch (err) {
+                console.error('Error al procesar imagen:', err);
+                adminLogger.error(`Error al procesar imagen para curso ID: ${curso.id}: ${err.message}`);
+                req.flash('error', `Error al procesar la imagen: ${err.message}`);
+                // Continuamos con el guardado del curso a pesar del error
+            }
         }
 
-        res.redirect('/admin/home');
+        res.redirect('/admin/editar-curso');
     } catch (error) {
         console.error('Error al guardar curso:', error);
         res.status(500).send('Error al guardar curso.');
